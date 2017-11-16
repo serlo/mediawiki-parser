@@ -1,0 +1,145 @@
+use ast::*;
+
+
+pub Document -> Element = posl:#position top:Paragraph* content:Heading* {
+    let mut top = top;
+    let mut content = content;
+    let mut c = Vec::new(); 
+    c.append(&mut top);
+    c.append(&mut content);
+    
+    Element::Document {
+        start: posl,
+        content: c, 
+    }
+}
+
+pub Heading -> Element = posl:#position d:$(Equal+) Space* caption:Paragraph pars:Paragraph*
+    {
+        Element::Heading {
+            start: posl,
+            depth: d.len(),
+            caption: Box::new(caption),
+            content: pars,
+        }
+    }
+
+
+pub Paragraph -> Element = 
+    posl:#position text:FormattedText* Newline {
+        Element::Paragraph {
+            start: posl,
+            content: text,
+        }
+    }
+    /
+    /* end of file paragraph */
+    posl:#position text:FormattedText+ !(".") {
+        Element::Paragraph {
+            start: posl,
+            content: text,
+        }
+    }
+
+pub TemplateAttribute -> Element = 
+    posl:#position name:TemplateText Equal value:(FormattedText / Paragraph)+ {
+        Element::TemplateAttribute {
+            start: posl,
+            name: Box::new(Some(name)),
+            value: value,
+        }    
+    } 
+    /
+    posl:#position value:(FormattedText / Paragraph)+ {
+        Element::TemplateAttribute {
+            start: posl,
+            name: Box::new(None),
+            value: value,
+        }
+    }
+
+pub Template -> Element = posl:#position CurlyOpen CurlyOpen s:TemplateAttribute attrs:(Pipe t:TemplateAttribute {t})* CurlyClose CurlyClose {
+    let mut attrs = attrs;
+    attrs.insert(0, s);
+    Element::Template {
+        start: posl,
+        content: attrs
+    }
+}
+
+pub FormattedText -> Element = (
+    /* bold text */
+    posl:#position Quote Quote Quote t:FormattedText+ Quote Quote Quote {
+        Element::Formatted {
+            start: posl,
+            content: t,
+            markup: MarkupType::Bold
+        }
+    }    
+    /
+    /* italic text */
+    posl:#position Quote Quote !(Quote) t:FormattedText+ Quote Quote !(Quote) {
+        Element::Formatted {
+            start: posl,
+            content: t,
+            markup: MarkupType::Italic
+        }    
+    }
+    /
+    /* math mode */
+    posl:#position Dollar t:MathText Dollar {
+        Element::Formatted {
+            start: posl,
+            content: vec![t],
+            markup: MarkupType::Math,
+        } 
+    }
+    /
+    /* Templates */
+    posl:#position t:Template {
+        t
+    }
+    /
+    posl:#position t:NormalText {
+        Element::Formatted {
+            start: posl,
+            content: vec![t],
+            markup: MarkupType::Plain
+        }
+    }
+)
+
+
+/* primitive terminals */
+
+Newline = "\n"
+Equal = "="
+CurlyOpen = "{"
+CurlyClose = "}"
+Space = " "
+Quote = "\'"
+Dollar = "$"
+Pipe = "|"
+Fence = "#"
+
+Text<C> = posl:#position chars:C+ {
+    let mut content = String::new();
+    for c in chars {
+        content.push_str(c);
+    }
+    Element::Text {
+        start: posl,
+        text: content
+    }
+}
+
+NormalText -> Element = #quiet<Text<Char>> / #expected("paragraph text")
+MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
+TemplateText -> Element = #quiet<Text<TemplateChar>> / #expected("template text")
+
+
+MathChar -> &'input str = !(Newline / Dollar) c:$. {c}
+Char -> &'input str = !(Equal / Newline / Quote / CurlyOpen / CurlyClose / Dollar / Pipe) c:$. {c}
+TemplateChar -> &'input str = !(Newline / CurlyOpen / CurlyClose / Pipe / Fence / Equal) c:$. {c}
+
+

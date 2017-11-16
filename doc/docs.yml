@@ -1,0 +1,81 @@
+# This document specifies valid MFNF wiki syntax.
+# It serves as documentation and is used to generate tests for the parser.
+# The whole document is structured as an array of tests cases:
+#
+# - case: descriptive name of a test here.
+#   in: |
+#     Here goes the input ''wikitext'' to parse.
+#   out:
+#     type: document
+#     start: 0
+#     content:
+#       - type: paragraph
+#         ...
+#
+
+# A single paragraph without newlines should be parsed as a document
+# with a single paragraph.
+  - case: single unicode paragraph
+    input: this is a äüöß test. "" ʕ•ᴥ•ʔ
+    out:
+      type: document
+      start: 0
+      content:
+        - type: paragraph
+          start: 0
+          content:
+            - type: formatted
+              start: 0
+              markup: plain
+              content:
+                - type: text
+                  start: 0
+                  text: this is a äüöß test. "" ʕ•ᴥ•ʔ
+
+# A paragraph with bold words contains a plain formatted element
+# wrapped by ''italic'' formatting.
+  - case: single italic word
+    input: "''this is italic''"
+    out:
+      type: document
+      start: 0
+      content:
+        - type: paragraph
+          start: 0
+          content:
+            - type: formatted
+              start: 0
+              markup: italic
+              content:
+                - type: formatted
+                  start: 2
+                  markup: plain
+                  content:
+                    - type: text
+                      start: 2
+                      text: this is italic
+
+# A paragraph with bold words contains a plain formatted element
+# wrapped by '''bold''' formatting.
+  - case: single bold word
+    input: "'''this is bold'''"
+    out:
+      type: document
+      start: 0
+      content:
+        - type: paragraph
+          start: 0
+          content:
+            - type: formatted
+              start: 0
+              markup: bold
+              content:
+                - type: formatted
+                  start: 3
+                  markup: plain
+                  content:
+                    - type: text
+                      start: 3
+                      text: this is bold
+
+
