@@ -16,7 +16,7 @@ pub Document -> Element = posl:#position top:Paragraph* content:Heading* {
     }
 }
 
-pub Heading -> Element = posl:#position d:$(Equal+) Space* caption:Paragraph pars:Paragraph*
+pub Heading -> Element = posl:#position d:$("="+) Space* caption:Paragraph pars:Paragraph*
     {
         Element::Heading {
             position: Position::new(posl, source_lines),
@@ -44,7 +44,7 @@ pub Paragraph -> Element =
     }
 
 pub TemplateAttribute -> Element = 
-    posl:#position name:TemplateAttributeName Equal value:(FormattedText / Paragraph)+ {
+    posl:#position name:TemplateAttributeName "=" value:(FormattedText / Paragraph)+ {
         Element::TemplateAttribute {
             position: Position::new(posl, source_lines),
             name: Box::new(Some(name)),
@@ -61,7 +61,7 @@ pub TemplateAttribute -> Element =
     }
 
 pub Template -> Element = 
-    posl:#position TemplateOpen s:TemplateAttribute attrs:(Pipe t:TemplateAttribute {t})* TemplateClose {
+    posl:#position "{{" s:TemplateAttribute attrs:("|" t:TemplateAttribute {t})* "}}" {
     let mut attrs = attrs;
     attrs.insert(0, s);
     Element::Template {
@@ -83,7 +83,7 @@ Reference -> Element =
 StrongText -> Element =  
     posl:#position 
     Strong
-    inner:( !(Quote) t:FormattedText {t} / e:EmphText {e} )+
+    inner:( !("'") t:FormattedText {t} / e:EmphText {e} )+
     Strong {
         Element::Formatted {
             position: Position::new(posl, source_lines),
@@ -95,7 +95,7 @@ StrongText -> Element =
 EmphText -> Element =  
     posl:#position 
     Emph
-    inner:( !(Quote) t:FormattedText {t} / s:StrongText {s} )+
+    inner:( !("'") t:FormattedText {t} / s:StrongText {s} )+
     Emph {
         Element::Formatted {
             position: Position::new(posl, source_lines),
@@ -107,7 +107,7 @@ EmphText -> Element =
 InlineMath -> Element = 
     posl:#position
     BeginMath
-    inner:MathText+
+    inner:MathText*
     EndMath {
         Element::Formatted {
             position: Position::new(posl, source_lines),
@@ -116,11 +116,24 @@ InlineMath -> Element =
         }
     }
 
+NoWikiMarkup -> Element = 
+    posl:#position
+    BeginNoWiki
+    inner: NowikiText*
+    EndNoWiki {
+        Element::Formatted {
+            position: Position::new(posl, source_lines),
+            content: inner,
+            markup: MarkupType::NoWiki
+        }
+    }
+
 pub FormattedText -> Element = StrongText
     / EmphText 
     / t:Template {t}
     / InlineMath
     / Reference
+    / NoWikiMarkup
     / (posl:#position t:NormalText {t})
 
 
@@ -129,16 +142,12 @@ pub FormattedText -> Element = StrongText
 Emph = "''"
 Strong = "'''"
 
-Newline = "\n"
-Equal = "="
-TemplateOpen = "{{"
-TemplateClose = "}}"
 Space = " "
-Quote = "\'"
-Pipe = "|"
-Fence = "#"
+Newline = "\n"
 BeginMath = "<math>" / "<MATH>"
 EndMath = "</math>" / "</MATH>"
+BeginNoWiki = "<nowiki>" / "<NOWIKI>"
+EndNoWiki = "</nowiki>" / "</NOWIKI>"
 
 Text<C> = posl:#position chars:C+ {
     let mut content = String::new();
@@ -162,7 +171,7 @@ Word -> String = #quiet<posl:#position chars:(!(Space) c:Char {c})+ {
 NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
 TemplateAttributeName -> Element = #quiet<Text<TemplateChar>> / #expected("template attribute name")
-
+NowikiText -> Element = #quiet<Text<(!(EndNoWiki) $(.))>> / #expected("any text.")
 
 MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
 Char -> &'input str = !(Newline / "=" / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath) c:$. {c}

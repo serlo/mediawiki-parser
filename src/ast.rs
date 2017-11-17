@@ -22,6 +22,7 @@ pub enum Element {
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all="lowercase")]
 pub enum MarkupType {
+    NoWiki,
     Plain,
     Bold,
     Italic,

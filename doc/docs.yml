@@ -156,6 +156,21 @@
                   position: {}
                   text: "$\\{{bla}} x'=c"
 
+# An empty math tag.
+  - case: empty math
+    input: "<math></math>"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: math
+              content: []
+
 # Simple hyperlink without a caption.
   - case: hyperlink without caption
     input: "[https://www.example.com/]"
@@ -214,4 +229,40 @@
                     - type: text
                       position: {}
                       text: dot com
+
+# An empty nowiki tag.
+  - case: empty nowiki
+    input: "<nowiki></nowiki>"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: nowiki
+              content: []
+
+# the nowiki tag should ignore everything.
+  - case: nowiki
+    input: |
+        <nowiki>abc {{bla}} ''' 
+        <another> [</nowiki>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: nowiki
+              content:
+                - type: text
+                  position: {}
+                  text: "abc {{bla}} ''' \n<another> ["
+
 
