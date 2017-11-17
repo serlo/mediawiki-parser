@@ -60,7 +60,8 @@ pub TemplateAttribute -> Element =
         }
     }
 
-pub Template -> Element = posl:#position CurlyOpen CurlyOpen s:TemplateAttribute attrs:(Pipe t:TemplateAttribute {t})* CurlyClose CurlyClose {
+pub Template -> Element = 
+    posl:#position TemplateOpen s:TemplateAttribute attrs:(Pipe t:TemplateAttribute {t})* TemplateClose {
     let mut attrs = attrs;
     attrs.insert(0, s);
     Element::Template {
@@ -69,55 +70,45 @@ pub Template -> Element = posl:#position CurlyOpen CurlyOpen s:TemplateAttribute
     }
 }
 
-pub FormattedText -> Element = (
-    /* bold text */
-    posl:#position Quote Quote Quote t:FormattedText+ Quote Quote Quote {
+StrongText -> Element =  
+    posl:#position 
+    Strong
+    inner:( !(Quote) t:FormattedText {t} / e:EmphText {e} )+
+    Strong {
         Element::Formatted {
             position: Position::new(posl, source_lines),
-            content: t,
+            content: inner,
             markup: MarkupType::Bold
         }
-    }    
-    /
-    /* italic text */
-    posl:#position Quote Quote !(Quote) t:FormattedText+ Quote Quote !(Quote) {
+    }
+
+EmphText -> Element =  
+    posl:#position 
+    Emph
+    inner:( !(Quote) t:FormattedText {t} / s:StrongText {s} )+
+    Emph {
         Element::Formatted {
             position: Position::new(posl, source_lines),
-            content: t,
+            content: inner,
             markup: MarkupType::Italic
-        }    
-    }
-    /
-    /* math mode */
-    posl:#position Dollar t:MathText Dollar {
-        Element::Formatted {
-            position: Position::new(posl, source_lines),
-            content: vec![t],
-            markup: MarkupType::Math,
-        } 
-    }
-    /
-    /* Templates */
-    posl:#position t:Template {
-        t
-    }
-    /
-    posl:#position t:NormalText {
-        Element::Formatted {
-            position: Position::new(posl, source_lines),
-            content: vec![t],
-            markup: MarkupType::Plain
         }
     }
-)
+
+
+pub FormattedText -> Element = StrongText
+    / EmphText 
+    / (posl:#position t:NormalText {t})
 
 
 /* primitive terminals */
 
+Emph = "''"
+Strong = "'''"
+
 Newline = "\n"
 Equal = "="
-CurlyOpen = "{"
-CurlyClose = "}"
+TemplateOpen = "{{"
+TemplateClose = "}}"
 Space = " "
 Quote = "\'"
 Dollar = "$"
@@ -135,13 +126,13 @@ Text<C> = posl:#position chars:C+ {
     }
 }
 
-NormalText -> Element = #quiet<Text<Char>> / #expected("paragraph text")
+NormalText -> Element = #quiet<Text<Char>> / #expected("alphanumeric synbol")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
 TemplateText -> Element = #quiet<Text<TemplateChar>> / #expected("template text")
 
 
 MathChar -> &'input str = !(Newline / Dollar) c:$. {c}
-Char -> &'input str = !(Equal / Newline / Quote / CurlyOpen / CurlyClose / Dollar / Pipe) c:$. {c}
-TemplateChar -> &'input str = !(Newline / CurlyOpen / CurlyClose / Pipe / Fence / Equal) c:$. {c}
+Char -> &'input str = !(Equal / Newline / Quote /  TemplateOpen / TemplateClose / Dollar / Pipe) c:$. {c}
+TemplateChar -> &'input str = !(Newline / TemplateOpen / TemplateClose / Pipe / Fence / Equal) c:$. {c}
 
 

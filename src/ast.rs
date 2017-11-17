@@ -8,7 +8,7 @@ pub enum Element {
     Document {position: Position, content: Vec<Element>},
     Heading {position: Position, depth: usize, caption: Box<Element>, content: Vec<Element>},
     Text {position: Position, text: String},
-    Formatted {position: Position, content: Vec<Element>, markup: MarkupType},
+    Formatted {position: Position, markup: MarkupType, content: Vec<Element>},
     Paragraph {position: Position, content: Vec<Element>},
     Template {position: Position, content: Vec<Element>},
     TemplateAttribute {position: Position, name: Box<Option<Element>>, value: Vec<Element>},
