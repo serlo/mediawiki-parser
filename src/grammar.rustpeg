@@ -28,6 +28,8 @@ pub Heading -> Element = posl:#position d:$("="+) Space* caption:Paragraph pars:
 
 
 pub Paragraph -> Element = 
+    List
+    /
     posl:#position text:FormattedText* Newline {
         Element::Paragraph {
             position: Position::new(posl, source_lines),
@@ -36,12 +38,13 @@ pub Paragraph -> Element =
     }
     /
     /* end of file paragraph */
-    posl:#position text:FormattedText+ !(".") {
+    posl:#position text:FormattedText+ EOF {
         Element::Paragraph {
             position: Position::new(posl, source_lines),
             content: text,
         }
     }
+    
 
 pub TemplateAttribute -> Element = 
     posl:#position name:TemplateAttributeName "=" value:(FormattedText / Paragraph)+ {
@@ -69,6 +72,31 @@ pub Template -> Element =
         content: attrs
     }
 }
+
+List -> Element = 
+    posl:#position items:ListItem+ Space* (Newline / EOF) {
+        Element::List {
+            position: Position::new(posl, source_lines),
+            content: items,
+        }
+    }
+
+ListItem -> Element = 
+    posl:#position Space* s:($("*" / "#" / ":"))+ Space* content:FormattedText* (Newline / EOF) {
+        let kind = match s[0] {
+            "*" => ListItemKind::Unordered,
+            "#" => ListItemKind::Ordered,
+            ":" => ListItemKind::Definition,
+            _ => ListItemKind::Unordered,
+        };
+
+        Element::ListItem {
+            position: Position::new(posl, source_lines),
+            depth: s.len(),
+            kind: kind,
+            content: content,
+        }
+    }
 
 Reference -> Element = 
     posl:#position
@@ -140,6 +168,14 @@ NoWikiMarkup -> Element =
         }
     }
 
+SingleQuoteText -> Element = posl:#position q:$("'") {
+    Element::Text {
+        position: Position::new(posl, source_lines),
+        text: String::from(q),
+    }
+}
+
+
 pub FormattedText -> Element = StrongText
     / EmphText 
     / t:Template {t}
@@ -148,6 +184,7 @@ pub FormattedText -> Element = StrongText
     / NoWikiMarkup
     / StrikeThroughMarkup
     / (posl:#position t:NormalText {t})
+    / SingleQuoteText
 
 
 /* primitive terminals */
@@ -155,14 +192,15 @@ pub FormattedText -> Element = StrongText
 Emph = "''"
 Strong = "'''"
 
-Space = " "
+EOF = !(".")
+Space = " " / "\t"
 Newline = "\n"
 BeginMath = "<math>" / "<MATH>"
 EndMath = "</math>" / "</MATH>"
 BeginNoWiki = "<nowiki>" / "<NOWIKI>"
 EndNoWiki = "</nowiki>" / "</NOWIKI>"
-BeginStrikethrough = "<del>" / "<DEL>"
-EndStrikethrough = "</del>" / "</DEL>"
+BeginStrikethrough = "<del>" / "<s>" / "<DEL>"
+EndStrikethrough = "</del>" / "</s>" / "</DEL>"
 
 Text<C> = posl:#position chars:C+ {
     let mut content = String::new();

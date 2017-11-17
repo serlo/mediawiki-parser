@@ -16,6 +16,8 @@ pub enum Element {
     Template {position: Position, content: Vec<Element>},
     TemplateAttribute {position: Position, name: Box<Option<Element>>, value: Vec<Element>},
     Reference {position: Position, target: String, caption: Vec<Element>},
+    ListItem {position: Position, depth: usize, kind: ListItemKind, content: Vec<Element>},
+    List {position: Position, content: Vec<Element>},
 }
 
 /// Types of markup a section of text may have.
@@ -28,6 +30,16 @@ pub enum MarkupType {
     Italic,
     Math,
     StrikeThrough,
+}
+
+
+/// Types of markup a section of text may have.
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all="lowercase")]
+pub enum ListItemKind {
+    Unordered,
+    Definition,
+    Ordered
 }
 
 /// Represents the position of a document element in the source document.

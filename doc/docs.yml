@@ -86,7 +86,7 @@
 
 # A paragraph with nested markup.
   - case: nested markup italic
-    input: "''italic paragraph with '''''nested'' bold and italic''''' and normal text."
+    input: "prelude ''italic paragraph with '''''nested'' bold and italic''''' and normal text."
     out:
         type: document
         position: {} 
@@ -94,6 +94,9 @@
           - type: paragraph
             position: {}
             content: 
+              - type: text
+                position: {}
+                text: "prelude "
               - type: formatted
                 position: {}
                 markup: italic
@@ -283,4 +286,101 @@
                   position: {}
                   text: strikethrough text
 
+# A simple list of one item.
+  - case: list one item
+    input: "* item"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: list
+          position: {}
+          content:
+            - type: listitem
+              position: {}
+              kind: unordered
+              depth: 1
+              content:
+                - type: text
+                  position: {}
+                  text: item
+
+
+# A ordered list and a unordered list of one item
+  - case: two simple lists
+    input: |
+        * item 1
+        
+        ## item 2
+    out:
+      type: document
+      position: {}
+      content:
+        - type: list
+          position: {}
+          content:
+            - type: listitem
+              position: {}
+              kind: unordered
+              depth: 1
+              content:
+                - type: text
+                  position: {}
+                  text: item 1
+        - type: list
+          position: {}
+          content:
+            - type: listitem
+              position: {}
+              kind: ordered
+              depth: 2
+              content:
+                - type: text
+                  position: {}
+                  text: item 2
+
+# A list with multiple different item types and a paragraph
+  - case: list diverse items
+    input: |
+        : item 1
+        *** item 2
+        ## item 3
+        paragraph
+    out:
+      type: document
+      position: {}
+      content:
+        - type: list
+          position: {}
+          content:
+            - type: listitem
+              position: {}
+              kind: definition
+              depth: 1
+              content:
+                - type: text
+                  position: {}
+                  text: item 1
+            - type: listitem
+              position: {}
+              kind: unordered
+              depth: 3
+              content:
+                - type: text
+                  position: {}
+                  text: item 2
+            - type: listitem
+              position: {}
+              kind: ordered
+              depth: 2
+              content:
+                - type: text
+                  position: {}
+                  text: item 3
+        - type: paragraph
+          position: {}
+          content:
+            - type: text
+              position: {}
+              text: paragraph
 
