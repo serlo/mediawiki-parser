@@ -245,7 +245,7 @@
               markup: nowiki
               content: []
 
-# the nowiki tag should ignore everything.
+# The nowiki tag should ignore everything.
   - case: nowiki
     input: |
         <nowiki>abc {{bla}} ''' 
@@ -264,5 +264,23 @@
                 - type: text
                   position: {}
                   text: "abc {{bla}} ''' \n<another> ["
+
+# Strikethrough text.
+  - case: strikethrough
+    input: <del>strikethrough text</del>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: strikethrough
+              content:
+                - type: text
+                  position: {}
+                  text: strikethrough text
 
 

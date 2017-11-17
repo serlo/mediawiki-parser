@@ -27,6 +27,7 @@ pub enum MarkupType {
     Bold,
     Italic,
     Math,
+    StrikeThrough,
 }
 
 /// Represents the position of a document element in the source document.

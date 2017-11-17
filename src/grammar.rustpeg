@@ -116,6 +116,18 @@ InlineMath -> Element =
         }
     }
 
+StrikeThroughMarkup -> Element = 
+    posl:#position
+    BeginStrikethrough
+    inner:FormattedText+
+    EndStrikethrough {
+        Element::Formatted {
+            position: Position::new(posl, source_lines),
+            content: inner,
+            markup: MarkupType::StrikeThrough
+        }
+    }
+
 NoWikiMarkup -> Element = 
     posl:#position
     BeginNoWiki
@@ -134,6 +146,7 @@ pub FormattedText -> Element = StrongText
     / InlineMath
     / Reference
     / NoWikiMarkup
+    / StrikeThroughMarkup
     / (posl:#position t:NormalText {t})
 
 
@@ -148,6 +161,8 @@ BeginMath = "<math>" / "<MATH>"
 EndMath = "</math>" / "</MATH>"
 BeginNoWiki = "<nowiki>" / "<NOWIKI>"
 EndNoWiki = "</nowiki>" / "</NOWIKI>"
+BeginStrikethrough = "<del>" / "<DEL>"
+EndStrikethrough = "</del>" / "</DEL>"
 
 Text<C> = posl:#position chars:C+ {
     let mut content = String::new();
@@ -174,7 +189,7 @@ TemplateAttributeName -> Element = #quiet<Text<TemplateChar>> / #expected("templ
 NowikiText -> Element = #quiet<Text<(!(EndNoWiki) $(.))>> / #expected("any text.")
 
 MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
-Char -> &'input str = !(Newline / "=" / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath) c:$. {c}
+Char -> &'input str = !(Newline / "=" / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
 TemplateChar -> &'input str = $([A-Za-z])
 
 
