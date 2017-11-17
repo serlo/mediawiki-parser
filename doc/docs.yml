@@ -19,17 +19,29 @@
     input: this is a äüöß test. "" ʕ•ᴥ•ʔ
     out:
       type: document
-      start: 0
+      position:
+        start: 0
+        line: 1
+        col: 1
       content:
         - type: paragraph
-          start: 0
+          position:
+            start: 0
+            line: 1
+            col: 1
           content:
             - type: formatted
-              start: 0
+              position:
+                start: 0
+                line: 1
+                col: 1
               markup: plain
               content:
                 - type: text
-                  start: 0
+                  position:
+                    start: 0
+                    line: 1
+                    col: 1
                   text: this is a äüöß test. "" ʕ•ᴥ•ʔ
 
 # A paragraph with bold words contains a plain formatted element
@@ -38,21 +50,36 @@
     input: "''this is italic''"
     out:
       type: document
-      start: 0
+      position:
+        start: 0
+        line: 1
+        col: 1
       content:
         - type: paragraph
-          start: 0
+          position:
+            start: 0
+            line: 1
+            col: 1
           content:
             - type: formatted
-              start: 0
+              position:
+                start: 0 
+                line: 1
+                col: 1
               markup: italic
               content:
                 - type: formatted
-                  start: 2
+                  position:
+                    start: 2
+                    line: 1
+                    col: 3
                   markup: plain
                   content:
                     - type: text
-                      start: 2
+                      position:
+                        start: 2
+                        line: 1
+                        col: 3
                       text: this is italic
 
 # A paragraph with bold words contains a plain formatted element
@@ -61,21 +88,34 @@
     input: "'''this is bold'''"
     out:
       type: document
-      start: 0
+      position:
+        start: 0
+        line: 1
+        col: 1
       content:
         - type: paragraph
-          start: 0
+          position:
+            start: 0
+            line: 1
+            col: 1
           content:
             - type: formatted
-              start: 0
+              position:
+                start: 0
+                line: 1
+                col: 1
               markup: bold
               content:
                 - type: formatted
-                  start: 3
+                  position:
+                    start: 3
+                    line: 1
+                    col: 4
                   markup: plain
                   content:
                     - type: text
-                      start: 3
+                      position:
+                        start: 3
+                        line: 1
+                        col: 4
                       text: this is bold
-
-

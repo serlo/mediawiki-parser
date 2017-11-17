@@ -25,7 +25,9 @@ mod grammar {
 
 fn main() {
     let input: String = read_file("./test.md");
-    match grammar::Document(&input) {
+    let source_lines = ast::get_source_lines(&input);
+
+    match grammar::Document(&input, &source_lines) {
         Ok(r) => println!("Parsed as: {}", r),
         Err(e) => println!("Parse error: {:?}", e),
     }

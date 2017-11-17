@@ -1,5 +1,7 @@
 use ast::*;
 
+#![arguments(source_lines: &Vec<SourceLine>)]
+
 
 pub Document -> Element = posl:#position top:Paragraph* content:Heading* {
     let mut top = top;
@@ -9,7 +11,7 @@ pub Document -> Element = posl:#position top:Paragraph* content:Heading* {
     c.append(&mut content);
     
     Element::Document {
-        start: posl,
+        position: Position::new(posl, source_lines),
         content: c, 
     }
 }
@@ -17,7 +19,7 @@ pub Document -> Element = posl:#position top:Paragraph* content:Heading* {
 pub Heading -> Element = posl:#position d:$(Equal+) Space* caption:Paragraph pars:Paragraph*
     {
         Element::Heading {
-            start: posl,
+            position: Position::new(posl, source_lines),
             depth: d.len(),
             caption: Box::new(caption),
             content: pars,
@@ -28,7 +30,7 @@ pub Heading -> Element = posl:#position d:$(Equal+) Space* caption:Paragraph par
 pub Paragraph -> Element = 
     posl:#position text:FormattedText* Newline {
         Element::Paragraph {
-            start: posl,
+            position: Position::new(posl, source_lines),
             content: text,
         }
     }
@@ -36,7 +38,7 @@ pub Paragraph -> Element =
     /* end of file paragraph */
     posl:#position text:FormattedText+ !(".") {
         Element::Paragraph {
-            start: posl,
+            position: Position::new(posl, source_lines),
             content: text,
         }
     }
@@ -44,7 +46,7 @@ pub Paragraph -> Element =
 pub TemplateAttribute -> Element = 
     posl:#position name:TemplateText Equal value:(FormattedText / Paragraph)+ {
         Element::TemplateAttribute {
-            start: posl,
+            position: Position::new(posl, source_lines),
             name: Box::new(Some(name)),
             value: value,
         }    
@@ -52,7 +54,7 @@ pub TemplateAttribute -> Element =
     /
     posl:#position value:(FormattedText / Paragraph)+ {
         Element::TemplateAttribute {
-            start: posl,
+            position: Position::new(posl, source_lines),
             name: Box::new(None),
             value: value,
         }
@@ -62,7 +64,7 @@ pub Template -> Element = posl:#position CurlyOpen CurlyOpen s:TemplateAttribute
     let mut attrs = attrs;
     attrs.insert(0, s);
     Element::Template {
-        start: posl,
+        position: Position::new(posl, source_lines),
         content: attrs
     }
 }
@@ -71,7 +73,7 @@ pub FormattedText -> Element = (
     /* bold text */
     posl:#position Quote Quote Quote t:FormattedText+ Quote Quote Quote {
         Element::Formatted {
-            start: posl,
+            position: Position::new(posl, source_lines),
             content: t,
             markup: MarkupType::Bold
         }
@@ -80,7 +82,7 @@ pub FormattedText -> Element = (
     /* italic text */
     posl:#position Quote Quote !(Quote) t:FormattedText+ Quote Quote !(Quote) {
         Element::Formatted {
-            start: posl,
+            position: Position::new(posl, source_lines),
             content: t,
             markup: MarkupType::Italic
         }    
@@ -89,7 +91,7 @@ pub FormattedText -> Element = (
     /* math mode */
     posl:#position Dollar t:MathText Dollar {
         Element::Formatted {
-            start: posl,
+            position: Position::new(posl, source_lines),
             content: vec![t],
             markup: MarkupType::Math,
         } 
@@ -102,7 +104,7 @@ pub FormattedText -> Element = (
     /
     posl:#position t:NormalText {
         Element::Formatted {
-            start: posl,
+            position: Position::new(posl, source_lines),
             content: vec![t],
             markup: MarkupType::Plain
         }
@@ -128,7 +130,7 @@ Text<C> = posl:#position chars:C+ {
         content.push_str(c);
     }
     Element::Text {
-        start: posl,
+        position: Position::new(posl, source_lines),
         text: content
     }
 }

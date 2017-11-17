@@ -16,12 +16,14 @@ macro_rules! TEST_SOUCE { () => ("
 fn {} () {{
     let input = {:?};
     let target_source = {:?};
-    
-    let result = grammar::Document(&input)
+
+    let source_lines = ast::get_source_lines(&input);
+    let result = grammar::Document(&input, &source_lines)
         .expect(\"Parsing of the input for {} failed!\");
     let target: ast::Element = serde_yaml::from_str(&target_source)
         .expect(\"Parsing the documentation of {} failed!\");
-    assert_eq!(&target, &result);
+    assert_eq!(&target, &result,
+        \"comparing documentation (left) with parse result (right) failed!\");
 }}
 ")}
 
@@ -70,21 +72,21 @@ fn generate_tests() {
                    .expect("Could not open input file!");
     let mut out_file = fs::File::create(Path::new("src/generated_tests.rs")).ok()
                    .expect("Could not open output file!");
-    
+
     let mut content = String::new();
     in_file.read_to_string(&mut content).ok().expect("Could not read file!");
-    
+
     let tests: Vec<Test> = serde_yaml::from_str(&content)
         .expect("Could not parse the documentation!");
- 
+
     write!(out_file, TEST_HEADER!()).unwrap();
 
     for test in &tests {
         test.write_code(&mut out_file).unwrap();
-    } 
+    }
 }
 
 fn main() {
-    generate_tests(); 
+    generate_tests();
     peg::cargo_build("src/grammar.rustpeg");
 }
