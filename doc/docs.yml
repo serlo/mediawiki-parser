@@ -85,14 +85,133 @@
                   text: this is bold
 
 # A paragraph with nested markup.
-#  - case: nested markup italic
-#    input: "''italic paragraph with '''''nested'' bold and italic'''''"
-#    out:
-#      type: document
-#      position:
-#        start: 0
-#        line: 1
-#        col: 1
-#      content:
-#        - type: paragraph
-#          paragraph: 
+  - case: nested markup italic
+    input: "''italic paragraph with '''''nested'' bold and italic''''' and normal text."
+    out:
+        type: document
+        position: {} 
+        content: 
+          - type: paragraph
+            position: {}
+            content: 
+              - type: formatted
+                position: {}
+                markup: italic
+                content: 
+                  - type: text
+                    position: {}
+                    text: "italic paragraph with "
+                
+                  - type: formatted
+                    position: {}
+                    markup: bold
+                    content: 
+                      - type: formatted
+                        position: {} 
+                        markup: italic
+                        content: 
+                          - type: text
+                            position: {}
+                            text: nested
+                      - type: text
+                        position: {} 
+                        text: " bold and italic"
+              - type: text
+                position: {}
+                text: " and normal text."
+                
+# A simple inline math tag.
+  - case: simple inline math
+    input: "<math>x^2</math>"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: math
+              content:
+                - type: text
+                  position: {}
+                  text: x^2
+
+# Math tag with special characters
+  - case: special inline math
+    input: "<math>$\\{{bla}} x'=c</math>"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: math
+              content:
+                - type: text
+                  position: {}
+                  text: "$\\{{bla}} x'=c"
+
+# Simple hyperlink without a caption.
+  - case: hyperlink without caption
+    input: "[https://www.example.com/]"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: reference
+              position: {}
+              target: https://www.example.com/
+              caption: []
+
+# Simple hyperlink with a caption.
+  - case: hyperlink with caption
+    input: "[https://www.example.com/ Example dot com]"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: reference
+              position: {}
+              target: https://www.example.com/
+              caption:
+                - type: text
+                  position: {}
+                  text: "Example dot com"
+
+# Simple hyperlink without a caption.
+  - case: hyperlink with formatted caption
+    input: "[https://www.example.com/ Example '''dot com''']"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: reference
+              position: {}
+              target: https://www.example.com/
+              caption:
+                - type: text
+                  position: {}
+                  text: "Example "
+
+                - type: formatted
+                  position: {}
+                  markup: bold
+                  content:
+                    - type: text
+                      position: {}
+                      text: dot com
+

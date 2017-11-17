@@ -44,7 +44,7 @@ pub Paragraph -> Element =
     }
 
 pub TemplateAttribute -> Element = 
-    posl:#position name:TemplateText Equal value:(FormattedText / Paragraph)+ {
+    posl:#position name:TemplateAttributeName Equal value:(FormattedText / Paragraph)+ {
         Element::TemplateAttribute {
             position: Position::new(posl, source_lines),
             name: Box::new(Some(name)),
@@ -70,6 +70,16 @@ pub Template -> Element =
     }
 }
 
+Reference -> Element = 
+    posl:#position
+    "[" url:Word Space? caption:FormattedText* "]" {
+        Element::Reference {
+            position: Position::new(posl, source_lines),
+            target: url,
+            caption: caption
+        }
+    }
+
 StrongText -> Element =  
     posl:#position 
     Strong
@@ -94,9 +104,23 @@ EmphText -> Element =
         }
     }
 
+InlineMath -> Element = 
+    posl:#position
+    BeginMath
+    inner:MathText+
+    EndMath {
+        Element::Formatted {
+            position: Position::new(posl, source_lines),
+            content: inner,
+            markup: MarkupType::Math
+        }
+    }
 
 pub FormattedText -> Element = StrongText
     / EmphText 
+    / t:Template {t}
+    / InlineMath
+    / Reference
     / (posl:#position t:NormalText {t})
 
 
@@ -111,9 +135,10 @@ TemplateOpen = "{{"
 TemplateClose = "}}"
 Space = " "
 Quote = "\'"
-Dollar = "$"
 Pipe = "|"
 Fence = "#"
+BeginMath = "<math>" / "<MATH>"
+EndMath = "</math>" / "</MATH>"
 
 Text<C> = posl:#position chars:C+ {
     let mut content = String::new();
@@ -126,13 +151,21 @@ Text<C> = posl:#position chars:C+ {
     }
 }
 
+Word -> String = #quiet<posl:#position chars:(!(Space) c:Char {c})+ {
+    let mut content = String::new();
+    for c in chars {
+        content.push_str(c);
+    }
+    content
+}> / #expected("url")
+
 NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
-TemplateText -> Element = #quiet<Text<TemplateChar>> / #expected("template text")
+TemplateAttributeName -> Element = #quiet<Text<TemplateChar>> / #expected("template attribute name")
 
 
-MathChar -> &'input str = !(Newline / Dollar) c:$. {c}
-Char -> &'input str = !(Equal / Newline / Quote /  TemplateOpen / TemplateClose / Dollar / Pipe) c:$. {c}
-TemplateChar -> &'input str = !(Newline / TemplateOpen / TemplateClose / Pipe / Fence / Equal) c:$. {c}
+MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
+Char -> &'input str = !(Newline / "=" / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath) c:$. {c}
+TemplateChar -> &'input str = $([A-Za-z])
 
 

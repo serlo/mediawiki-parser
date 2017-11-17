@@ -15,6 +15,7 @@ pub enum Element {
     Paragraph {position: Position, content: Vec<Element>},
     Template {position: Position, content: Vec<Element>},
     TemplateAttribute {position: Position, name: Box<Option<Element>>, value: Vec<Element>},
+    Reference {position: Position, target: String, caption: Vec<Element>},
 }
 
 /// Types of markup a section of text may have.
