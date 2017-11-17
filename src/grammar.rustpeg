@@ -126,7 +126,7 @@ Text<C> = posl:#position chars:C+ {
     }
 }
 
-NormalText -> Element = #quiet<Text<Char>> / #expected("alphanumeric synbol")
+NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
 TemplateText -> Element = #quiet<Text<TemplateChar>> / #expected("template text")
 

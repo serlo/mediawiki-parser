@@ -1,7 +1,10 @@
 use std::fmt;
 use serde_yaml;
 
-
+/// Element types used in the abstract syntax tree (AST).
+///
+/// Each element must keep track of its position in the original
+/// input document. After parsing, the document tree can be serialized by serde.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(tag="type", rename_all="lowercase")]
 pub enum Element {
@@ -12,9 +15,9 @@ pub enum Element {
     Paragraph {position: Position, content: Vec<Element>},
     Template {position: Position, content: Vec<Element>},
     TemplateAttribute {position: Position, name: Box<Option<Element>>, value: Vec<Element>},
-    Error{message: String},
 }
 
+/// Types of markup a section of text may have.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all="lowercase")]
 pub enum MarkupType {
@@ -24,19 +27,28 @@ pub enum MarkupType {
     Math,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all="lowercase")]
+/// Represents the position of a document element in the source document.
+///
+/// The PartialEq implementation allows for a "any" position (all zero), which is
+/// equal to any other position. This is used to reduce clutter in tests, where
+/// a default Position ("{}") can be used where the actual representation is irrelevant.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all="lowercase", default="Position::any_position")]
 pub struct Position {
     start: usize,
     line: usize,
     col: usize,
 }
 
+/// Position of a source line of code.
 pub struct SourceLine {
     start: usize,
     end: usize,
 }
 
+/// Compiles a list of start and end positions of the input source lines.
+///
+/// This representation is used to calculate line and column position from the input offset.
 pub fn get_source_lines(source: &str) -> Vec<SourceLine> {
 
     let mut pos = 0;
@@ -72,6 +84,28 @@ impl Position {
             col: col,
         }
     }
+
+    pub fn any_position() -> Self {
+        Position {
+            start: 0,
+            line: 0,
+            col: 0,
+        }
+    }
+}
+
+impl PartialEq for Position {
+    fn eq(&self, other: &Position) -> bool {
+        // comparing with "any" position is always true
+        if (other.start == 0 && other.line == 0 && other.col == 0) ||
+           (self.start == 0 && self.line == 0 && self.col == 0) {
+            return true;
+        }
+
+        return self.start == other.start && self.line == other.line && self.col == other.col;
+    }
+
+    fn ne(&self, other: &Position) -> bool {!self.eq(other)}
 }
 
 impl fmt::Display for Element {

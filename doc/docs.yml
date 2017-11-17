@@ -12,6 +12,24 @@
 #       - type: paragraph
 #         ...
 #
+# If the position of an element is not important for the test,
+# you may ommit its position info:
+# 
+# ...
+# type: paragraph
+# position: {}
+# content: []
+
+# An empty document should parse fine.
+  - case: empty document
+    input: ""
+    out:
+      type: document
+      position:
+        start: 0
+        line: 1
+        col: 1
+      content: []
 
 # A single paragraph without newlines should be parsed as a document
 # with a single paragraph.
@@ -19,103 +37,62 @@
     input: this is a äüöß test. "" ʕ•ᴥ•ʔ
     out:
       type: document
-      position:
-        start: 0
-        line: 1
-        col: 1
+      position: {}
       content:
         - type: paragraph
-          position:
-            start: 0
-            line: 1
-            col: 1
+          position: {}
           content:
-            - type: formatted
-              position:
-                start: 0
-                line: 1
-                col: 1
-              markup: plain
-              content:
-                - type: text
-                  position:
-                    start: 0
-                    line: 1
-                    col: 1
-                  text: this is a äüöß test. "" ʕ•ᴥ•ʔ
+            - type: text
+              position: {}
+              text: this is a äüöß test. "" ʕ•ᴥ•ʔ
 
 # A paragraph with bold words contains a plain formatted element
 # wrapped by ''italic'' formatting.
-  - case: single italic word
+  - case: single italic text
     input: "''this is italic''"
     out:
       type: document
-      position:
-        start: 0
-        line: 1
-        col: 1
+      position: {}
       content:
         - type: paragraph
-          position:
-            start: 0
-            line: 1
-            col: 1
+          position: {}
           content:
             - type: formatted
-              position:
-                start: 0 
-                line: 1
-                col: 1
+              position: {}
               markup: italic
               content:
-                - type: formatted
-                  position:
-                    start: 2
-                    line: 1
-                    col: 3
-                  markup: plain
-                  content:
-                    - type: text
-                      position:
-                        start: 2
-                        line: 1
-                        col: 3
-                      text: this is italic
+                - type: text
+                  position: {}
+                  text: this is italic
 
 # A paragraph with bold words contains a plain formatted element
 # wrapped by '''bold''' formatting.
-  - case: single bold word
+  - case: single bold text
     input: "'''this is bold'''"
     out:
       type: document
-      position:
-        start: 0
-        line: 1
-        col: 1
+      position: {}
       content:
         - type: paragraph
-          position:
-            start: 0
-            line: 1
-            col: 1
+          position: {}
           content:
             - type: formatted
-              position:
-                start: 0
-                line: 1
-                col: 1
+              position: {}
               markup: bold
-              content:
-                - type: formatted
-                  position:
-                    start: 3
-                    line: 1
-                    col: 4
-                  markup: plain
-                  content:
-                    - type: text
-                      position:
-                        start: 3
-                        line: 1
-                        col: 4
-                      text: this is bold
+              content: 
+                - type: text
+                  position: {}
+                  text: this is bold
+
+# A paragraph with nested markup.
+#  - case: nested markup italic
+#    input: "''italic paragraph with '''''nested'' bold and italic'''''"
+#    out:
+#      type: document
+#      position:
+#        start: 0
+#        line: 1
+#        col: 1
+#      content:
+#        - type: paragraph
+#          paragraph: 
