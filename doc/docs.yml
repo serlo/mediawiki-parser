@@ -34,7 +34,7 @@
 # A single paragraph without newlines should be parsed as a document
 # with a single paragraph.
   - case: single unicode paragraph
-    input: this is a äüöß test. "" ʕ•ᴥ•ʔ
+    input: this is a äüöß == test. "" ʕ•ᴥ•ʔ
     out:
       type: document
       position: {}
@@ -44,7 +44,7 @@
           content:
             - type: text
               position: {}
-              text: this is a äüöß test. "" ʕ•ᴥ•ʔ
+              text: this is a äüöß == test. "" ʕ•ᴥ•ʔ
 
 # A paragraph with bold words contains a plain formatted element
 # wrapped by ''italic'' formatting.
@@ -369,6 +369,34 @@
                 - type: text
                   position: {}
                   text: item 2
+
+
+# Star, Fence, Semicolon should be considered as text in an inline context.
+  - case: list symbols inline context
+    input: |
+        * item 1 #;* bla
+        abc # def *
+    out:
+      type: document
+      position: {}
+      content:
+        - type: list
+          position: {}
+          content:
+            - type: listitem
+              position: {}
+              kind: unordered
+              depth: 1
+              content:
+                - type: text
+                  position: {}
+                  text: "item 1 #;* bla"
+        - type: paragraph
+          position: {}
+          content:
+            - type: text
+              position: {}
+              text: "abc # def *"
 
 # A list with multiple different item types and a paragraph
   - case: list diverse items

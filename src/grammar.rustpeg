@@ -30,7 +30,7 @@ pub Heading -> Element = posl:#position d:$("="+) Space* caption:Paragraph pars:
 pub Paragraph -> Element = 
     List
     /
-    posl:#position text:FormattedText* Newline {
+    posl:#position !("=") text:FormattedText* Newline {
         Element::Paragraph {
             position: Position::new(posl, source_lines),
             content: text,
@@ -38,7 +38,7 @@ pub Paragraph -> Element =
     }
     /
     /* end of file paragraph */
-    posl:#position text:FormattedText+ EOF {
+    posl:#position !("=") text:FormattedText+ EOF {
         Element::Paragraph {
             position: Position::new(posl, source_lines),
             content: text,
@@ -228,7 +228,7 @@ TemplateArgumentName -> Element = #quiet<Text<TemplateChar>> / #expected("templa
 NowikiText -> Element = #quiet<Text<(!(EndNoWiki) $(.))>> / #expected("any text.")
 
 MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
-Char -> &'input str = !(Newline / "=" / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
+Char -> &'input str = !(Newline / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
 TemplateChar -> &'input str = $([A-Za-z0-9 ])
 
 
