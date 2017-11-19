@@ -1,1 +1,1 @@
-The '''''dog''''''s bone
+{{name}}

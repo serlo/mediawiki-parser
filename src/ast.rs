@@ -14,7 +14,7 @@ pub enum Element {
     Formatted {position: Position, markup: MarkupType, content: Vec<Element>},
     Paragraph {position: Position, content: Vec<Element>},
     Template {position: Position, content: Vec<Element>},
-    TemplateAttribute {position: Position, name: Box<Option<Element>>, value: Vec<Element>},
+    TemplateArgument {position: Position, name: Box<Option<Element>>, value: Vec<Element>},
     Reference {position: Position, target: String, caption: Vec<Element>},
     ListItem {position: Position, depth: usize, kind: ListItemKind, content: Vec<Element>},
     List {position: Position, content: Vec<Element>},
@@ -25,7 +25,6 @@ pub enum Element {
 #[serde(rename_all="lowercase")]
 pub enum MarkupType {
     NoWiki,
-    Plain,
     Bold,
     Italic,
     Math,

@@ -415,3 +415,239 @@
               position: {}
               text: paragraph
 
+# A very simple template
+  - case: simple template
+    input: "{{name}}"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: template
+              position: {}
+              content:
+                - type: templateargument
+                  position: {}
+                  name: ~
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: name
+
+
+# A sequence of unnamed template arguments
+  - case: anonymous attribute sequence
+    input: |
+        {{attribute1
+        |attribute2
+        |attribute3
+        |attribute4
+        }}
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: template
+              position: {}
+              content:
+                - type: templateargument
+                  position: {}
+                  name: ~
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: attribute1
+                - type: templateargument
+                  position: {}
+                  name: ~
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: attribute2
+                - type: templateargument
+                  position: {}
+                  name: ~
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: attribute3
+                - type: templateargument
+                  position: {}
+                  name: ~
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: attribute4
+
+# A named argument
+  - case: named argument
+    input: "{{caption=üäö test}}"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: template
+              position: {}
+              content:
+                - type: templateargument
+                  position: {}
+                  name:
+                    type: text
+                    position: {}
+                    text: caption
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: üäö test
+
+# Multiple named template arguments
+  - case: multiple named template arguments
+    input: "{{item1=1|item2=2|item3=3|item4=4}}"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: template
+              position: {}
+              content:
+                - type: templateargument
+                  position: {}
+                  name:
+                    type: text
+                    position: {}
+                    text: item1
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "1"
+                - type: templateargument
+                  position: {}
+                  name:
+                    type: text
+                    position: {}
+                    text: item2
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "2"
+                - type: templateargument
+                  position: {}
+                  name:
+                    type: text
+                    position: {}
+                    text: item3
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "3"
+                - type: templateargument
+                  position: {}
+                  name:
+                    type: text
+                    position: {}
+                    text: item4
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "4"
+
+# Mixed named and unnamed arguments
+  - case: mixed template arguments
+    input: "{{item1|item2=2|item3=3|item4}}"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: template
+              position: {}
+              content:
+                - type: templateargument
+                  position: {}
+                  name: ~
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "item1"
+                - type: templateargument
+                  position: {}
+                  name:
+                    type: text
+                    position: {}
+                    text: item2
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "2"
+                - type: templateargument
+                  position: {}
+                  name:
+                    type: text
+                    position: {}
+                    text: item3
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "3"
+                - type: templateargument
+                  position: {}
+                  name: ~
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "item4"

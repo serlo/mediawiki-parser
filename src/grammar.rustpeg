@@ -46,17 +46,17 @@ pub Paragraph -> Element =
     }
     
 
-pub TemplateAttribute -> Element = 
-    posl:#position name:TemplateAttributeName "=" value:(FormattedText / Paragraph)+ {
-        Element::TemplateAttribute {
+pub TemplateArgument -> Element = 
+    posl:#position name:TemplateArgumentName "=" value:(Paragraph / FormattedText)+ {
+        Element::TemplateArgument {
             position: Position::new(posl, source_lines),
             name: Box::new(Some(name)),
             value: value,
         }    
     } 
     /
-    posl:#position value:(FormattedText / Paragraph)+ {
-        Element::TemplateAttribute {
+    posl:#position value:(Paragraph / FormattedText)+ {
+        Element::TemplateArgument {
             position: Position::new(posl, source_lines),
             name: Box::new(None),
             value: value,
@@ -64,7 +64,7 @@ pub TemplateAttribute -> Element =
     }
 
 pub Template -> Element = 
-    posl:#position "{{" s:TemplateAttribute attrs:("|" t:TemplateAttribute {t})* "}}" {
+    posl:#position "{{" Space* s:TemplateArgument attrs:("|" t:TemplateArgument {t})* "}}" {
     let mut attrs = attrs;
     attrs.insert(0, s);
     Element::Template {
@@ -224,11 +224,11 @@ Word -> String = #quiet<posl:#position chars:(!(Space) c:Char {c})+ {
 
 NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
-TemplateAttributeName -> Element = #quiet<Text<TemplateChar>> / #expected("template attribute name")
+TemplateArgumentName -> Element = #quiet<Text<TemplateChar>> / #expected("template attribute name")
 NowikiText -> Element = #quiet<Text<(!(EndNoWiki) $(.))>> / #expected("any text.")
 
 MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
 Char -> &'input str = !(Newline / "=" / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
-TemplateChar -> &'input str = $([A-Za-z])
+TemplateChar -> &'input str = $([A-Za-z0-9 ])
 
 

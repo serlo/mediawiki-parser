@@ -8,7 +8,6 @@ use std::fs;
 use std::io::prelude::*;
 pub mod ast;
 
-#[cfg(test)]
 mod tests;
 
 fn read_file(filename: &str) -> String {
