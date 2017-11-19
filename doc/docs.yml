@@ -402,6 +402,7 @@
   - case: list diverse items
     input: |
         : item 1
+        ; item 11
         *** item 2
         ## item 3
         paragraph
@@ -420,6 +421,14 @@
                 - type: text
                   position: {}
                   text: item 1
+            - type: listitem
+              position: {}
+              kind: definitionterm
+              depth: 1
+              content:
+                - type: text
+                  position: {}
+                  text: item 11
             - type: listitem
               position: {}
               kind: unordered

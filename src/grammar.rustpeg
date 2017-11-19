@@ -82,11 +82,12 @@ List -> Element =
     }
 
 ListItem -> Element = 
-    posl:#position Space* s:($("*" / "#" / ":"))+ Space* content:FormattedText* (Newline / EOF) {
+    posl:#position Space* s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* (Newline / EOF) {
         let kind = match s[s.len() - 1] {
             "*" => ListItemKind::Unordered,
             "#" => ListItemKind::Ordered,
             ":" => ListItemKind::Definition,
+            ";" => ListItemKind::DefinitionTerm,
             _ => ListItemKind::Unordered,
         };
 

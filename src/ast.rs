@@ -38,6 +38,7 @@ pub enum MarkupType {
 pub enum ListItemKind {
     Unordered,
     Definition,
+    DefinitionTerm,
     Ordered
 }
 
