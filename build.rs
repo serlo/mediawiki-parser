@@ -4,10 +4,14 @@ extern crate serde_yaml;
 #[macro_use]
 extern crate serde_derive;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::fs;
+use std::env;
 use std::io::*;
-pub mod ast;
+
+mod ast {
+    include!("src/ast.rs");
+}
 
 
 macro_rules! TEST_SOUCE { () => ("
@@ -66,11 +70,13 @@ impl Test {
 
 fn generate_tests() {
     // tell cargo to rerun if the documentation changes.
-    println!("cargo:rerun-if-changed=src/docs.yml");
+    println!("cargo:rerun-if-changed=doc/docs.yml");
+    let out_dir: PathBuf = env::var_os("OUT_DIR").unwrap().into();
+    let out_path = out_dir.join(Path::new("tests_generated.rs")).with_extension("rs");
 
     let mut in_file = fs::File::open(Path::new("doc/docs.yml")).ok()
                    .expect("Could not open input file!");
-    let mut out_file = fs::File::create(Path::new("src/generated_tests.rs")).ok()
+    let mut out_file = fs::File::create(Path::new(&out_path)).ok()
                    .expect("Could not open output file!");
 
     let mut content = String::new();
@@ -87,6 +93,6 @@ fn generate_tests() {
 }
 
 fn main() {
-    generate_tests();
     peg::cargo_build("src/grammar.rustpeg");
+    generate_tests();
 }

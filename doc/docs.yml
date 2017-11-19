@@ -122,6 +122,37 @@
               - type: text
                 position: {}
                 text: " and normal text."
+
+# An apostrophe after markup
+  - case: markup and apostrophe
+    input: "The '''''dog''''''s bone"
+    out:
+        type: document
+        position: {} 
+        content: 
+          - type: paragraph
+            position: {}
+            content: 
+              - type: text
+                position: {}
+                text: "The "
+              - type: formatted
+                position: {}
+                markup: bold
+                content: 
+                  - type: formatted
+                    position: {}
+                    markup: italic
+                    content: 
+                      - type: text
+                        position: {} 
+                        text: "dog"
+              - type: text
+                position: {}
+                text: "\'"
+              - type: text
+                position: {}
+                text: "s bone"
                 
 # A simple inline math tag.
   - case: simple inline math

@@ -9,7 +9,7 @@ use std::io::prelude::*;
 pub mod ast;
 
 #[cfg(test)]
-pub mod generated_tests;
+mod tests;
 
 fn read_file(filename: &str) -> String {
     let mut file = fs::File::open(Path::new(filename)).ok().unwrap();

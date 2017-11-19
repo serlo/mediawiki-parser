@@ -83,7 +83,7 @@ List -> Element =
 
 ListItem -> Element = 
     posl:#position Space* s:($("*" / "#" / ":"))+ Space* content:FormattedText* (Newline / EOF) {
-        let kind = match s[0] {
+        let kind = match s[s.len() - 1] {
             "*" => ListItemKind::Unordered,
             "#" => ListItemKind::Ordered,
             ":" => ListItemKind::Definition,
@@ -202,16 +202,17 @@ EndNoWiki = "</nowiki>" / "</NOWIKI>"
 BeginStrikethrough = "<del>" / "<s>" / "<DEL>"
 EndStrikethrough = "</del>" / "</s>" / "</DEL>"
 
-Text<C> = posl:#position chars:C+ {
-    let mut content = String::new();
-    for c in chars {
-        content.push_str(c);
+Text<C> = 
+    posl:#position chars:C+ {
+        let mut content = String::new();
+        for c in chars {
+            content.push_str(c);
+        }
+        Element::Text {
+            position: Position::new(posl, source_lines),
+            text: content
+        }
     }
-    Element::Text {
-        position: Position::new(posl, source_lines),
-        text: content
-    }
-}
 
 Word -> String = #quiet<posl:#position chars:(!(Space) c:Char {c})+ {
     let mut content = String::new();
