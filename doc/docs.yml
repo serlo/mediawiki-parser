@@ -464,23 +464,17 @@
           content:
             - type: template
               position: {}
-              content:
-                - type: templateargument
-                  position: {}
-                  name: ~
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: name
+              name:
+                type: text
+                position: {}
+                text: name
+              content: []
 
 
 # A sequence of unnamed template arguments
   - case: anonymous attribute sequence
     input: |
-        {{attribute1
+        {{templatename
         |attribute2
         |attribute3
         |attribute4
@@ -494,17 +488,11 @@
           content:
             - type: template
               position: {}
+              name:
+                type: text
+                position: {}
+                text: templatename
               content:
-                - type: templateargument
-                  position: {}
-                  name: ~
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: attribute1
                 - type: templateargument
                   position: {}
                   name: ~
@@ -538,7 +526,7 @@
 
 # A named argument
   - case: named argument
-    input: "{{caption=üäö test}}"
+    input: "{{name|caption=üäö test}}"
     out:
       type: document
       position: {}
@@ -548,6 +536,10 @@
           content:
             - type: template
               position: {}
+              name:
+                type: text
+                position: {}
+                text: name
               content:
                 - type: templateargument
                   position: {}
@@ -565,7 +557,7 @@
 
 # Multiple named template arguments
   - case: multiple named template arguments
-    input: "{{item1=1|item2=2|item3=3|item4=4}}"
+    input: "{{templatename|item2=2|item3=3|item4=4}}"
     out:
       type: document
       position: {}
@@ -575,20 +567,11 @@
           content:
             - type: template
               position: {}
+              name:
+                type: text
+                position: {}
+                text: templatename
               content:
-                - type: templateargument
-                  position: {}
-                  name:
-                    type: text
-                    position: {}
-                    text: item1
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "1"
                 - type: templateargument
                   position: {}
                   name:
@@ -631,7 +614,7 @@
 
 # Mixed named and unnamed arguments
   - case: mixed template arguments
-    input: "{{item1|item2=2|item3=3|item4}}"
+    input: "{{template1|item2=2|item3=3|item4}}"
     out:
       type: document
       position: {}
@@ -641,17 +624,11 @@
           content:
             - type: template
               position: {}
+              name:
+                type: text
+                position: {}
+                text: "template1"
               content:
-                - type: templateargument
-                  position: {}
-                  name: ~
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "item1"
                 - type: templateargument
                   position: {}
                   name:

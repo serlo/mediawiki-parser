@@ -64,11 +64,10 @@ pub TemplateArgument -> Element =
     }
 
 pub Template -> Element = 
-    posl:#position "{{" Space* s:TemplateArgument attrs:("|" t:TemplateArgument {t})* "}}" {
-    let mut attrs = attrs;
-    attrs.insert(0, s);
+    posl:#position "{{" Space* n:TemplateName (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" {
     Element::Template {
         position: Position::new(posl, source_lines),
+        name: Box::new(n),
         content: attrs
     }
 }
@@ -226,10 +225,12 @@ Word -> String = #quiet<posl:#position chars:(!(Space) c:Char {c})+ {
 NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
 TemplateArgumentName -> Element = #quiet<Text<TemplateChar>> / #expected("template attribute name")
-NowikiText -> Element = #quiet<Text<(!(EndNoWiki) $(.))>> / #expected("any text.")
+NowikiText -> Element = #quiet<Text<(!(EndNoWiki) $(.))>> / #expected("any text")
+TemplateName -> Element = #quiet<Text<TemplateNameChar>> / #expected("template name")
 
 MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
 Char -> &'input str = !(Newline / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
+TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
 TemplateChar -> &'input str = $([A-Za-z0-9 ])
 
 

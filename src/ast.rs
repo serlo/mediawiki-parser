@@ -13,7 +13,7 @@ pub enum Element {
     Text {position: Position, text: String},
     Formatted {position: Position, markup: MarkupType, content: Vec<Element>},
     Paragraph {position: Position, content: Vec<Element>},
-    Template {position: Position, content: Vec<Element>},
+    Template {position: Position, name: Box<Element>, content: Vec<Element>},
     TemplateArgument {position: Position, name: Box<Option<Element>>, value: Vec<Element>},
     Reference {position: Position, target: String, caption: Vec<Element>},
     ListItem {position: Position, depth: usize, kind: ListItemKind, content: Vec<Element>},
