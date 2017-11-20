@@ -38,7 +38,7 @@ pub Paragraph -> Element =
     }
     /
     /* end of file paragraph */
-    posl:#position !("=") text:FormattedText+ EOF {
+    posl:#position !("=") text:FormattedText+ Newline? {
         Element::Paragraph {
             position: Position::new(posl, source_lines),
             content: text,
@@ -73,7 +73,7 @@ pub Template -> Element =
 }
 
 List -> Element = 
-    posl:#position items:ListItem+ Space* (Newline / EOF) {
+    posl:#position items:ListItem+ Space* Newline?  {
         Element::List {
             position: Position::new(posl, source_lines),
             content: items,
@@ -81,7 +81,7 @@ List -> Element =
     }
 
 ListItem -> Element = 
-    posl:#position Space* s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* (Newline / EOF) {
+    posl:#position Space* s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* Newline? {
         let kind = match s[s.len() - 1] {
             "*" => ListItemKind::Unordered,
             "#" => ListItemKind::Ordered,
@@ -192,7 +192,6 @@ pub FormattedText -> Element = StrongText
 Emph = "''"
 Strong = "'''"
 
-EOF = !(".")
 Space = " " / "\t"
 Newline = "\n"
 BeginMath = "<math>" / "<MATH>"
