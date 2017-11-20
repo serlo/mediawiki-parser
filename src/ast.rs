@@ -15,7 +15,8 @@ pub enum Element {
     Paragraph {position: Position, content: Vec<Element>},
     Template {position: Position, name: Box<Element>, content: Vec<Element>},
     TemplateArgument {position: Position, name: Box<Option<Element>>, value: Vec<Element>},
-    Reference {position: Position, target: String, caption: Vec<Element>},
+    InternalReference {position: Position, target: Vec<Element>, options: Vec<Vec<Element>>, caption: Vec<Element>},
+    ExternalReference {position: Position, target: String, caption: Vec<Element>},
     ListItem {position: Position, depth: usize, kind: ListItemKind, content: Vec<Element>},
     List {position: Position, content: Vec<Element>},
 }

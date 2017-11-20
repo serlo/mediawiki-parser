@@ -215,7 +215,7 @@
         - type: paragraph
           position: {}
           content:
-            - type: reference
+            - type: externalreference
               position: {}
               target: https://www.example.com/
               caption: []
@@ -230,7 +230,7 @@
         - type: paragraph
           position: {}
           content:
-            - type: reference
+            - type: externalreference
               position: {}
               target: https://www.example.com/
               caption:
@@ -248,7 +248,7 @@
         - type: paragraph
           position: {}
           content:
-            - type: reference
+            - type: externalreference
               position: {}
               target: https://www.example.com/
               caption:
@@ -665,3 +665,99 @@
                         - type: text
                           position: {}
                           text: "item4"
+
+# A simple internal reference
+  - case: simple internal ref
+    input: "[[File:Abc]]"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: internalreference
+              position: {}
+              target: 
+                - type: text
+                  position: {}
+                  text: File:Abc
+              options: []
+              caption: []
+
+# An empty internal reference
+  - case: empty internal ref
+    input: "[[]]"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: internalreference
+              position: {}
+              target: []
+              options: []
+              caption: []
+
+# A simple internal reference with caption
+  - case: internal ref with caption
+    input: "[[File:Abc|this is a caption]]"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: internalreference
+              position: {}
+              target: 
+                - type: text
+                  position: {}
+                  text: File:Abc
+              options: []
+              caption: 
+                - type: text
+                  position: {}
+                  text: this is a caption
+
+# A simple internal reference with options
+  - case: internal ref with options
+    input: "[[File:Abc|opt1=value1|opt2=123|this is a caption with '''bold''' markup]]"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: internalreference
+              position: {}
+              target: 
+                - type: text
+                  position: {}
+                  text: "File:Abc"
+              options: 
+                - - type: text
+                    position: {}
+                    text: "opt1=value1"
+                - - type: text
+                    position: {}
+                    text: "opt2=123"
+              caption: 
+                - type: text
+                  position: {}
+                  text: "this is a caption with "
+                - type: formatted
+                  position: {}
+                  markup: bold
+                  content:
+                    - type: text
+                      position: {}
+                      text: bold
+                - type: text
+                  position: {}
+                  text: " markup"                     
+

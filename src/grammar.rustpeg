@@ -98,12 +98,42 @@ ListItem -> Element =
         }
     }
 
-Reference -> Element = 
+ReferenceInternal -> Element =
+    posl:#position "[[" t:((tar:FormattedText* {tar}) ** "|") "]]" {
+        let mut t = t;
+        let caption = if t.len() > 1 {
+            match t.pop() {
+                Some(e) => e,
+                None => vec![],
+            }
+        } else {vec![]};
+
+        let mut options = vec![];
+        for i in 1..t.len() {
+            options.insert(0, t.pop().unwrap());
+        }
+        let target = match t.pop() {
+            Some(e) => e,
+            None => vec![],
+        };
+
+        Element::InternalReference {
+            position: Position::new(posl, source_lines),
+            target: target,
+            options: options,
+            caption: caption,
+        }      
+    }
+
+ReferenceExternal -> Element = 
     posl:#position
     "[" url:Word Space? caption:FormattedText* "]" {
-        Element::Reference {
+        Element::ExternalReference {
             position: Position::new(posl, source_lines),
-            target: url,
+            target: match url {
+                Element::Text {position, text} => text,
+                _ => unreachable!(),
+            },
             caption: caption
         }
     }
@@ -180,7 +210,8 @@ pub FormattedText -> Element = StrongText
     / EmphText 
     / t:Template {t}
     / InlineMath
-    / Reference
+    / ReferenceInternal
+    / ReferenceExternal
     / NoWikiMarkup
     / StrikeThroughMarkup
     / (posl:#position t:NormalText {t})
@@ -213,19 +244,12 @@ Text<C> =
         }
     }
 
-Word -> String = #quiet<posl:#position chars:(!(Space) c:Char {c})+ {
-    let mut content = String::new();
-    for c in chars {
-        content.push_str(c);
-    }
-    content
-}> / #expected("url")
-
 NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
 TemplateArgumentName -> Element = #quiet<Text<TemplateChar>> / #expected("template attribute name")
 NowikiText -> Element = #quiet<Text<(!(EndNoWiki) $(.))>> / #expected("any text")
 TemplateName -> Element = #quiet<Text<TemplateNameChar>> / #expected("template name")
+Word -> Element =  #quiet<Text<(!(Space) c:Char {c})>> / #expected("url")
 
 MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
 Char -> &'input str = !(Newline / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
