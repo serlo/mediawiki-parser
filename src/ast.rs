@@ -19,6 +19,9 @@ pub enum Element {
     ExternalReference {position: Position, target: String, caption: Vec<Element>},
     ListItem {position: Position, depth: usize, kind: ListItemKind, content: Vec<Element>},
     List {position: Position, content: Vec<Element>},
+    Table {position: Position, attributes: String, rows: Vec<Element>},
+    TableRow {position: Position, attributes: String, cells: Vec<Element>},
+    TableCell {position: Position, attributes: String, content: Vec<Element>},
 }
 
 /// Types of markup a section of text may have.

@@ -29,16 +29,15 @@ pub Heading -> Element = posl:#position d:$("="+) Space* caption:Paragraph pars:
 
 pub Paragraph -> Element = 
     List
-    /
-    posl:#position !("=") text:FormattedText* Newline {
+    / Table
+    / posl:#position !("=") text:FormattedText* Newline {
         Element::Paragraph {
             position: Position::new(posl, source_lines),
             content: text,
         }
     }
-    /
     /* end of file paragraph */
-    posl:#position !("=") text:FormattedText+ Newline? {
+    / posl:#position !("=") text:FormattedText+ Newline? {
         Element::Paragraph {
             position: Position::new(posl, source_lines),
             content: text,
@@ -95,6 +94,74 @@ ListItem -> Element =
             depth: s.len(),
             kind: kind,
             content: content,
+        }
+    }
+
+Table -> Element = 
+    posl:#position "{|" (Newline / Space)* start_sep:TableRowSeparator? first:TableRow rows_list:(s:TableRowSeparator r:TableRow {(s, r)})* "|}" {
+        let mut rows = vec![first];
+        let mut attrs = Vec::new();
+        match start_sep {
+            Some(s) => attrs.push(s),
+            None => attrs.push(String::new()),
+        };
+        for (sep, row) in rows_list {
+            rows.push(row);
+            attrs.push(sep);
+        }
+        
+        let mut result_rows = Vec::new();
+        for i in 0..rows.len() {
+            let mut row = rows.pop().unwrap();
+            match row {
+                Element::TableRow{ position, attributes, cells} => {
+                    result_rows.insert(0, Element::TableRow {
+                        position: position,
+                        attributes: attrs.pop().unwrap(),
+                        cells: cells,
+                    });
+                },
+                _ => unreachable!(),
+            };
+            
+        }
+
+        Element::Table {
+            position: Position::new(posl, source_lines),
+            rows: result_rows,
+            attributes: String::new(),
+        }
+    }
+
+TableRow -> Element =
+    posl:#position !("|}") c:TableCell* {
+        Element::TableRow {
+            position: Position::new(posl, source_lines),
+            cells: c,
+            attributes: String::new(),
+        }
+    }
+
+TableRowSeparator -> String = "|-" attr:(!("|" / Newline) c:$. {c})* Newline {
+   let mut s = String::new();
+   for c in attr {s.push_str(c)};
+   s 
+}
+
+TableCell -> Element = 
+    posl:#position !("|}" / TableRowSeparator) "|" attr:Text<(!("|" / Newline) c:$. {c})> "|" Space* content:Paragraph+ {
+        Element::TableCell {
+            position: Position::new(posl, source_lines),
+            content: content,
+            attributes: match attr { Element::Text {position, text} => String::from(text.trim()), _ => unreachable!()},
+        }
+    }
+    / 
+    posl:#position !("|}" / TableRowSeparator) "|"  Space* content:Paragraph+ {
+        Element::TableCell {
+            position: Position::new(posl, source_lines),
+            content: content,
+            attributes: String::new(),
         }
     }
 
@@ -252,7 +319,7 @@ TemplateName -> Element = #quiet<Text<TemplateNameChar>> / #expected("template n
 Word -> Element =  #quiet<Text<(!(Space) c:Char {c})>> / #expected("url")
 
 MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
-Char -> &'input str = !(Newline / "'" / "{{" / "}}" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
+Char -> &'input str = !(Newline / "'" / "{" / "}" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
 TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
 TemplateChar -> &'input str = $([A-Za-z0-9 ])
 

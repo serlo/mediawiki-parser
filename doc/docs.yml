@@ -761,3 +761,116 @@
                   position: {}
                   text: " markup"                     
 
+# Simple table with one cell
+  - case: single cell table
+    input: |
+        {|
+        | attributevalue = "test" | test
+        |}
+    out:
+      type: document
+      position: {}
+      content:
+        - type: table
+          position: {}
+          attributes: ""
+          rows:
+            - type: tablerow
+              position: {}
+              attributes: ""
+              cells:
+                - type: tablecell
+                  position: {}
+                  attributes: attributevalue = "test"
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content: 
+                        - type: text
+                          position: {}
+                          text: test
+        - type: paragraph
+          position: {}
+          content: []
+ 
+ # Table with multiple rows
+  - case: multi row table
+    input: |
+        {|
+        | attributevalue = "test" | test
+        |-
+        | test ''2''
+        |-
+        | test3
+        | attr4 | test4
+        |}
+    out:
+      type: document
+      position: {}
+      content:
+        - type: table
+          position: {}
+          attributes: ""
+          rows:
+            - type: tablerow
+              position: {}
+              attributes: ""
+              cells:
+                - type: tablecell
+                  position: {}
+                  attributes: attributevalue = "test"
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content: 
+                        - type: text
+                          position: {}
+                          text: test
+            - type: tablerow
+              position: {}
+              attributes: ""
+              cells:
+                - type: tablecell
+                  position: {}
+                  attributes: ""
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content: 
+                        - type: text
+                          position: {}
+                          text: "test "
+                        - type: formatted
+                          position: {}
+                          markup: italic
+                          content:
+                            - type: text
+                              position: {}
+                              text: "2"
+            - type: tablerow
+              position: {}
+              attributes: ""
+              cells:
+                - type: tablecell
+                  position: {}
+                  attributes: ""
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content: 
+                        - type: text
+                          position: {}
+                          text: "test3"
+                - type: tablecell
+                  position: {}
+                  attributes: "attr4"
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content: 
+                        - type: text
+                          position: {}
+                          text: "test4"
+        - type: paragraph
+          position: {}
+          content: []
