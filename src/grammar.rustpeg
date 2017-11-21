@@ -98,7 +98,9 @@ ListItem -> Element =
     }
 
 Table -> Element = 
-    posl:#position "{|" (Newline / Space)* start_sep:TableRowSeparator? first:TableRow rows_list:(s:TableRowSeparator r:TableRow {(s, r)})* "|}" {
+    posl:#position "{|" attr:TableAttributeText Newline (Space / Newline)*
+        caption:TableCaption? start_sep:TableRowSeparator? first:TableRow rows_list:(s:TableRowSeparator r:TableRow {(s, r)})* 
+    "|}" {
         let mut rows = vec![first];
         let mut attrs = Vec::new();
         match start_sep {
@@ -129,9 +131,12 @@ Table -> Element =
         Element::Table {
             position: Position::new(posl, source_lines),
             rows: result_rows,
-            attributes: String::new(),
+            attributes: attr,
+            caption: caption.unwrap_or(vec![]),
         }
     }
+
+TableCaption -> Vec<Element> = "|+" Space* pars:Paragraph* {pars}
 
 TableRow -> Element =
     posl:#position !("|}") c:TableCell* {
@@ -142,22 +147,26 @@ TableRow -> Element =
         }
     }
 
-TableRowSeparator -> String = "|-" attr:(!("|" / Newline) c:$. {c})* Newline {
-   let mut s = String::new();
-   for c in attr {s.push_str(c)};
-   s 
+TableAttributeText -> String = attr:(!("|" / Newline) c:$. {c})* {
+    let mut s = String::new();
+    for c in attr {s.push_str(c)};
+    String::from(s.trim())
+}
+
+TableRowSeparator -> String = "|-"  attr:TableAttributeText Newline {
+    attr
 }
 
 TableCell -> Element = 
-    posl:#position !("|}" / TableRowSeparator) "|" attr:Text<(!("|" / Newline) c:$. {c})> "|" Space* content:Paragraph+ {
+    posl:#position !("|}" / TableRowSeparator) ("||" / "|") attr:TableAttributeText "|" Space* content:Paragraph+ {
         Element::TableCell {
             position: Position::new(posl, source_lines),
             content: content,
-            attributes: match attr { Element::Text {position, text} => String::from(text.trim()), _ => unreachable!()},
+            attributes: attr,
         }
     }
     / 
-    posl:#position !("|}" / TableRowSeparator) "|"  Space* content:Paragraph+ {
+    posl:#position !("|}" / TableRowSeparator) ("||" / "|") Space* content:Paragraph+ {
         Element::TableCell {
             position: Position::new(posl, source_lines),
             content: content,
@@ -169,20 +178,14 @@ ReferenceInternal -> Element =
     posl:#position "[[" t:((tar:FormattedText* {tar}) ** "|") "]]" {
         let mut t = t;
         let caption = if t.len() > 1 {
-            match t.pop() {
-                Some(e) => e,
-                None => vec![],
-            }
+            t.pop().unwrap_or(vec![]) 
         } else {vec![]};
 
         let mut options = vec![];
         for i in 1..t.len() {
             options.insert(0, t.pop().unwrap());
         }
-        let target = match t.pop() {
-            Some(e) => e,
-            None => vec![],
-        };
+        let target = t.pop().unwrap_or(vec![]);
 
         Element::InternalReference {
             position: Position::new(posl, source_lines),

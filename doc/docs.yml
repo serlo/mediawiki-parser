@@ -774,6 +774,7 @@
         - type: table
           position: {}
           attributes: ""
+          caption: []
           rows:
             - type: tablerow
               position: {}
@@ -793,14 +794,62 @@
           position: {}
           content: []
  
+ 
+ # Simple table with caption
+  - case: table caption
+    input: |
+        {|
+        |+ this is a ''caption''
+        | attributevalue = "test" | test
+        |}
+    out:
+      type: document
+      position: {}
+      content:
+        - type: table
+          position: {}
+          attributes: ""
+          caption:
+            - type: paragraph
+              position: {}
+              content:
+                - type: text
+                  position: {}
+                  text: "this is a "
+                - type: formatted
+                  position: {}
+                  markup: italic
+                  content:
+                    - type: text
+                      position: {}
+                      text: "caption"
+          rows:
+            - type: tablerow
+              position: {}
+              attributes: ""
+              cells:
+                - type: tablecell
+                  position: {}
+                  attributes: attributevalue = "test"
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content: 
+                        - type: text
+                          position: {}
+                          text: test
+        - type: paragraph
+          position: {}
+          content: []
+          
  # Table with multiple rows
   - case: multi row table
     input: |
-        {|
+        {| class="wikitable"
         | attributevalue = "test" | test
         |-
         | test ''2''
-        |-
+        |-style="font-style: italic; color: green;"
         | test3
         | attr4 | test4
         |}
@@ -810,7 +859,8 @@
       content:
         - type: table
           position: {}
-          attributes: ""
+          attributes: class="wikitable"
+          caption: []
           rows:
             - type: tablerow
               position: {}
@@ -849,7 +899,7 @@
                               text: "2"
             - type: tablerow
               position: {}
-              attributes: ""
+              attributes: 'style="font-style: italic; color: green;"'
               cells:
                 - type: tablecell
                   position: {}
@@ -871,6 +921,59 @@
                         - type: text
                           position: {}
                           text: "test4"
+        - type: paragraph
+          position: {}
+          content: []
+          
+# Table with multiple cells on one line
+  - case: table inline cells
+    input: |
+        {|
+        | attributevalue = "test" | test || cell 2 || attribute=3 | cell 3
+        |}
+    out:
+      type: document
+      position: {}
+      content:
+        - type: table
+          position: {}
+          attributes: ""
+          caption: []
+          rows:
+            - type: tablerow
+              position: {}
+              attributes: ""
+              cells:
+                - type: tablecell
+                  position: {}
+                  attributes: attributevalue = "test"
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content: 
+                        - type: text
+                          position: {}
+                          text: "test "
+                - type: tablecell
+                  position: {}
+                  attributes: ""
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content: 
+                        - type: text
+                          position: {}
+                          text: "cell 2 "
+                - type: tablecell
+                  position: {}
+                  attributes: "attribute=3"
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content: 
+                        - type: text
+                          position: {}
+                          text: cell 3
         - type: paragraph
           position: {}
           content: []
