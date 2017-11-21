@@ -774,6 +774,7 @@
         - type: table
           position: {}
           attributes: ""
+          caption_attributes: ""
           caption: []
           rows:
             - type: tablerow
@@ -800,7 +801,7 @@
   - case: table caption
     input: |
         {|
-        |+ this is a ''caption''
+        |+ caption_attribute | this is a ''caption''
         | attributevalue = "test" | test
         |}
     out:
@@ -810,6 +811,7 @@
         - type: table
           position: {}
           attributes: ""
+          caption_attributes: "caption_attribute"
           caption:
             - type: paragraph
               position: {}
@@ -848,6 +850,7 @@
   - case: multi row table
     input: |
         {| class="wikitable"
+        |+ caption
         | attributevalue = "test" | test
         |-
         | test ''2''
@@ -862,7 +865,14 @@
         - type: table
           position: {}
           attributes: class="wikitable"
-          caption: []
+          caption_attributes: ""
+          caption:
+            - type: paragraph
+              position: {}
+              content:
+                - type: text
+                  position: {}
+                  text: caption
           rows:
             - type: tablerow
               position: {}
@@ -944,6 +954,7 @@
         - type: table
           position: {}
           attributes: ""
+          caption_attributes: ""
           caption: []
           rows:
             - type: tablerow
@@ -1002,6 +1013,7 @@
         - type: table
           position: {}
           attributes: ""
+          caption_attributes: ""
           caption: []
           rows:
             - type: tablerow

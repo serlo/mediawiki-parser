@@ -1,5 +1,12 @@
-{|
-!  Orange !! attribute="test" | Apple
+{| class="wikitable"
+|+ style="caption-side:bottom; color:#e76700;"|''Food complements''
 |-
-|  Bread  || Pie
+|Orange
+|Apple
+|-
+|Bread
+|Pie
+|-
+|Butter
+|Ice cream 
 |}

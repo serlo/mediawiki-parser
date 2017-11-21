@@ -19,7 +19,7 @@ pub enum Element {
     ExternalReference {position: Position, target: String, caption: Vec<Element>},
     ListItem {position: Position, depth: usize, kind: ListItemKind, content: Vec<Element>},
     List {position: Position, content: Vec<Element>},
-    Table {position: Position, attributes: String, caption: Vec<Element>, rows: Vec<Element>},
+    Table {position: Position, attributes: String, caption: Vec<Element>, caption_attributes: String, rows: Vec<Element>},
     TableRow {position: Position, attributes: String, cells: Vec<Element>},
     TableCell {position: Position, header: bool, attributes: String, content: Vec<Element>},
 }

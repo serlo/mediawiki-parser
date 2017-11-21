@@ -127,16 +127,18 @@ Table -> Element =
             };
             
         }
+        let (cap_attrs, cap_pars) = caption.unwrap_or((String::new(), vec![]));
 
         Element::Table {
             position: Position::new(posl, source_lines),
             rows: result_rows,
             attributes: attr,
-            caption: caption.unwrap_or(vec![]),
+            caption: cap_pars,
+            caption_attributes: cap_attrs,
         }
     }
 
-TableCaption -> Vec<Element> = "|+" Space* pars:Paragraph* {pars}
+TableCaption -> (String, Vec<Element>) = "|+" attr:(t:TableAttributeText "|" {t})? Space* pars:Paragraph* {(String::from(attr.unwrap_or(String::new()).trim()), pars)}
 
 TableRow -> Element =
     posl:#position !("|}") c:TableCell* {
