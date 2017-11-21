@@ -3,21 +3,20 @@ use ast::*;
 #![arguments(source_lines: &Vec<SourceLine>)]
 
 
+/* the main document structure */
 pub Document -> Element = posl:#position top:Paragraph* content:Heading* {
-    let mut top = top;
+    let mut res = top;
     let mut content = content;
-    let mut c = Vec::new(); 
-    c.append(&mut top);
-    c.append(&mut content);
+    res.append(&mut content);
     
     Element::Document {
         position: Position::new(posl, source_lines),
-        content: c, 
+        content: res, 
     }
 }
 
-pub Heading -> Element = posl:#position d:$("="+) Space* caption:Paragraph pars:Paragraph*
-    {
+/* all paragraphs after a heading belong to its content */
+Heading -> Element = posl:#position d:$("="+) Space* caption:Paragraph pars:Paragraph* {
         Element::Heading {
             position: Position::new(posl, source_lines),
             depth: d.len(),
@@ -26,43 +25,19 @@ pub Heading -> Element = posl:#position d:$("="+) Space* caption:Paragraph pars:
         }
     }
 
-
-pub Paragraph -> Element = 
+/* a paragraph is a block element, some or no text followed by a newline or just some text */
+Paragraph -> Element = 
     List
     / Table
-    / posl:#position !("=") text:FormattedText* Newline {
+    / posl:#position PAR_START_GUARD text:((t:FormattedText* Newline {t}) / (f:FormattedText+ Newline? {f})) {
         Element::Paragraph {
             position: Position::new(posl, source_lines),
             content: text,
         }
-    }
-    /* end of file paragraph */
-    / posl:#position !("=") text:FormattedText+ Newline? {
-        Element::Paragraph {
-            position: Position::new(posl, source_lines),
-            content: text,
-        }
-    }
-    
-
-pub TemplateArgument -> Element = 
-    posl:#position name:TemplateArgumentName "=" value:(Paragraph / FormattedText)+ {
-        Element::TemplateArgument {
-            position: Position::new(posl, source_lines),
-            name: Box::new(Some(name)),
-            value: value,
-        }    
     } 
-    /
-    posl:#position value:(Paragraph / FormattedText)+ {
-        Element::TemplateArgument {
-            position: Position::new(posl, source_lines),
-            name: Box::new(None),
-            value: value,
-        }
-    }
 
-pub Template -> Element = 
+/* mediawiki templates */
+Template -> Element = 
     posl:#position "{{" Space* n:TemplateName (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" {
     Element::Template {
         position: Position::new(posl, source_lines),
@@ -71,6 +46,17 @@ pub Template -> Element =
     }
 }
 
+TemplateArgument -> Element = 
+    posl:#position name:(n:TemplateArgumentName "=" {n})? value:(Paragraph / FormattedText)+ {
+        Element::TemplateArgument {
+            position: Position::new(posl, source_lines),
+            name: Box::new(name),
+            value: value,
+        }    
+    } 
+
+
+/* mediawiki lists */
 List -> Element = 
     posl:#position items:ListItem+ Space* Newline?  {
         Element::List {
@@ -97,121 +83,68 @@ ListItem -> Element =
         }
     }
 
+/* mediawiki tables */
 Table -> Element = 
-    posl:#position "{|" attr:TableAttributeText Newline (Space / Newline)*
-        caption:TableCaption? start_sep:TableRowSeparator? first:TableRow rows_list:(s:TableRowSeparator r:TableRow {(s, r)})* 
-    "|}" {
-        let mut rows = vec![first];
-        let mut attrs = Vec::new();
-        match start_sep {
-            Some(s) => attrs.push(s),
-            None => attrs.push(String::new()),
-        };
-        for (sep, row) in rows_list {
-            rows.push(row);
-            attrs.push(sep);
-        }
-        
-        let mut result_rows = Vec::new();
-        for i in 0..rows.len() {
-            let mut row = rows.pop().unwrap();
-            match row {
-                Element::TableRow{ position, attributes, cells} => {
-                    result_rows.insert(0, Element::TableRow {
-                        position: position,
-                        attributes: attrs.pop().unwrap(),
-                        cells: cells,
-                    });
-                },
-                _ => unreachable!(),
-            };
-            
-        }
+    posl:#position "{|" attr:TableAttributeText? Newline (Space / Newline)* caption:TableCaption? rows:TableRow* "|}" { 
         let (cap_attrs, cap_pars) = caption.unwrap_or((String::new(), vec![]));
 
         Element::Table {
             position: Position::new(posl, source_lines),
-            rows: result_rows,
-            attributes: attr,
+            rows: rows,
+            attributes: attr.unwrap_or(String::new()),
             caption: cap_pars,
             caption_attributes: cap_attrs,
         }
     }
 
 TableCaption -> (String, Vec<Element>) = "|+" attr:(t:TableAttributeText "|" {t})? Space* pars:Paragraph* {(String::from(attr.unwrap_or(String::new()).trim()), pars)}
+TableAttributeText -> String = attr:CharString<(!("|" / "!" / Newline) c:$. {c})> { String::from(attr.trim()) }
+TableCellSeparator -> &'input str = $("||") / $("!!") / $("|") / $("!")
+TableRowSeparator -> String = "|-"  attr:TableAttributeText? Newline { attr.unwrap_or(String::new()) }
 
 TableRow -> Element =
-    posl:#position !("|}") c:TableCell* {
+    posl:#position !("|}") sep:TableRowSeparator? c:TableCell* {
         Element::TableRow {
             position: Position::new(posl, source_lines),
             cells: c,
-            attributes: String::new(),
+            attributes: sep.unwrap_or(String::new()),
         }
     }
 
-TableAttributeText -> String = attr:(!("|" / "!" / Newline) c:$. {c})* {
-    let mut s = String::new();
-    for c in attr {s.push_str(c)};
-    String::from(s.trim())
-}
-
-TableRowSeparator -> String = "|-"  attr:TableAttributeText Newline {
-    attr
-}
-
 TableCell -> Element = 
-    posl:#position !("|}" / TableRowSeparator) sep:($("||") / $("!!") / $("|") / $("!")) attr:TableAttributeText "|" Space* content:Paragraph+ {
+    posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableAttributeText "|" !("|") {a})? Space* content:Paragraph+ {
         Element::TableCell {
             position: Position::new(posl, source_lines),
             content: content,
-            attributes: attr,
+            attributes: attr.unwrap_or(String::new()),
             header: sep.starts_with("!"),
         }
     }
-    / 
-    posl:#position !("|}" / TableRowSeparator) sep:($("||") / $("!!") / $("|") / $("!")) Space* content:Paragraph+ {
-        Element::TableCell {
-            position: Position::new(posl, source_lines),
-            content: content,
-            attributes: String::new(),
-            header: sep.starts_with("!"), 
-        }
-    }
 
+/* internal references, may have pipe-separated options */
 ReferenceInternal -> Element =
-    posl:#position "[[" t:((tar:FormattedText* {tar}) ** "|") "]]" {
+    posl:#position "[[" t:((tar:FormattedText* {tar}) ++ "|") "]]" {
         let mut t = t;
-        let caption = if t.len() > 1 {
-            t.pop().unwrap_or(vec![]) 
-        } else {vec![]};
-
-        let mut options = vec![];
-        for i in 1..t.len() {
-            options.insert(0, t.pop().unwrap());
-        }
-        let target = t.pop().unwrap_or(vec![]);
-
         Element::InternalReference {
             position: Position::new(posl, source_lines),
-            target: target,
-            options: options,
-            caption: caption,
+            target: t.remove(0),
+            caption: t.pop().unwrap_or(vec![]),
+            options: t, 
         }      
     }
 
+/* external references (hyperlink) with only url and optional caption */
 ReferenceExternal -> Element = 
     posl:#position
     "[" url:Word Space? caption:FormattedText* "]" {
         Element::ExternalReference {
             position: Position::new(posl, source_lines),
-            target: match url {
-                Element::Text {position, text} => text,
-                _ => unreachable!(),
-            },
+            target: url,
             caption: caption
         }
     }
 
+/* text markup */
 StrongText -> Element =  
     posl:#position 
     Strong
@@ -305,29 +238,35 @@ BeginNoWiki = "<nowiki>" / "<NOWIKI>"
 EndNoWiki = "</nowiki>" / "</NOWIKI>"
 BeginStrikethrough = "<del>" / "<s>" / "<DEL>"
 EndStrikethrough = "</del>" / "</s>" / "</DEL>"
+PAR_START_GUARD = !("=" / "!" / "|")
 
 Text<C> = 
-    posl:#position chars:C+ {
-        let mut content = String::new();
-        for c in chars {
-            content.push_str(c);
-        }
+    posl:#position s:CharString<C> {
         Element::Text {
             position: Position::new(posl, source_lines),
-            text: content
+            text: s
         }
     }
 
+CharString<C> = 
+    chars:C+ {
+        let mut result = String::new();;
+        for c in chars {
+            result.push_str(c);
+        }
+        result
+    }
+
+/* primitive strings */
 NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
 TemplateArgumentName -> Element = #quiet<Text<TemplateChar>> / #expected("template attribute name")
 NowikiText -> Element = #quiet<Text<(!(EndNoWiki) $(.))>> / #expected("any text")
 TemplateName -> Element = #quiet<Text<TemplateNameChar>> / #expected("template name")
-Word -> Element =  #quiet<Text<(!(Space) c:Char {c})>> / #expected("url")
+Word -> String =  #quiet<CharString<(!(Space) c:Char {c})>> / #expected("url")
 
+/* character classes */
 MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
-Char -> &'input str = !(Newline / "'" / "{" / "}" / "!!" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
+Char -> &'input str = !(Newline / "'" / "{" / "}" / "!!"  / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
 TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
 TemplateChar -> &'input str = $([A-Za-z0-9 ])
-
-

@@ -1005,6 +1005,7 @@
         !  Orange !! attribute="test" | Apple
         |-
         |  Bread  || Pie
+        ! footer
         |}
     out:
       type: document
@@ -1068,6 +1069,17 @@
                         - type: text
                           position: {}
                           text: Pie
+                - type: tablecell
+                  position: {}
+                  header: true
+                  attributes: ""
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: footer
         - type: paragraph
           position: {}
           content: []
