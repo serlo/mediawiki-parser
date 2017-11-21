@@ -6,8 +6,8 @@ extern crate serde_yaml;
 use std::path::Path;
 use std::fs;
 use std::io::prelude::*;
-pub mod ast;
 
+mod ast;
 mod tests;
 
 fn read_file(filename: &str) -> String {

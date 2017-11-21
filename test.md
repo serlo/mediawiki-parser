@@ -1,6 +1,14 @@
-{|
-!  Orange !! attribute="test" | Apple
-! Test
+{| class="wikitable"
+!colspan="6"|Shopping List
 |-
-|  Bread  || Pie
+|rowspan="2"|Bread & Butter
+|Pie
+|Buns
+|Danish
+|colspan="2"|Croissant
+|-
+|Cheese
+|colspan="2äöopäölæſł@¶ſ»æð€"|Ice cream
+|Butter
+|Yogurt
 |}

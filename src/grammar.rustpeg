@@ -66,7 +66,7 @@ List -> Element =
     }
 
 ListItem -> Element = 
-    posl:#position Space* s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* Newline? {
+    Space* posl:#position s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* Newline? {
         let kind = match s[s.len() - 1] {
             "*" => ListItemKind::Unordered,
             "#" => ListItemKind::Ordered,
@@ -238,7 +238,8 @@ BeginNoWiki = "<nowiki>" / "<NOWIKI>"
 EndNoWiki = "</nowiki>" / "</NOWIKI>"
 BeginStrikethrough = "<del>" / "<s>" / "<DEL>"
 EndStrikethrough = "</del>" / "</s>" / "</DEL>"
-PAR_START_GUARD = !("=" / "!" / "|")
+// a paragraph may not start with these symbols as they indicate other elements
+PAR_START_GUARD = !("=" / "!" / "|" / "*" / "#" / ":" / ";")
 
 Text<C> = 
     posl:#position s:CharString<C> {

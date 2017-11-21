@@ -54,21 +54,22 @@ pub enum ListItemKind {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all="lowercase", default="Position::any_position")]
 pub struct Position {
-    start: usize,
+    offset: usize,
     line: usize,
     col: usize,
 }
 
 /// Position of a source line of code.
-pub struct SourceLine {
+pub struct SourceLine<'input> {
     start: usize,
+    line: &'input str,
     end: usize,
 }
 
 /// Compiles a list of start and end positions of the input source lines.
 ///
 /// This representation is used to calculate line and column position from the input offset.
-pub fn get_source_lines(source: &str) -> Vec<SourceLine> {
+pub fn get_source_lines<'input>(source: &'input str) -> Vec<SourceLine> {
 
     let mut pos = 0;
     let mut result = Vec::new();
@@ -76,6 +77,7 @@ pub fn get_source_lines(source: &str) -> Vec<SourceLine> {
     for line in source.split("\n") {
         result.push( SourceLine {
             start: pos,
+            line: line,
             end: pos + line.len() + 1,
         });
         pos += line.len() + 1;
@@ -84,29 +86,22 @@ pub fn get_source_lines(source: &str) -> Vec<SourceLine> {
 }
 
 impl Position {
-    pub fn new(start: usize, slocs: &Vec<SourceLine>) -> Self {
-
-        let mut line = 0;
-        let mut col = 0;
-
+    pub fn new(offset: usize, slocs: &Vec<SourceLine>) -> Self {
         for (i, sloc) in slocs.iter().enumerate() {
-            if start >= sloc.start && start <= sloc.end {
-                line = i + 1;
-                col = start - sloc.start + 1;
-                break;
+            if offset >= sloc.start && offset < sloc.end {
+                return Position {
+                    offset: offset,
+                    line: i + 1,
+                    col: sloc.line[0..offset - sloc.start].chars().count() + 1,
+                }
             }
         }
-
-        Position {
-            start: start,
-            line: line,
-            col: col,
-        }
+        Position {offset: offset, line: slocs.len() + 1, col: 0}
     }
 
     pub fn any_position() -> Self {
         Position {
-            start: 0,
+            offset: 0,
             line: 0,
             col: 0,
         }
@@ -116,12 +111,12 @@ impl Position {
 impl PartialEq for Position {
     fn eq(&self, other: &Position) -> bool {
         // comparing with "any" position is always true
-        if (other.start == 0 && other.line == 0 && other.col == 0) ||
-           (self.start == 0 && self.line == 0 && self.col == 0) {
+        if (other.offset == 0 && other.line == 0 && other.col == 0) ||
+           (self.offset == 0 && self.line == 0 && self.col == 0) {
             return true;
         }
 
-        return self.start == other.start && self.line == other.line && self.col == other.col;
+        return self.offset == other.offset && self.line == other.line && self.col == other.col;
     }
 
     fn ne(&self, other: &Position) -> bool {!self.eq(other)}
