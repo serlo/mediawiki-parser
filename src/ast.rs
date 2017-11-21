@@ -6,7 +6,7 @@ use serde_yaml;
 /// Each element must keep track of its position in the original
 /// input document. After parsing, the document tree can be serialized by serde.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
-#[serde(tag="type", rename_all="lowercase")]
+#[serde(tag="type", rename_all="lowercase", deny_unknown_fields)]
 pub enum Element {
     Document {position: Position, content: Vec<Element>},
     Heading {position: Position, depth: usize, caption: Box<Element>, content: Vec<Element>},
@@ -21,7 +21,7 @@ pub enum Element {
     List {position: Position, content: Vec<Element>},
     Table {position: Position, attributes: String, caption: Vec<Element>, rows: Vec<Element>},
     TableRow {position: Position, attributes: String, cells: Vec<Element>},
-    TableCell {position: Position, attributes: String, content: Vec<Element>},
+    TableCell {position: Position, header: bool, attributes: String, content: Vec<Element>},
 }
 
 /// Types of markup a section of text may have.

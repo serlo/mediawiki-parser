@@ -147,7 +147,7 @@ TableRow -> Element =
         }
     }
 
-TableAttributeText -> String = attr:(!("|" / Newline) c:$. {c})* {
+TableAttributeText -> String = attr:(!("|" / "!" / Newline) c:$. {c})* {
     let mut s = String::new();
     for c in attr {s.push_str(c)};
     String::from(s.trim())
@@ -158,19 +158,21 @@ TableRowSeparator -> String = "|-"  attr:TableAttributeText Newline {
 }
 
 TableCell -> Element = 
-    posl:#position !("|}" / TableRowSeparator) ("||" / "|") attr:TableAttributeText "|" Space* content:Paragraph+ {
+    posl:#position !("|}" / TableRowSeparator) sep:($("||") / $("!!") / $("|") / $("!")) attr:TableAttributeText "|" Space* content:Paragraph+ {
         Element::TableCell {
             position: Position::new(posl, source_lines),
             content: content,
             attributes: attr,
+            header: sep.starts_with("!"),
         }
     }
     / 
-    posl:#position !("|}" / TableRowSeparator) ("||" / "|") Space* content:Paragraph+ {
+    posl:#position !("|}" / TableRowSeparator) sep:($("||") / $("!!") / $("|") / $("!")) Space* content:Paragraph+ {
         Element::TableCell {
             position: Position::new(posl, source_lines),
             content: content,
             attributes: String::new(),
+            header: sep.starts_with("!"), 
         }
     }
 
@@ -322,7 +324,7 @@ TemplateName -> Element = #quiet<Text<TemplateNameChar>> / #expected("template n
 Word -> Element =  #quiet<Text<(!(Space) c:Char {c})>> / #expected("url")
 
 MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
-Char -> &'input str = !(Newline / "'" / "{" / "}" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
+Char -> &'input str = !(Newline / "'" / "{" / "}" / "!!" / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
 TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
 TemplateChar -> &'input str = $([A-Za-z0-9 ])
 

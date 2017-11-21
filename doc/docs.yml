@@ -783,6 +783,7 @@
                 - type: tablecell
                   position: {}
                   attributes: attributevalue = "test"
+                  header: false
                   content:
                     - type: paragraph
                       position: {}
@@ -831,6 +832,7 @@
                 - type: tablecell
                   position: {}
                   attributes: attributevalue = "test"
+                  header: false
                   content:
                     - type: paragraph
                       position: {}
@@ -869,6 +871,7 @@
                 - type: tablecell
                   position: {}
                   attributes: attributevalue = "test"
+                  header: false
                   content:
                     - type: paragraph
                       position: {}
@@ -883,6 +886,7 @@
                 - type: tablecell
                   position: {}
                   attributes: ""
+                  header: false
                   content:
                     - type: paragraph
                       position: {}
@@ -904,6 +908,7 @@
                 - type: tablecell
                   position: {}
                   attributes: ""
+                  header: false
                   content:
                     - type: paragraph
                       position: {}
@@ -914,6 +919,7 @@
                 - type: tablecell
                   position: {}
                   attributes: "attr4"
+                  header: false
                   content:
                     - type: paragraph
                       position: {}
@@ -947,6 +953,7 @@
                 - type: tablecell
                   position: {}
                   attributes: attributevalue = "test"
+                  header: false
                   content:
                     - type: paragraph
                       position: {}
@@ -957,6 +964,7 @@
                 - type: tablecell
                   position: {}
                   attributes: ""
+                  header: false
                   content:
                     - type: paragraph
                       position: {}
@@ -967,6 +975,7 @@
                 - type: tablecell
                   position: {}
                   attributes: "attribute=3"
+                  header: false
                   content:
                     - type: paragraph
                       position: {}
@@ -974,6 +983,79 @@
                         - type: text
                           position: {}
                           text: cell 3
+        - type: paragraph
+          position: {}
+          content: []
+          
+# Table with header cells
+  - case: table header cells
+    input: |
+        {|
+        !  Orange !! attribute="test" | Apple
+        |-
+        |  Bread  || Pie
+        |}
+    out:
+      type: document
+      position: {}
+      content:
+        - type: table
+          position: {}
+          attributes: ""
+          caption: []
+          rows:
+            - type: tablerow
+              position: {}
+              attributes: ""
+              cells:
+                - type: tablecell
+                  position: {}
+                  header: true
+                  attributes: ""
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "Orange "
+                - type: tablecell
+                  position: {}
+                  header: true
+                  attributes: attribute="test"
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: Apple
+            - type: tablerow
+              position: {}
+              attributes: ""
+              cells:
+                - type: tablecell
+                  position: {}
+                  header: false
+                  attributes: ""
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: "Bread  "
+                - type: tablecell
+                  position: {}
+                  header: false
+                  attributes: ""
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: Pie
         - type: paragraph
           position: {}
           content: []
