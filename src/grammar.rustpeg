@@ -188,6 +188,7 @@ DefinitionMarkup -> Element = inner:MarkupTag<"dfn"i, Paragraph*> {inner}
 CodeMarkup -> Element = inner:MarkupTag<"code"i, Paragraph*> {inner}
 BlockquoteMarkup -> Element = inner:MarkupTag<"blockquote"i, Paragraph*> {inner}
 PreformattedMarkup -> Element = inner:MarkupTag<"pre"i, PreformattedText*> {inner}
+TranslationMarkup -> Element = inner:MarkupTag<"translate"i, Paragraph*> {inner}
 
 /* any unmatched characters which normally indicate special function */
 UnmatchedText -> Element = posl:#position q:($("'") / $(">") / !(TagOpen<Word>) $("<")) {
@@ -212,6 +213,7 @@ FormattedTextTemplate<TextRule, UnmatchedRule> = formatted:(
     / CodeMarkup
     / BlockquoteMarkup
     / PreformattedMarkup
+    / TranslationMarkup
 
     / TextRule
     / UnmatchedRule

@@ -38,6 +38,7 @@ pub enum MarkupType {
     Code,
     Blockquote,
     Preformatted,
+    TranslationMark,
 }
 
 
@@ -84,6 +85,7 @@ pub fn get_markup_by_tag_name(tag: &str) -> MarkupType {
         "code" => MarkupType::Code,
         "blockquote" => MarkupType::Blockquote,
         "pre" => MarkupType::Preformatted,
+        "translate" => MarkupType::TranslationMark,
         _ => panic!("markup type lookup not implemented for {}!", tag),
     }
 }

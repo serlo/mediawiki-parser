@@ -359,7 +359,28 @@
                       position: {}
                       text: dot com
 
-# An empty nowiki tag.
+# A translation tag
+  - case: translation tag
+    input: "<translate>Fréttinga is a small municipality in MungoLand.</translate>"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: translationmark
+              content:
+                - type: paragraph
+                  position: {}
+                  content:
+                    - type: text
+                      position: {}
+                      text: "Fréttinga is a small municipality in MungoLand."
+              
+# An empty nowiki tag
   - case: empty nowiki
     input: "<nowiki></nowiki>"
     out:
@@ -373,7 +394,7 @@
               position: {}
               markup: nowiki
               content: []
-
+              
 # The nowiki tag should ignore everything.
   - case: nowiki
     input: |
