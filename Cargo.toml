@@ -6,12 +6,12 @@ build = "build.rs"
 
 [dependencies]
 serde = "1.0"
-serde_yaml = {git = "https://github.com/vroland/serde-yaml"}
+serde_yaml = {git = "https://github.com/dtolnay/serde-yaml" }
 serde_derive = "1.0"
 
 [build-dependencies]
 serde = "1.0"
 serde_derive = "1.0"
 peg = "0.5.4"
-serde_yaml = {git = "https://github.com/vroland/serde-yaml"}
+serde_yaml = {git = "https://github.com/dtolnay/serde-yaml" }
 

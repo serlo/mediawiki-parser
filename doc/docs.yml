@@ -45,7 +45,27 @@
             - type: text
               position: {}
               text: this is a äüöß == test. "" ʕ•ᴥ•ʔ
-
+              
+# A single paragraph with some special characters.
+  - case: special chars in inline context
+    input: hey!!! this is a test! <3 |x|
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: text
+              position: {}
+              text: "hey!!! this is a test! "
+            - type: text
+              position: {}
+              text: "<"
+            - type: text
+              position: {}
+              text: "3 |x|"
+                            
 # A paragraph with bold words contains a plain formatted element
 # wrapped by ''italic'' formatting.
   - case: single italic text
@@ -847,7 +867,7 @@
 
 # A simple internal reference with options
   - case: internal ref with options
-    input: "[[File:Abc|opt1=value1|opt2=123|this is a caption with '''bold''' markup]]"
+    input: "[[File:Abc|opt1=value1|opt2=123|this is a caption with '''bold and |special|''' markup]]"
     out:
       type: document
       position: {}
@@ -878,7 +898,7 @@
                   content:
                     - type: text
                       position: {}
-                      text: bold
+                      text: "bold and |special|"
                 - type: text
                   position: {}
                   text: " markup"                     
@@ -1127,7 +1147,7 @@
         {|
         !  Orange !! attribute="test" | Apple
         |-
-        |  Bread  || Pie
+        |  Bread  || Pie !! ''hey!!''
         ! footer
         |}
     out:
@@ -1191,7 +1211,22 @@
                       content:
                         - type: text
                           position: {}
-                          text: Pie
+                          text: "Pie "
+                - type: tablecell
+                  position: {}
+                  header: true
+                  attributes: ""
+                  content:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: formatted
+                          position: {}
+                          markup: italic
+                          content:
+                            - type: text
+                              position: {}
+                              text: "hey!!"
                 - type: tablecell
                   position: {}
                   header: true

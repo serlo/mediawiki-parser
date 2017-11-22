@@ -38,7 +38,9 @@ ParagraphTemplate<FormattedRule> =
 
 Paragraph -> Element = ParagraphTemplate<FormattedText>
 
+
 /* mediawiki templates */
+TemplateParagraph -> Element = ParagraphTemplate<FormattedTextTemplate<Text<TemplateContentChar>, UnmatchedText>>
 Template -> Element = 
     posl:#position "{{" Space* n:TemplateName (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" {
     Element::Template {
@@ -49,7 +51,7 @@ Template -> Element =
 }
 
 TemplateArgument -> Element = 
-    posl:#position name:(n:TemplateArgumentName "=" {n})? value:(Paragraph / FormattedText)+ {
+    posl:#position name:(n:TemplateArgumentName "=" {n})? value:TemplateParagraph+ {
         Element::TemplateArgument {
             position: Position::new(posl, source_lines),
             name: Box::new(name),
@@ -99,7 +101,8 @@ Table -> Element =
         }
     }
 
-TableCaption -> (String, Vec<Element>) = "|+" attr:(t:TableAttributeText "|" {t})? Space* pars:Paragraph* {(String::from(attr.unwrap_or(String::new()).trim()), pars)}
+TableParagraph -> Element = ParagraphTemplate<FormattedTextTemplate<Text<TableChar>, UnmatchedText>>
+TableCaption -> (String, Vec<Element>) = "|+" attr:(t:TableAttributeText "|" {t})? Space* pars:TableParagraph* {(String::from(attr.unwrap_or(String::new()).trim()), pars)}
 TableAttributeText -> String = attr:CharString<(!("|" / "!" / Newline) c:$. {c})> { String::from(attr.trim()) }
 TableCellSeparator -> &'input str = $("||") / $("!!") / $("|") / $("!")
 TableRowSeparator -> String = "|-"  attr:TableAttributeText? Newline { attr.unwrap_or(String::new()) }
@@ -114,7 +117,7 @@ TableRow -> Element =
     }
 
 TableCell -> Element = 
-    posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableAttributeText "|" !("|") {a})? Space* content:Paragraph+ {
+    posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableAttributeText "|" !("|") {a})? Space* content:TableParagraph+ {
         Element::TableCell {
             position: Position::new(posl, source_lines),
             content: content,
@@ -124,8 +127,9 @@ TableCell -> Element =
     }
 
 /* internal references, may have pipe-separated options */
+InternalReferenceFormatted -> Element = FormattedTextTemplate<Text<TemplateContentChar>, UnmatchedText>
 ReferenceInternal -> Element =
-    posl:#position "[[" t:((tar:FormattedText* {tar}) ++ "|") "]]" {
+    posl:#position "[[" t:((tar:InternalReferenceFormatted* {tar}) ++ "|") "]]" {
         let mut t = t;
         Element::InternalReference {
             position: Position::new(posl, source_lines),
@@ -266,7 +270,10 @@ TemplateName -> Element = #quiet<Text<TemplateNameChar>> / #expected("template n
 Word -> String =  #quiet<CharString<(!(Space) c:Char {c})>> / #expected("url")
 
 /* character classes */
+// These characters are allowed within certain contexts, other characters have special meaning and break texts
 MathChar -> &'input str = !(TagClose<"math"i>) c:$. {c}
-Char -> &'input str = !(Newline / "'" / "{" / "}" / "!!" / "<" / ">" / "|" / "[" / "]") c:$. {c}
+Char -> &'input str = !(Newline / "'" / "{" / "}" / "<" / ">" / "[" / "]") c:$. {c}
+TableChar -> &'input str = !(Newline / "'" / "{" / "}" / "!!" / "<" / ">" / "|" / "[" / "]") c:$. {c}
+TemplateContentChar -> &'input str = !(Newline / "'" / "{" / "}" / "<" / ">" / "|" / "[" / "]") c:$. {c}
 TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
 TemplateChar -> &'input str = $([A-Za-z0-9 ])
