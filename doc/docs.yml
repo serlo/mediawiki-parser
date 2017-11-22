@@ -65,7 +65,82 @@
             - type: text
               position: {}
               text: "3 |x|"
-                            
+              
+# two simple headings.
+  - case: two simple headings
+    input: |
+      == Heading 1 ==
+      === Heading 2
+    out:
+      type: document
+      position: {}
+      content:
+        - type: heading
+          position: {}
+          depth: 2
+          caption:
+            type: paragraph
+            position: {}
+            content:
+              - type: text
+                position: {}
+                text: "Heading 1 "
+          content:
+            - type: paragraph
+              position: {}
+              content: []
+        - type: heading
+          position: {}
+          depth: 3
+          caption:
+            type: paragraph
+            position: {}
+            content:
+              - type: text
+                position: {}
+                text: "Heading 2"
+          content: []
+          
+# heading with an ancor
+  - case: heading with ancor
+    input: |
+      == Heading {{Anker|foo}} ==
+    out:
+      type: document
+      position: {}
+      content:
+        - type: heading
+          position: {}
+          depth: 2
+          caption:
+            type: paragraph
+            position: {}
+            content:
+              - type: text
+                position: {}
+                text: "Heading "
+              - type: template
+                position: {}
+                name: Anker
+                content:
+                  - type: templateargument
+                    position: {}
+                    name: ""
+                    value:
+                      - type: paragraph
+                        position: {}
+                        content:
+                          - type: text
+                            position: {}
+                            text: foo
+              - type: text
+                position: {}
+                text: " "
+          content:
+            - type: paragraph
+              position: {}
+              content: []
+          
 # A paragraph with bold words contains a plain formatted element
 # wrapped by ''italic'' formatting.
   - case: single italic text
@@ -606,10 +681,7 @@
           content:
             - type: template
               position: {}
-              name:
-                type: text
-                position: {}
-                text: name
+              name: name
               content: []
 
 
@@ -630,14 +702,11 @@
           content:
             - type: template
               position: {}
-              name:
-                type: text
-                position: {}
-                text: templatename
+              name: templatename
               content:
                 - type: templateargument
                   position: {}
-                  name: ~
+                  name: ""
                   value:
                     - type: paragraph
                       position: {}
@@ -647,7 +716,7 @@
                           text: attribute2
                 - type: templateargument
                   position: {}
-                  name: ~
+                  name: ""
                   value:
                     - type: paragraph
                       position: {}
@@ -657,7 +726,7 @@
                           text: attribute3
                 - type: templateargument
                   position: {}
-                  name: ~
+                  name: ""
                   value:
                     - type: paragraph
                       position: {}
@@ -678,17 +747,11 @@
           content:
             - type: template
               position: {}
-              name:
-                type: text
-                position: {}
-                text: name
+              name: name
               content:
                 - type: templateargument
                   position: {}
-                  name:
-                    type: text
-                    position: {}
-                    text: caption
+                  name: caption
                   value:
                     - type: paragraph
                       position: {}
@@ -709,17 +772,11 @@
           content:
             - type: template
               position: {}
-              name:
-                type: text
-                position: {}
-                text: templatename
+              name: templatename
               content:
                 - type: templateargument
                   position: {}
-                  name:
-                    type: text
-                    position: {}
-                    text: item2
+                  name: item2
                   value:
                     - type: paragraph
                       position: {}
@@ -729,10 +786,7 @@
                           text: "2"
                 - type: templateargument
                   position: {}
-                  name:
-                    type: text
-                    position: {}
-                    text: item3
+                  name: item3
                   value:
                     - type: paragraph
                       position: {}
@@ -742,10 +796,7 @@
                           text: "3"
                 - type: templateargument
                   position: {}
-                  name:
-                    type: text
-                    position: {}
-                    text: item4
+                  name: item4
                   value:
                     - type: paragraph
                       position: {}
@@ -766,17 +817,11 @@
           content:
             - type: template
               position: {}
-              name:
-                type: text
-                position: {}
-                text: "template1"
+              name: "template1"
               content:
                 - type: templateargument
                   position: {}
-                  name:
-                    type: text
-                    position: {}
-                    text: item2
+                  name: item2
                   value:
                     - type: paragraph
                       position: {}
@@ -786,10 +831,7 @@
                           text: "2"
                 - type: templateargument
                   position: {}
-                  name:
-                    type: text
-                    position: {}
-                    text: item3
+                  name: item3
                   value:
                     - type: paragraph
                       position: {}
@@ -799,7 +841,7 @@
                           text: "3"
                 - type: templateargument
                   position: {}
-                  name: ~
+                  name: ""
                   value:
                     - type: paragraph
                       position: {}

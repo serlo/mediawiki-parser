@@ -15,7 +15,8 @@ pub Document -> Element = posl:#position top:Paragraph* content:Heading* {
 }
 
 /* all paragraphs after a heading belong to its content */
-Heading -> Element = posl:#position d:$("="+) Space* caption:Paragraph pars:Paragraph* {
+HeadingParagraph -> Element = ParagraphTemplate<FormattedTextTemplate<Text<HeadingChar>, UnmatchedText>>
+Heading -> Element = posl:#position d:$("="+) Space* caption:HeadingParagraph "="* pars:Paragraph* {
         Element::Heading {
             position: Position::new(posl, source_lines),
             depth: d.len(),
@@ -45,7 +46,7 @@ Template -> Element =
     posl:#position "{{" Space* n:TemplateName (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" {
     Element::Template {
         position: Position::new(posl, source_lines),
-        name: Box::new(n),
+        name: n,
         content: attrs
     }
 }
@@ -54,7 +55,7 @@ TemplateArgument -> Element =
     posl:#position name:(n:TemplateArgumentName "=" {n})? value:TemplateParagraph+ {
         Element::TemplateArgument {
             position: Position::new(posl, source_lines),
-            name: Box::new(name),
+            name: name.unwrap_or(String::new()),
             value: value,
         }    
     } 
@@ -263,17 +264,18 @@ CharString<C> =
 /* primitive strings */
 NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
-TemplateArgumentName -> Element = #quiet<Text<TemplateChar>> / #expected("template attribute name")
+TemplateArgumentName -> String = #quiet<CharString<TemplateAttributeNameChar>> / #expected("template attribute name")
 NowikiText -> Element = #quiet<Text<(!(TagClose<"nowiki"i>) $(.))>> / #expected("any text")
 PreformattedText -> Element = #quiet<Text<(!(TagClose<"pre"i>) $(.))>> / #expected ("any text")
-TemplateName -> Element = #quiet<Text<TemplateNameChar>> / #expected("template name")
+TemplateName -> String = #quiet<CharString<TemplateNameChar>> / #expected("template name")
 Word -> String =  #quiet<CharString<(!(Space) c:Char {c})>> / #expected("url")
 
 /* character classes */
 // These characters are allowed within certain contexts, other characters have special meaning and break texts
 MathChar -> &'input str = !(TagClose<"math"i>) c:$. {c}
-Char -> &'input str = !(Newline / "'" / "{" / "}" / "<" / ">" / "[" / "]") c:$. {c}
+Char -> &'input str = !(Newline / "'" / "{" / "}" / "<" / ">" / "[" / "]") c:$. {c} // general inline context
+HeadingChar -> &'input str = !(Newline / "'" / "{" / "}" / "<" / ">" / "[" / "]" / "=") c:$. {c}
 TableChar -> &'input str = !(Newline / "'" / "{" / "}" / "!!" / "<" / ">" / "|" / "[" / "]") c:$. {c}
 TemplateContentChar -> &'input str = !(Newline / "'" / "{" / "}" / "<" / ">" / "|" / "[" / "]") c:$. {c}
 TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
-TemplateChar -> &'input str = $([A-Za-z0-9 ])
+TemplateAttributeNameChar -> &'input str = $([A-Za-z0-9 ])
