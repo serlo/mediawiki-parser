@@ -301,7 +301,9 @@
 
 # Strikethrough text.
   - case: strikethrough
-    input: <del>strikethrough text</del>
+    input: |
+      <del>strikethrough text</del>
+      <s>strikethrough text</s>
     out:
       type: document
       position: {}
@@ -313,10 +315,130 @@
               position: {}
               markup: strikethrough
               content:
+                - type: paragraph
+                  position: {}
+                  content:
+                    - type: text
+                      position: {}
+                      text: strikethrough text
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: strikethrough
+              content:
+                - type: paragraph
+                  position: {}
+                  content:
+                    - type: text
+                      position: {}
+                      text: strikethrough text
+                      
+# Definition markup
+  - case: definition markup
+    input: <dfn title="Riemannsumme">Riemannsumme</dfn>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: definition
+              content:
+                - type: paragraph
+                  position: {}
+                  content:
+                    - type: text
+                      position: {}
+                      text: Riemannsumme
+                      
+# Underline text
+  - case: underline markup
+    input: <ins>Inserted</ins>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: underline
+              content:
+                - type: paragraph
+                  position: {}
+                  content:
+                    - type: text
+                      position: {}
+                      text: Inserted
+                      
+# Fixed-width text
+  - case: fixed width markup
+    input: <code>Fixed width text</code>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: code
+              content:
+                - type: paragraph
+                  position: {}
+                  content:
+                    - type: text
+                      position: {}
+                      text: Fixed width text
+                      
+# Blockquote
+  - case: blockquote markup
+    input: <blockquote>Blockquote</blockquote>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: blockquote
+              content:
+                - type: paragraph
+                  position: {}
+                  content:
+                    - type: text
+                      position: {}
+                      text: Blockquote
+                      
+# Pre-formatted Text
+  - case: pre formatted text
+    input: |
+      <pre>Text is '''preformatted''' and 
+      ''markups'' '''''cannot''''' be done</pre>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: formatted
+              position: {}
+              markup: preformatted
+              content:
                 - type: text
                   position: {}
-                  text: strikethrough text
-
+                  text: "Text is '''preformatted''' and \n''markups'' '''''cannot''''' be done"
+                      
 # A simple list of one item.
   - case: list one item
     input: "* item"

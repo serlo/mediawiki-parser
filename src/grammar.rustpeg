@@ -2,7 +2,6 @@ use ast::*;
 
 #![arguments(source_lines: &Vec<SourceLine>)]
 
-
 /* the main document structure */
 pub Document -> Element = posl:#position top:Paragraph* content:Heading* {
     let mut res = top;
@@ -136,7 +135,7 @@ ReferenceInternal -> Element =
 /* external references (hyperlink) with only url and optional caption */
 ReferenceExternal -> Element = 
     posl:#position
-    "[" url:Word Space? caption:FormattedText* "]" {
+    "[" url:Word Space* caption:FormattedText* "]" {
         Element::ExternalReference {
             position: Position::new(posl, source_lines),
             target: url,
@@ -169,60 +168,59 @@ EmphText -> Element =
         }
     }
 
-InlineMath -> Element = 
-    posl:#position
-    BeginMath
-    inner:MathText*
-    EndMath {
-        Element::Formatted {
-            position: Position::new(posl, source_lines),
-            content: inner,
-            markup: MarkupType::Math
-        }
-    }
+InlineMath -> Element = inner:MarkupTag<"math"i, MathText*> {inner}
+StrikeThroughMarkup -> Element = inner:MarkupTag<"del"i, Paragraph*> {inner}
+    / inner:MarkupTag<"s"i, Paragraph*> {inner}
 
-StrikeThroughMarkup -> Element = 
-    posl:#position
-    BeginStrikethrough
-    inner:FormattedText+
-    EndStrikethrough {
-        Element::Formatted {
-            position: Position::new(posl, source_lines),
-            content: inner,
-            markup: MarkupType::StrikeThrough
-        }
-    }
+UnderlineMarkup -> Element = inner:MarkupTag<"ins"i, Paragraph*> {inner}
+    / inner:MarkupTag<"u"i, Paragraph*> {inner}
 
-NoWikiMarkup -> Element = 
-    posl:#position
-    BeginNoWiki
-    inner: NowikiText*
-    EndNoWiki {
-        Element::Formatted {
-            position: Position::new(posl, source_lines),
-            content: inner,
-            markup: MarkupType::NoWiki
-        }
-    }
+NoWikiMarkup -> Element = inner:MarkupTag<"nowiki"i, NowikiText*> {inner}
+DefinitionMarkup -> Element = inner:MarkupTag<"dfn"i, Paragraph*> {inner}
+CodeMarkup -> Element = inner:MarkupTag<"code"i, Paragraph*> {inner}
+BlockquoteMarkup -> Element = inner:MarkupTag<"blockquote"i, Paragraph*> {inner}
+PreformattedMarkup -> Element = inner:MarkupTag<"pre"i, PreformattedText*> {inner}
 
-SingleQuoteText -> Element = posl:#position q:$("'") {
+/* any unmatched characters which normally indicate special function */
+UnmatchedText -> Element = posl:#position q:($("'") / $(">") / !(TagOpen<Word>) $("<")) {
     Element::Text {
         position: Position::new(posl, source_lines),
         text: String::from(q),
     }
 }
 
-
 pub FormattedText -> Element = StrongText
     / EmphText 
-    / t:Template {t}
-    / InlineMath
+    / t:Template {t} 
     / ReferenceInternal
     / ReferenceExternal
+    
+    / InlineMath
     / NoWikiMarkup
     / StrikeThroughMarkup
+    / DefinitionMarkup
+    / UnderlineMarkup
+    / CodeMarkup
+    / BlockquoteMarkup
+    / PreformattedMarkup
+
     / (posl:#position t:NormalText {t})
-    / SingleQuoteText
+    / UnmatchedText
+
+
+/* html tags */
+TagOpen<Name> = "<" Space* n:$(Name) Char* ">" {n}
+TagClose<Name> = "<" Space* "/" Space * Name Space* ">"
+HtmlTag<Name, Inner> = n:TagOpen<Name> i:Inner TagClose<Name> {(n, i)}
+
+/* macro for simple formatting markup tags. Matches markup type by tag name (see ast.rs) */
+MarkupTag<Name, Inner> = posl:#position tag_info:HtmlTag<Name, Inner> { 
+        Element::Formatted {
+            position: Position::new(posl, source_lines),
+            content: tag_info.1,
+            markup: get_markup_by_tag_name(tag_info.0),
+        }
+    }
 
 
 /* primitive terminals */
@@ -232,12 +230,6 @@ Strong = "'''"
 
 Space = " " / "\t"
 Newline = "\n"
-BeginMath = "<math>" / "<MATH>"
-EndMath = "</math>" / "</MATH>"
-BeginNoWiki = "<nowiki>" / "<NOWIKI>"
-EndNoWiki = "</nowiki>" / "</NOWIKI>"
-BeginStrikethrough = "<del>" / "<s>" / "<DEL>"
-EndStrikethrough = "</del>" / "</s>" / "</DEL>"
 // a paragraph may not start with these symbols as they indicate other elements
 PAR_START_GUARD = !("=" / "!" / "|" / "*" / "#" / ":" / ";")
 
@@ -262,12 +254,13 @@ CharString<C> =
 NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
 TemplateArgumentName -> Element = #quiet<Text<TemplateChar>> / #expected("template attribute name")
-NowikiText -> Element = #quiet<Text<(!(EndNoWiki) $(.))>> / #expected("any text")
+NowikiText -> Element = #quiet<Text<(!(TagClose<"nowiki"i>) $(.))>> / #expected("any text")
+PreformattedText -> Element = #quiet<Text<(!(TagClose<"pre"i>) $(.))>> / #expected ("any text")
 TemplateName -> Element = #quiet<Text<TemplateNameChar>> / #expected("template name")
 Word -> String =  #quiet<CharString<(!(Space) c:Char {c})>> / #expected("url")
 
 /* character classes */
-MathChar -> &'input str = !(Newline / BeginMath / EndMath) c:$. {c}
-Char -> &'input str = !(Newline / "'" / "{" / "}" / "!!"  / "|" / "[" / "]" / BeginMath / EndMath / BeginNoWiki / EndNoWiki / BeginStrikethrough / EndStrikethrough) c:$. {c}
+MathChar -> &'input str = !(TagClose<"math"i>) c:$. {c}
+Char -> &'input str = !(Newline / "'" / "{" / "}" / "!!" / "<" / ">" / "|" / "[" / "]") c:$. {c}
 TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
 TemplateChar -> &'input str = $([A-Za-z0-9 ])

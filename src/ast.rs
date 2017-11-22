@@ -32,7 +32,12 @@ pub enum MarkupType {
     Bold,
     Italic,
     Math,
+    Definition,
     StrikeThrough,
+    Underline,
+    Code,
+    Blockquote,
+    Preformatted,
 }
 
 
@@ -64,6 +69,23 @@ pub struct SourceLine<'input> {
     start: usize,
     line: &'input str,
     end: usize,
+}
+
+/// Match an HTML tag name to it's markup type
+pub fn get_markup_by_tag_name(tag: &str) -> MarkupType {
+    match &tag.to_lowercase()[..] {
+        "math" => MarkupType::Math,
+        "del" => MarkupType::StrikeThrough,
+        "s" => MarkupType::StrikeThrough,
+        "nowiki" => MarkupType::NoWiki,
+        "dfn" => MarkupType::Definition,
+        "u" => MarkupType::Underline,
+        "ins" => MarkupType::Underline,
+        "code" => MarkupType::Code,
+        "blockquote" => MarkupType::Blockquote,
+        "pre" => MarkupType::Preformatted,
+        _ => panic!("markup type lookup not implemented for {}!", tag),
+    }
 }
 
 /// Compiles a list of start and end positions of the input source lines.
