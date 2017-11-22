@@ -25,15 +25,18 @@ Heading -> Element = posl:#position d:$("="+) Space* caption:Paragraph pars:Para
     }
 
 /* a paragraph is a block element, some or no text followed by a newline or just some text */
-Paragraph -> Element = 
+ParagraphTemplate<FormattedRule> = 
     List
     / Table
-    / posl:#position PAR_START_GUARD text:((t:FormattedText* Newline {t}) / (f:FormattedText+ Newline? {f})) {
+    / posl:#position PAR_START_GUARD text:((t:FormattedRule* Newline {t}) 
+    / (f:FormattedRule+ Newline? {f})) {
         Element::Paragraph {
             position: Position::new(posl, source_lines),
             content: text,
         }
     } 
+
+Paragraph -> Element = ParagraphTemplate<FormattedText>
 
 /* mediawiki templates */
 Template -> Element = 
@@ -189,9 +192,10 @@ UnmatchedText -> Element = posl:#position q:($("'") / $(">") / !(TagOpen<Word>) 
     }
 }
 
-pub FormattedText -> Element = StrongText
+FormattedTextTemplate<TextRule, UnmatchedRule> = formatted:(
+    StrongText
     / EmphText 
-    / t:Template {t} 
+    / Template
     / ReferenceInternal
     / ReferenceExternal
     
@@ -204,9 +208,11 @@ pub FormattedText -> Element = StrongText
     / BlockquoteMarkup
     / PreformattedMarkup
 
-    / (posl:#position t:NormalText {t})
-    / UnmatchedText
+    / TextRule
+    / UnmatchedRule
+    ) {formatted}
 
+FormattedText -> Element = f:FormattedTextTemplate<NormalText, UnmatchedText> {f}
 
 /* html tags */
 TagOpen<Name> = "<" Space* n:$(Name) Char* ">" {n}
