@@ -188,7 +188,7 @@ DefinitionMarkup -> Element = inner:MarkupTag<"dfn"i, Paragraph*> {inner}
 CodeMarkup -> Element = inner:MarkupTag<"code"i, Paragraph*> {inner}
 BlockquoteMarkup -> Element = inner:MarkupTag<"blockquote"i, Paragraph*> {inner}
 PreformattedMarkup -> Element = inner:MarkupTag<"pre"i, PreformattedText*> {inner}
-TranslationMarkup -> Element = inner:MarkupTag<"translate"i, Paragraph*> {inner}
+TranslationMarkup -> Element = inner:MarkupTag<"translate"i, (Paragraph / Heading)*> {inner}
 
 /* any unmatched characters which normally indicate special function */
 UnmatchedText -> Element = posl:#position q:($("'") / $(">") / !(TagOpen<Word>) $("<")) {
@@ -204,7 +204,8 @@ FormattedTextTemplate<TextRule, UnmatchedRule> = formatted:(
     / Template
     / ReferenceInternal
     / ReferenceExternal
-    
+   
+    / HtmlComment 
     / InlineMath
     / NoWikiMarkup
     / StrikeThroughMarkup
@@ -225,6 +226,12 @@ FormattedText -> Element = f:FormattedTextTemplate<NormalText, UnmatchedText> {f
 TagOpen<Name> = "<" Space* n:$(Name) Char* ">" {n}
 TagClose<Name> = "<" Space* "/" Space * Name Space* ">"
 HtmlTag<Name, Inner> = n:TagOpen<Name> i:Inner TagClose<Name> {(n, i)}
+HtmlComment -> Element = posl:#position "<!--" s:CharString<(!("-->") c:$. {c})> "-->" {
+    Element::Comment {
+        position: Position::new(posl, source_lines),
+        text: s
+    }
+}
 
 /* macro for simple formatting markup tags. Matches markup type by tag name (see ast.rs) */
 MarkupTag<Name, Inner> = posl:#position tag_info:HtmlTag<Name, Inner> { 

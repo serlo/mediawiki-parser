@@ -395,6 +395,23 @@
               markup: nowiki
               content: []
               
+# A HTML comment
+  - case: html comment
+    input: "bla <!-- comment ³½}³¹ðđ æđ||đð@³¼¶²{{}} content -->"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: text
+              position: {}
+              text: "bla "
+            - type: comment
+              position: {}
+              text: " comment ³½}³¹ðđ æđ||đð@³¼¶²{{}} content "
+              
 # The nowiki tag should ignore everything.
   - case: nowiki
     input: |

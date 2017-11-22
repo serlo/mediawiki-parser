@@ -22,6 +22,7 @@ pub enum Element {
     Table {position: Position, attributes: String, caption: Vec<Element>, caption_attributes: String, rows: Vec<Element>},
     TableRow {position: Position, attributes: String, cells: Vec<Element>},
     TableCell {position: Position, header: bool, attributes: String, content: Vec<Element>},
+    Comment {position: Position, text: String},
 }
 
 /// Types of markup a section of text may have.
