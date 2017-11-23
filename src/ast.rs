@@ -8,21 +8,21 @@ use serde_yaml;
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(tag="type", rename_all="lowercase", deny_unknown_fields)]
 pub enum Element {
-    Document {position: Position, content: Vec<Element>},
-    Heading {position: Position, depth: usize, caption: Box<Element>, content: Vec<Element>},
-    Text {position: Position, text: String},
-    Formatted {position: Position, markup: MarkupType, content: Vec<Element>},
-    Paragraph {position: Position, content: Vec<Element>},
-    Template {position: Position, name: String, content: Vec<Element>},
-    TemplateArgument {position: Position, name: String, value: Vec<Element>},
-    InternalReference {position: Position, target: Vec<Element>, options: Vec<Vec<Element>>, caption: Vec<Element>},
-    ExternalReference {position: Position, target: String, caption: Vec<Element>},
-    ListItem {position: Position, depth: usize, kind: ListItemKind, content: Vec<Element>},
-    List {position: Position, content: Vec<Element>},
-    Table {position: Position, attributes: String, caption: Vec<Element>, caption_attributes: String, rows: Vec<Element>},
-    TableRow {position: Position, attributes: String, cells: Vec<Element>},
-    TableCell {position: Position, header: bool, attributes: String, content: Vec<Element>},
-    Comment {position: Position, text: String},
+    Document {position: Span, content: Vec<Element>},
+    Heading {position: Span, depth: usize, caption: Box<Element>, content: Vec<Element>},
+    Text {position: Span, text: String},
+    Formatted {position: Span, markup: MarkupType, content: Vec<Element>},
+    Paragraph {position: Span, content: Vec<Element>},
+    Template {position: Span, name: String, content: Vec<Element>},
+    TemplateArgument {position: Span, name: String, value: Vec<Element>},
+    InternalReference {position: Span, target: Vec<Element>, options: Vec<Vec<Element>>, caption: Vec<Element>},
+    ExternalReference {position: Span, target: String, caption: Vec<Element>},
+    ListItem {position: Span, depth: usize, kind: ListItemKind, content: Vec<Element>},
+    List {position: Span, content: Vec<Element>},
+    Table {position: Span, attributes: String, caption: Vec<Element>, caption_attributes: String, rows: Vec<Element>},
+    TableRow {position: Span, attributes: String, cells: Vec<Element>},
+    TableCell {position: Span, header: bool, attributes: String, content: Vec<Element>},
+    Comment {position: Span, text: String},
 }
 
 /// Types of markup a section of text may have.
@@ -53,17 +53,25 @@ pub enum ListItemKind {
     Ordered
 }
 
-/// Represents the position of a document element in the source document.
+/// Represents a position in the source document.
 ///
 /// The PartialEq implementation allows for a "any" position (all zero), which is
 /// equal to any other position. This is used to reduce clutter in tests, where
 /// a default Position ("{}") can be used where the actual representation is irrelevant.
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all="lowercase", default="Position::any_position")]
+#[serde(rename_all="lowercase", default="Position::any_position", deny_unknown_fields)]
 pub struct Position {
     offset: usize,
     line: usize,
     col: usize,
+}
+
+/// Holds position information (start and end) for one element
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all="lowercase", default="Span::any", deny_unknown_fields)]
+pub struct Span {
+    start: Position,
+    end: Position
 }
 
 /// Position of a source line of code.
@@ -129,6 +137,22 @@ impl Position {
             offset: 0,
             line: 0,
             col: 0,
+        }
+    }
+}
+
+impl Span {
+    pub fn any() -> Self {
+        Span {
+            start: Position::any_position(),
+            end: Position::any_position(),
+        }
+    }
+
+    pub fn new(posl: usize, posr: usize, source_lines: &Vec<SourceLine>) -> Self {
+        Span {
+            start: Position::new(posl, source_lines),
+            end: Position::new(posr, source_lines),
         }
     }
 }

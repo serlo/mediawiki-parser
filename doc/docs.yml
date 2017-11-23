@@ -26,9 +26,14 @@
     out:
       type: document
       position:
-        offset: 0
-        line: 1
-        col: 1
+        start:
+          offset: 0
+          line: 1
+          col: 1
+        end:
+          offset: 0
+          line: 1
+          col: 1
       content: []
 
 # A single paragraph without newlines should be parsed as a document

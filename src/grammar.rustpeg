@@ -3,22 +3,22 @@ use ast::*;
 #![arguments(source_lines: &Vec<SourceLine>)]
 
 /* the main document structure */
-pub Document -> Element = posl:#position top:Paragraph* content:Heading* {
+pub Document -> Element = posl:#position top:Paragraph* content:Heading* posr:#position {
     let mut res = top;
     let mut content = content;
     res.append(&mut content);
     
     Element::Document {
-        position: Position::new(posl, source_lines),
+        position: Span::new(posl, posr, source_lines),
         content: res, 
     }
 }
 
 /* all paragraphs after a heading belong to its content */
 HeadingParagraph -> Element = ParagraphTemplate<FormattedTextTemplate<Text<HeadingChar>, UnmatchedText>>
-Heading -> Element = posl:#position d:$("="+) Space* caption:HeadingParagraph "="* pars:Paragraph* {
+Heading -> Element = posl:#position d:$("="+) Space* caption:HeadingParagraph "="* pars:Paragraph* posr:#position {
         Element::Heading {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             depth: d.len(),
             caption: Box::new(caption),
             content: pars,
@@ -30,9 +30,10 @@ ParagraphTemplate<FormattedRule> =
     List
     / Table
     / posl:#position PAR_START_GUARD text:((t:FormattedRule* Newline {t}) 
-    / (f:FormattedRule+ Newline? {f})) {
-        Element::Paragraph {
-            position: Position::new(posl, source_lines),
+        / (f:FormattedRule+ Newline? {f})) posr:#position {
+       
+         Element::Paragraph {
+            position: Span::new(posl, posr, source_lines),
             content: text,
         }
     } 
@@ -43,18 +44,18 @@ Paragraph -> Element = ParagraphTemplate<FormattedText>
 /* mediawiki templates */
 TemplateParagraph -> Element = ParagraphTemplate<FormattedTextTemplate<Text<TemplateContentChar>, UnmatchedText>>
 Template -> Element = 
-    posl:#position "{{" Space* n:TemplateName (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" {
+    posl:#position "{{" Space* n:TemplateName (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" posr:#position {
     Element::Template {
-        position: Position::new(posl, source_lines),
+        position: Span::new(posl, posr, source_lines),
         name: n,
         content: attrs
     }
 }
 
 TemplateArgument -> Element = 
-    posl:#position name:(n:TemplateArgumentName "=" {n})? value:TemplateParagraph+ {
+    posl:#position name:(n:TemplateArgumentName "=" {n})? value:TemplateParagraph+ posr:#position {
         Element::TemplateArgument {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             name: name.unwrap_or(String::new()),
             value: value,
         }    
@@ -63,15 +64,15 @@ TemplateArgument -> Element =
 
 /* mediawiki lists */
 List -> Element = 
-    posl:#position items:ListItem+ Space* Newline?  {
+    posl:#position items:ListItem+ Space* Newline? posr:#position {
         Element::List {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             content: items,
         }
     }
 
 ListItem -> Element = 
-    Space* posl:#position s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* Newline? {
+    Space* posl:#position s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* Newline? posr:#position {
         let kind = match s[s.len() - 1] {
             "*" => ListItemKind::Unordered,
             "#" => ListItemKind::Ordered,
@@ -81,7 +82,7 @@ ListItem -> Element =
         };
 
         Element::ListItem {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             depth: s.len(),
             kind: kind,
             content: content,
@@ -90,11 +91,11 @@ ListItem -> Element =
 
 /* mediawiki tables */
 Table -> Element = 
-    posl:#position "{|" attr:TableAttributeText? Newline (Space / Newline)* caption:TableCaption? rows:TableRow* "|}" { 
+    posl:#position "{|" attr:TableAttributeText? Newline (Space / Newline)* caption:TableCaption? rows:TableRow* "|}" posr:#position { 
         let (cap_attrs, cap_pars) = caption.unwrap_or((String::new(), vec![]));
 
         Element::Table {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             rows: rows,
             attributes: attr.unwrap_or(String::new()),
             caption: cap_pars,
@@ -109,18 +110,20 @@ TableCellSeparator -> &'input str = $("||") / $("!!") / $("|") / $("!")
 TableRowSeparator -> String = "|-"  attr:TableAttributeText? Newline { attr.unwrap_or(String::new()) }
 
 TableRow -> Element =
-    posl:#position !("|}") sep:TableRowSeparator? c:TableCell* {
+    posl:#position !("|}") sep:TableRowSeparator? c:TableCell* posr:#position {
         Element::TableRow {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             cells: c,
             attributes: sep.unwrap_or(String::new()),
         }
     }
 
 TableCell -> Element = 
-    posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableAttributeText "|" !("|") {a})? Space* content:TableParagraph+ {
+    posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableAttributeText 
+    "|" !("|") {a})? Space* content:TableParagraph+ posr:#position {
+
         Element::TableCell {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             content: content,
             attributes: attr.unwrap_or(String::new()),
             header: sep.starts_with("!"),
@@ -130,10 +133,10 @@ TableCell -> Element =
 /* internal references, may have pipe-separated options */
 InternalReferenceFormatted -> Element = FormattedTextTemplate<Text<TemplateContentChar>, UnmatchedText>
 ReferenceInternal -> Element =
-    posl:#position "[[" t:((tar:InternalReferenceFormatted* {tar}) ++ "|") "]]" {
+    posl:#position "[[" t:((tar:InternalReferenceFormatted* {tar}) ++ "|") "]]" posr:#position {
         let mut t = t;
         Element::InternalReference {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             target: t.remove(0),
             caption: t.pop().unwrap_or(vec![]),
             options: t, 
@@ -142,10 +145,9 @@ ReferenceInternal -> Element =
 
 /* external references (hyperlink) with only url and optional caption */
 ReferenceExternal -> Element = 
-    posl:#position
-    "[" url:Word Space* caption:FormattedText* "]" {
+    posl:#position "[" url:Word Space* caption:FormattedText* "]" posr:#position {
         Element::ExternalReference {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             target: url,
             caption: caption
         }
@@ -153,24 +155,18 @@ ReferenceExternal -> Element =
 
 /* text markup */
 StrongText -> Element =  
-    posl:#position 
-    Strong
-    inner:( !("'") t:FormattedText {t} / e:EmphText {e} )+
-    Strong {
+    posl:#position Strong inner:( !("'") t:FormattedText {t} / e:EmphText {e} )+ Strong posr:#position {
         Element::Formatted {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             content: inner,
             markup: MarkupType::Bold
         }
     }
 
 EmphText -> Element =  
-    posl:#position 
-    Emph
-    inner:( !("'") t:FormattedText {t} / s:StrongText {s} )+
-    Emph {
+    posl:#position Emph inner:( !("'") t:FormattedText {t} / s:StrongText {s} )+ Emph posr:#position {
         Element::Formatted {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             content: inner,
             markup: MarkupType::Italic
         }
@@ -191,9 +187,9 @@ PreformattedMarkup -> Element = inner:MarkupTag<"pre"i, PreformattedText*> {inne
 TranslationMarkup -> Element = inner:MarkupTag<"translate"i, (Paragraph / Heading)*> {inner}
 
 /* any unmatched characters which normally indicate special function */
-UnmatchedText -> Element = posl:#position q:($("'") / $(">") / !(TagOpen<Word>) $("<")) {
+UnmatchedText -> Element = posl:#position q:($("'") / $(">") / !(TagOpen<Word>) $("<")) posr:#position {
     Element::Text {
-        position: Position::new(posl, source_lines),
+        position: Span::new(posl, posr, source_lines),
         text: String::from(q),
     }
 }
@@ -226,17 +222,17 @@ FormattedText -> Element = f:FormattedTextTemplate<NormalText, UnmatchedText> {f
 TagOpen<Name> = "<" Space* n:$(Name) Char* ">" {n}
 TagClose<Name> = "<" Space* "/" Space * Name Space* ">"
 HtmlTag<Name, Inner> = n:TagOpen<Name> i:Inner TagClose<Name> {(n, i)}
-HtmlComment -> Element = posl:#position "<!--" s:CharString<(!("-->") c:$. {c})> "-->" {
+HtmlComment -> Element = posl:#position "<!--" s:CharString<(!("-->") c:$. {c})> "-->" posr:#position {
     Element::Comment {
-        position: Position::new(posl, source_lines),
+        position: Span::new(posl, posr, source_lines),
         text: s
     }
 }
 
 /* macro for simple formatting markup tags. Matches markup type by tag name (see ast.rs) */
-MarkupTag<Name, Inner> = posl:#position tag_info:HtmlTag<Name, Inner> { 
+MarkupTag<Name, Inner> = posl:#position tag_info:HtmlTag<Name, Inner> posr:#position { 
         Element::Formatted {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             content: tag_info.1,
             markup: get_markup_by_tag_name(tag_info.0),
         }
@@ -254,9 +250,9 @@ Newline = "\n"
 PAR_START_GUARD = !("=" / "!" / "|" / "*" / "#" / ":" / ";")
 
 Text<C> = 
-    posl:#position s:CharString<C> {
+    posl:#position s:CharString<C> posr:#position {
         Element::Text {
-            position: Position::new(posl, source_lines),
+            position: Span::new(posl, posr, source_lines),
             text: s
         }
     }
