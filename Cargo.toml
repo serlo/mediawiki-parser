@@ -4,10 +4,19 @@ version = "0.1.0"
 authors = ["Valentin Roland <valentin@vroland.de>"]
 build = "build.rs"
 
+[lib]
+name = "mediawiki_parser"
+path = "src/lib.rs"
+
+[[bin]]
+name = "mwtoast"
+path = "src/main.rs"
+
 [dependencies]
 serde = "1.0"
 serde_yaml = {git = "https://github.com/dtolnay/serde-yaml" }
 serde_derive = "1.0"
+argparse = "0.2"
 
 [build-dependencies]
 serde = "1.0"

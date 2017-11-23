@@ -1,6 +1,3 @@
-use std::fmt;
-use serde_yaml;
-
 /// Element types used in the abstract syntax tree (AST).
 ///
 /// Each element must keep track of its position in the original
@@ -171,9 +168,3 @@ impl PartialEq for Position {
     fn ne(&self, other: &Position) -> bool {!self.eq(other)}
 }
 
-impl fmt::Display for Element {
-
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", serde_yaml::to_string(&self).unwrap())
-    }
-}
