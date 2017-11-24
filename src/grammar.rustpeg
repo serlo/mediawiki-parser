@@ -146,7 +146,7 @@ ReferenceInternal -> Element =
 
 /* external references (hyperlink) with only url and optional caption */
 ReferenceExternal -> Element = 
-    posl:#position "[" url:Word Space* caption:FormattedText* "]" posr:#position {
+    posl:#position "[" url:Url Space* caption:FormattedText* "]" posr:#position {
         Element::ExternalReference {
             position: Span::new(posl, posr, source_lines),
             target: url,
@@ -181,7 +181,6 @@ UnderlineMarkup -> Element = inner:MarkupTag<"ins"i, (FormattedText / Paragraph)
     / inner:MarkupTag<"u"i, (FormattedText / Paragraph)*> {inner}
 
 NoWikiMarkup -> Element = inner:MarkupTag<"nowiki"i, NowikiText*> {inner}
-DefinitionMarkup -> Element = inner:MarkupTag<"dfn"i, (FormattedText / Paragraph)*> {inner}
 CodeMarkup -> Element = inner:MarkupTag<"code"i, (FormattedText / Paragraph)*> {inner}
 BlockquoteMarkup -> Element = inner:MarkupTag<"blockquote"i, (FormattedText / Paragraph)*> {inner}
 PreformattedMarkup -> Element = inner:MarkupTag<"pre"i, PreformattedText*> {inner}
@@ -197,7 +196,6 @@ FormattedTextTemplate<TextRule> = formatted:(
     / InlineMath
     / NoWikiMarkup
     / StrikeThroughMarkup
-    / DefinitionMarkup
     / UnderlineMarkup
     / CodeMarkup
     / BlockquoteMarkup
@@ -254,6 +252,7 @@ Strong = "'''"
 
 Space = " " / "\t"
 Newline = "\n"
+
 // a paragraph may not start with these symbols as they indicate other elements
 PAR_START_GUARD = !("=" / "!" / "|" / "*" / "#" / ":" / ";")
 
@@ -283,7 +282,7 @@ TemplateArgumentName -> String = #quiet<CharString<TemplateAttributeNameChar>> /
 NowikiText -> Element = #quiet<Text<(!(TagClose<"nowiki"i>) $(.))>> / #expected("any text")
 PreformattedText -> Element = #quiet<Text<(!(TagClose<"pre"i>) $(.))>> / #expected ("any text")
 TemplateName -> String = #quiet<CharString<TemplateNameChar>> / #expected("template name")
-Word -> String =  #quiet<CharString<(!(Space) c:Char {c})>> / #expected("a word of text (e.g. url)")
+Url -> String =  #quiet<CharString<(!(Space / "]" / "|") c:$. {c})>> / #expected("a word of text (e.g. url)")
 TagSafeLiteral -> String = #quiet<CharString<(!(Space / "<" / ">") c:$(.) {c})>> / #expected("tag attribute value")
 QuotedText -> String = #quiet<EnclosedLiteral<"\""> / EnclosedLiteral<"'">> / #expected("quoted text")
 TagName -> String = #quiet<CharString<!("<" / ">" / Space / "=") c:$. {c}>> / #expected("tag / attribute name")

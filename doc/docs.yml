@@ -481,9 +481,13 @@
         - type: paragraph
           position: {}
           content:
-            - type: formatted
+            - type: htmltag
               position: {}
-              markup: definition
+              name: dfn
+              attributes:
+                - key: title
+                  value: Riemannsumme
+                  position: {}
               content:
                 - type: text
                   position: {}
