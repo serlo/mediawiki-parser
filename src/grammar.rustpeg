@@ -181,7 +181,7 @@ UnderlineMarkup -> Element = inner:MarkupTag<"ins"i, (FormattedText / Paragraph)
     / inner:MarkupTag<"u"i, (FormattedText / Paragraph)*> {inner}
 
 NoWikiMarkup -> Element = inner:MarkupTag<"nowiki"i, NowikiText*> {inner}
-CodeMarkup -> Element = inner:MarkupTag<"code"i, (FormattedText / Paragraph)*> {inner}
+CodeMarkup -> Element = inner:MarkupTag<"code"i, CodeText*> {inner}
 BlockquoteMarkup -> Element = inner:MarkupTag<"blockquote"i, (FormattedText / Paragraph)*> {inner}
 PreformattedMarkup -> Element = inner:MarkupTag<"pre"i, PreformattedText*> {inner}
 
@@ -283,9 +283,10 @@ NormalText -> Element = #quiet<Text<Char>> / #expected("normal text")
 MathText -> Element = #quiet<Text<MathChar>> / #expected("LaTeX source code")
 TemplateArgumentName -> String = #quiet<CharString<TemplateAttributeNameChar>> / #expected("template attribute name")
 NowikiText -> Element = #quiet<Text<(!(TagClose<"nowiki"i>) $(.))>> / #expected("any text")
+CodeText -> Element = #quiet<Text<(!(TagClose<"code"i>) $(.))>> / #expected("any text")
 PreformattedText -> Element = #quiet<Text<(!(TagClose<"pre"i>) $(.))>> / #expected ("any text")
 TemplateName -> String = #quiet<CharString<TemplateNameChar>> / #expected("template name")
-Url -> String =  #quiet<CharString<(!(Space / "]" / "|") c:$. {c})>> / #expected("a word of text (e.g. url)")
+Url -> String =  #quiet<CharString<(!(Space / "]") c:$. {c})>> / #expected("a word of text (e.g. url)")
 TagSafeLiteral -> String = #quiet<CharString<(!(Space / "<" / ">") c:$(.) {c})>> / #expected("tag attribute value")
 QuotedText -> String = #quiet<EnclosedLiteral<"\""> / EnclosedLiteral<"'">> / #expected("quoted text")
 TagName -> String = #quiet<CharString<!("<" / ">" / "/" / Space / "=") c:$. {c}>> / #expected("tag / attribute name")
