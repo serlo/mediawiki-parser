@@ -111,7 +111,7 @@ TableCellSeparator -> &'input str = $("||") / $("!!") / $("|") / $("!")
 TableRowSeparator -> String = "|-"  attr:TableAttributeText? Newline { attr.unwrap_or(String::new()) }
 
 TableRow -> Element =
-    posl:#position !("|}") sep:TableRowSeparator? c:TableCell* posr:#position {
+    posl:#position !("|}") sep:TableRowSeparator? c:TableCell+ posr:#position {
         Element::TableRow {
             position: Span::new(posl, posr, source_lines),
             cells: c,
