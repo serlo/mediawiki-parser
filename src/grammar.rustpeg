@@ -92,7 +92,7 @@ ListItem -> Element =
 
 /* mediawiki tables */
 Table -> Element = 
-    posl:#position "{|" attr:TableAttributeText? Newline (Space / Newline)* caption:TableCaption? rows:TableRow* "|}" posr:#position { 
+    posl:#position "{|" attr:TableAttributeText? (Space / Newline)* caption:TableCaption? rows:TableRow* "|}" posr:#position { 
         let (cap_attrs, cap_pars) = caption.unwrap_or((String::new(), vec![]));
 
         Element::Table {
@@ -208,9 +208,12 @@ FormattedTextTemplate<TextRule> = formatted:(
 FormattedText -> Element = f:FormattedTextTemplate<NormalText> {f}
 
 /* html tags */
-TagOpen<Name> = "<" Space* !("/") n:Name Space* attrs:(a:HtmlAttribute Space* {a})* ">" {(n, attrs)}
-TagClose<Name> = "<" Space* "/" Space * Name Space* ">"
-HtmlTag<Name, Inner> = o:TagOpen<Name> i:Inner TagClose<Name> {(o.0, o.1, i)}
+TagInner<Name> = Space* n:Name Space* attrs:(a:HtmlAttribute Space* {a})* {(n, attrs)}
+TagOpen<Name> = "<" inner:TagInner<Name> ">" {inner}
+TagClose<Name> = ("<" Space* "/" Space * TagInner<Name> Space* ">") / "</>"
+HtmlTag<Name, Inner> = (tag:TagOpen<Name> i:Inner TagClose<Name> {(tag.0, tag.1, i)}) 
+                     / ("<" tag:TagInner<Name> "/" Space* ">" {(tag.0, tag.1, vec![])})
+
 HtmlAttribute -> TagAttribute = posl:#position key:TagName "=" value:(QuotedText / TagSafeLiteral) posr:#position {
     TagAttribute::new(Span::new(posl, posr, source_lines), key, value)
 }
@@ -285,14 +288,14 @@ TemplateName -> String = #quiet<CharString<TemplateNameChar>> / #expected("templ
 Url -> String =  #quiet<CharString<(!(Space / "]" / "|") c:$. {c})>> / #expected("a word of text (e.g. url)")
 TagSafeLiteral -> String = #quiet<CharString<(!(Space / "<" / ">") c:$(.) {c})>> / #expected("tag attribute value")
 QuotedText -> String = #quiet<EnclosedLiteral<"\""> / EnclosedLiteral<"'">> / #expected("quoted text")
-TagName -> String = #quiet<CharString<!("<" / ">" / Space / "=") c:$. {c}>> / #expected("tag / attribute name")
+TagName -> String = #quiet<CharString<!("<" / ">" / "/" / Space / "=") c:$. {c}>> / #expected("tag / attribute name")
 
 /* character classes */
 // These characters are allowed within certain contexts, other characters have special meaning and break texts
 MathChar -> &'input str = !(TagClose<"math"i>) c:$. {c}
-Char -> &'input str = !(Newline / Emph / "{" / "}" / AnyOpen / AnyClose / HtmlComment / "[" / "]") c:$. {c} // general inline context
-HeadingChar -> &'input str = !(Newline / Emph / "{" / "}" / AnyOpen / AnyClose / HtmlComment / "[" / "]" / "=") c:$. {c}
-TableChar -> &'input str = !(Newline / Emph / "{" / "}" / "!!" / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
-TemplateContentChar -> &'input str = !(Newline / Emph / "{" / "}" / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
+Char -> &'input str = !(Newline / Emph / "{" / "}" / AnyTag / AnyOpen / AnyClose / HtmlComment / "[" / "]") c:$. {c} // general inline context
+HeadingChar -> &'input str = !(Newline / Emph / "{" / "}" /AnyTag / AnyOpen / AnyClose / HtmlComment / "[" / "]" / "=") c:$. {c}
+TableChar -> &'input str = !(Newline / Emph / "{" / "}" / "!!" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
+TemplateContentChar -> &'input str = !(Newline / Emph / "{" / "}" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
 TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
 TemplateAttributeNameChar -> &'input str = $([A-Za-z0-9 ])
