@@ -63,13 +63,7 @@
           content:
             - type: text
               position: {}
-              text: "hey!!! this is a test! "
-            - type: text
-              position: {}
-              text: "<"
-            - type: text
-              position: {}
-              text: "3 |x|"
+              text: "hey!!! this is a test! <3 |x|"
               
 # two simple headings.
   - case: two simple headings
@@ -361,9 +355,10 @@
                       position: {}
                       text: dot com
 
-# A translation tag
-  - case: translation tag
-    input: "<translate>Fréttinga is a small municipality in MungoLand.</translate>"
+# An arbitrary html tag
+  - case: nested html tag
+    input: |
+      <translate language="test" attr2=bla attröbüte='this is a "test"'><translate >Fréttinga is a small municipality in MungoLand.< / translate></translate>
     out:
       type: document
       position: {}
@@ -371,12 +366,24 @@
         - type: paragraph
           position: {}
           content:
-            - type: formatted
+            - type: htmltag
               position: {}
-              markup: translationmark
+              name: translate
+              attributes:
+                - position: {}
+                  key: language
+                  value: test
+                - position: {}
+                  key: attr2
+                  value: bla
+                - position: {}
+                  key: attröbüte
+                  value: "this is a \"test\""
               content:
-                - type: paragraph
+                - type: htmltag
                   position: {}
+                  name: translate
+                  attributes: []
                   content:
                     - type: text
                       position: {}
@@ -450,12 +457,9 @@
               position: {}
               markup: strikethrough
               content:
-                - type: paragraph
+                - type: text
                   position: {}
-                  content:
-                    - type: text
-                      position: {}
-                      text: strikethrough text
+                  text: strikethrough text
         - type: paragraph
           position: {}
           content:
@@ -463,12 +467,9 @@
               position: {}
               markup: strikethrough
               content:
-                - type: paragraph
+                - type: text
                   position: {}
-                  content:
-                    - type: text
-                      position: {}
-                      text: strikethrough text
+                  text: strikethrough text
                       
 # Definition markup
   - case: definition markup
@@ -484,12 +485,9 @@
               position: {}
               markup: definition
               content:
-                - type: paragraph
+                - type: text
                   position: {}
-                  content:
-                    - type: text
-                      position: {}
-                      text: Riemannsumme
+                  text: Riemannsumme
                       
 # Underline text
   - case: underline markup
@@ -505,12 +503,9 @@
               position: {}
               markup: underline
               content:
-                - type: paragraph
+                - type: text
                   position: {}
-                  content:
-                    - type: text
-                      position: {}
-                      text: Inserted
+                  text: Inserted
                       
 # Fixed-width text
   - case: fixed width markup
@@ -526,12 +521,9 @@
               position: {}
               markup: code
               content:
-                - type: paragraph
+                - type: text
                   position: {}
-                  content:
-                    - type: text
-                      position: {}
-                      text: Fixed width text
+                  text: Fixed width text
                       
 # Blockquote
   - case: blockquote markup
@@ -547,12 +539,9 @@
               position: {}
               markup: blockquote
               content:
-                - type: paragraph
+                - type: text
                   position: {}
-                  content:
-                    - type: text
-                      position: {}
-                      text: Blockquote
+                  text: Blockquote
                       
 # Pre-formatted Text
   - case: pre formatted text

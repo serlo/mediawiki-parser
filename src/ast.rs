@@ -20,6 +20,7 @@ pub enum Element {
     TableRow {position: Span, attributes: String, cells: Vec<Element>},
     TableCell {position: Span, header: bool, attributes: String, content: Vec<Element>},
     Comment {position: Span, text: String},
+    HtmlTag {position: Span, name: String, attributes: Vec<TagAttribute>, content: Vec<Element>},
 }
 
 /// Types of markup a section of text may have.
@@ -36,7 +37,6 @@ pub enum MarkupType {
     Code,
     Blockquote,
     Preformatted,
-    TranslationMark,
 }
 
 
@@ -71,6 +71,15 @@ pub struct Span {
     end: Position
 }
 
+/// Represents a pair of html tag attribute and value.
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all="lowercase", deny_unknown_fields)]
+pub struct TagAttribute {
+    position: Span,
+    key: String,
+    value: String,
+}
+
 /// Position of a source line of code.
 pub struct SourceLine<'input> {
     start: usize,
@@ -91,7 +100,6 @@ pub fn get_markup_by_tag_name(tag: &str) -> MarkupType {
         "code" => MarkupType::Code,
         "blockquote" => MarkupType::Blockquote,
         "pre" => MarkupType::Preformatted,
-        "translate" => MarkupType::TranslationMark,
         _ => panic!("markup type lookup not implemented for {}!", tag),
     }
 }
@@ -168,3 +176,12 @@ impl PartialEq for Position {
     fn ne(&self, other: &Position) -> bool {!self.eq(other)}
 }
 
+impl TagAttribute {
+    pub fn new(position: Span, key: String, value: String) -> Self {
+        TagAttribute {
+            position: position,
+            key: key,
+            value: value,
+        }
+    }
+}
