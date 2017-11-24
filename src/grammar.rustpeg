@@ -222,10 +222,10 @@ FormattedText -> Element = f:FormattedTextTemplate<NormalText, UnmatchedText> {f
 TagOpen<Name> = "<" Space* n:$(Name) Char* ">" {n}
 TagClose<Name> = "<" Space* "/" Space * Name Space* ">"
 HtmlTag<Name, Inner> = n:TagOpen<Name> i:Inner TagClose<Name> {(n, i)}
-HtmlComment -> Element = posl:#position "<!--" s:CharString<(!("-->") c:$. {c})> "-->" posr:#position {
+HtmlComment -> Element = posl:#position "<!--" s:CharString<(!("-->") c:$. {c})>? "-->" posr:#position {
     Element::Comment {
         position: Span::new(posl, posr, source_lines),
-        text: s
+        text: s.unwrap_or(String::new()),
     }
 }
 
@@ -278,9 +278,9 @@ Word -> String =  #quiet<CharString<(!(Space) c:Char {c})>> / #expected("url")
 /* character classes */
 // These characters are allowed within certain contexts, other characters have special meaning and break texts
 MathChar -> &'input str = !(TagClose<"math"i>) c:$. {c}
-Char -> &'input str = !(Newline / "'" / "{" / "}" / "<" / ">" / "[" / "]") c:$. {c} // general inline context
-HeadingChar -> &'input str = !(Newline / "'" / "{" / "}" / "<" / ">" / "[" / "]" / "=") c:$. {c}
-TableChar -> &'input str = !(Newline / "'" / "{" / "}" / "!!" / "<" / ">" / "|" / "[" / "]") c:$. {c}
-TemplateContentChar -> &'input str = !(Newline / "'" / "{" / "}" / "<" / ">" / "|" / "[" / "]") c:$. {c}
+Char -> &'input str = !(Newline / Emph / "{" / "}" / "<" / ">" / "[" / "]") c:$. {c} // general inline context
+HeadingChar -> &'input str = !(Newline / Emph / "{" / "}" / "<" / ">" / "[" / "]" / "=") c:$. {c}
+TableChar -> &'input str = !(Newline / Emph / "{" / "}" / "!!" / "<" / ">" / "|" / "[" / "]") c:$. {c}
+TemplateContentChar -> &'input str = !(Newline / Emph / "{" / "}" / "<" / ">" / "|" / "[" / "]") c:$. {c}
 TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
 TemplateAttributeNameChar -> &'input str = $([A-Za-z0-9 ])

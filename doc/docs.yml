@@ -249,10 +249,7 @@
                         text: "dog"
               - type: text
                 position: {}
-                text: "\'"
-              - type: text
-                position: {}
-                text: "s bone"
+                text: "\'s bone"
                 
 # A simple inline math tag.
   - case: simple inline math
