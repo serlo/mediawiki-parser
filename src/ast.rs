@@ -16,9 +16,9 @@ pub enum Element {
     ExternalReference {position: Span, target: String, caption: Vec<Element>},
     ListItem {position: Span, depth: usize, kind: ListItemKind, content: Vec<Element>},
     List {position: Span, content: Vec<Element>},
-    Table {position: Span, attributes: String, caption: Vec<Element>, caption_attributes: String, rows: Vec<Element>},
-    TableRow {position: Span, attributes: String, cells: Vec<Element>},
-    TableCell {position: Span, header: bool, attributes: String, content: Vec<Element>},
+    Table {position: Span, attributes: Vec<TagAttribute>, caption: Vec<Element>, caption_attributes: Vec<TagAttribute>, rows: Vec<Element>},
+    TableRow {position: Span, attributes: Vec<TagAttribute>, cells: Vec<Element>},
+    TableCell {position: Span, header: bool, attributes: Vec<TagAttribute>, content: Vec<Element>},
     Comment {position: Span, text: String},
     HtmlTag {position: Span, name: String, attributes: Vec<TagAttribute>, content: Vec<Element>},
 }

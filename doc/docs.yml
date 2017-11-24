@@ -990,17 +990,20 @@
       content:
         - type: table
           position: {}
-          attributes: ""
-          caption_attributes: ""
+          attributes: []
+          caption_attributes: []
           caption: []
           rows:
             - type: tablerow
               position: {}
-              attributes: ""
+              attributes: []
               cells:
                 - type: tablecell
                   position: {}
-                  attributes: attributevalue = "test"
+                  attributes: 
+                    - position: {}
+                      key: attributevalue
+                      value: test
                   header: false
                   content:
                     - type: paragraph
@@ -1018,7 +1021,7 @@
   - case: table caption
     input: |
         {|
-        |+ caption_attribute | this is a ''caption''
+        |+ caption_attribute=value | this is a ''caption''
         | attributevalue = "test" | test
         |}
     out:
@@ -1027,8 +1030,11 @@
       content:
         - type: table
           position: {}
-          attributes: ""
-          caption_attributes: "caption_attribute"
+          attributes: []
+          caption_attributes:
+            - position: {}
+              key: caption_attribute
+              value: value
           caption:
             - type: paragraph
               position: {}
@@ -1046,11 +1052,14 @@
           rows:
             - type: tablerow
               position: {}
-              attributes: ""
+              attributes: []
               cells:
                 - type: tablecell
                   position: {}
-                  attributes: attributevalue = "test"
+                  attributes:
+                    - position: {}
+                      key: attributevalue 
+                      value: test
                   header: false
                   content:
                     - type: paragraph
@@ -1074,7 +1083,7 @@
         | test ''2''
         |-style="font-style: italic; color: green;"
         | test3
-        | attr4 | test4
+        | attr4=val | test4
         |}
     out:
       type: document
@@ -1082,8 +1091,11 @@
       content:
         - type: table
           position: {}
-          attributes: class="wikitable"
-          caption_attributes: ""
+          attributes: 
+            - position: {}
+              key: class
+              value: wikitable
+          caption_attributes: []
           caption:
             - type: paragraph
               position: {}
@@ -1094,11 +1106,14 @@
           rows:
             - type: tablerow
               position: {}
-              attributes: ""
+              attributes: []
               cells:
                 - type: tablecell
                   position: {}
-                  attributes: attributevalue = "test"
+                  attributes: 
+                    - position: {}
+                      key: attributevalue
+                      value: test
                   header: false
                   content:
                     - type: paragraph
@@ -1109,11 +1124,11 @@
                           text: test
             - type: tablerow
               position: {}
-              attributes: ""
+              attributes: []
               cells:
                 - type: tablecell
                   position: {}
-                  attributes: ""
+                  attributes: []
                   header: false
                   content:
                     - type: paragraph
@@ -1131,11 +1146,14 @@
                               text: "2"
             - type: tablerow
               position: {}
-              attributes: 'style="font-style: italic; color: green;"'
+              attributes: 
+                - position: {}
+                  key: style
+                  value: "font-style: italic; color: green;"
               cells:
                 - type: tablecell
                   position: {}
-                  attributes: ""
+                  attributes: []
                   header: false
                   content:
                     - type: paragraph
@@ -1146,7 +1164,10 @@
                           text: "test3"
                 - type: tablecell
                   position: {}
-                  attributes: "attr4"
+                  attributes:
+                    - position: {}
+                      key: attr4
+                      value: val
                   header: false
                   content:
                     - type: paragraph
@@ -1171,17 +1192,20 @@
       content:
         - type: table
           position: {}
-          attributes: ""
-          caption_attributes: ""
+          attributes: []
+          caption_attributes: []
           caption: []
           rows:
             - type: tablerow
               position: {}
-              attributes: ""
+              attributes: []
               cells:
                 - type: tablecell
                   position: {}
-                  attributes: attributevalue = "test"
+                  attributes: 
+                    - position: {}
+                      key: attributevalue
+                      value: test
                   header: false
                   content:
                     - type: paragraph
@@ -1192,7 +1216,7 @@
                           text: "test "
                 - type: tablecell
                   position: {}
-                  attributes: ""
+                  attributes: []
                   header: false
                   content:
                     - type: paragraph
@@ -1203,7 +1227,10 @@
                           text: "cell 2 "
                 - type: tablecell
                   position: {}
-                  attributes: "attribute=3"
+                  attributes: 
+                    - position: {}
+                      key: attribute
+                      value: "3"
                   header: false
                   content:
                     - type: paragraph
@@ -1231,18 +1258,18 @@
       content:
         - type: table
           position: {}
-          attributes: ""
-          caption_attributes: ""
+          attributes: []
+          caption_attributes: []
           caption: []
           rows:
             - type: tablerow
               position: {}
-              attributes: ""
+              attributes: []
               cells:
                 - type: tablecell
                   position: {}
                   header: true
-                  attributes: ""
+                  attributes: []
                   content:
                     - type: paragraph
                       position: {}
@@ -1253,7 +1280,10 @@
                 - type: tablecell
                   position: {}
                   header: true
-                  attributes: attribute="test"
+                  attributes: 
+                    - position: {}
+                      key: attribute
+                      value: test
                   content:
                     - type: paragraph
                       position: {}
@@ -1263,12 +1293,12 @@
                           text: Apple
             - type: tablerow
               position: {}
-              attributes: ""
+              attributes: []
               cells:
                 - type: tablecell
                   position: {}
                   header: false
-                  attributes: ""
+                  attributes: []
                   content:
                     - type: paragraph
                       position: {}
@@ -1279,7 +1309,7 @@
                 - type: tablecell
                   position: {}
                   header: false
-                  attributes: ""
+                  attributes: []
                   content:
                     - type: paragraph
                       position: {}
@@ -1290,7 +1320,7 @@
                 - type: tablecell
                   position: {}
                   header: true
-                  attributes: ""
+                  attributes: []
                   content:
                     - type: paragraph
                       position: {}
@@ -1305,7 +1335,7 @@
                 - type: tablecell
                   position: {}
                   header: true
-                  attributes: ""
+                  attributes: []
                   content:
                     - type: paragraph
                       position: {}

@@ -92,41 +92,42 @@ ListItem -> Element =
 
 /* mediawiki tables */
 Table -> Element = 
-    posl:#position "{|" attr:TableAttributeText? (Space / Newline)* caption:TableCaption? rows:TableRow* "|}" posr:#position { 
-        let (cap_attrs, cap_pars) = caption.unwrap_or((String::new(), vec![]));
+    posl:#position "{|" attr:TableElementAttributes? (Space / Newline)* caption:TableCaption? rows:TableRow* "|}" posr:#position { 
+        let (cap_attrs, cap_pars) = caption.unwrap_or((vec![], vec![]));
 
         Element::Table {
             position: Span::new(posl, posr, source_lines),
             rows: rows,
-            attributes: attr.unwrap_or(String::new()),
+            attributes: attr.unwrap_or(vec![]),
             caption: cap_pars,
             caption_attributes: cap_attrs,
         }
     }
 
+TableElementAttributes -> Vec<TagAttribute> = Space* attr:(HtmlAttribute ** (Space+)) Space* {attr}
 TableParagraph -> Element = ParagraphTemplate<FormattedTextTemplate<Text<TableChar>>>
-TableCaption -> (String, Vec<Element>) = "|+" attr:(t:TableAttributeText "|" {t})? Space* pars:TableParagraph* {(String::from(attr.unwrap_or(String::new()).trim()), pars)}
-TableAttributeText -> String = attr:CharString<(!("|" / "!" / Newline) c:$. {c})> { String::from(attr.trim()) }
+TableCaption -> (Vec<TagAttribute>, Vec<Element>) =
+    "|+" attr:(t:TableElementAttributes "|" {t})? Space* pars:TableParagraph* {(attr.unwrap_or(vec![]), pars)}
 TableCellSeparator -> &'input str = $("||") / $("!!") / $("|") / $("!")
-TableRowSeparator -> String = "|-"  attr:TableAttributeText? Newline { attr.unwrap_or(String::new()) }
+TableRowSeparator -> Vec<TagAttribute> = "|-" attr:TableElementAttributes Newline { attr }
 
 TableRow -> Element =
     posl:#position !("|}") sep:TableRowSeparator? c:TableCell+ posr:#position {
         Element::TableRow {
             position: Span::new(posl, posr, source_lines),
             cells: c,
-            attributes: sep.unwrap_or(String::new()),
+            attributes: sep.unwrap_or(vec![]),
         }
     }
 
 TableCell -> Element = 
-    posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableAttributeText 
+    posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableElementAttributes 
     "|" !("|") {a})? Space* content:TableParagraph+ posr:#position {
 
         Element::TableCell {
             position: Span::new(posl, posr, source_lines),
             content: content,
-            attributes: attr.unwrap_or(String::new()),
+            attributes: attr.unwrap_or(vec![]),
             header: sep.starts_with("!"),
         }
     }
@@ -214,7 +215,7 @@ TagClose<Name> = ("<" Space* "/" Space * TagInner<Name> Space* ">") / "</>"
 HtmlTag<Name, Inner> = (tag:TagOpen<Name> i:Inner TagClose<Name> {(tag.0, tag.1, i)}) 
                      / ("<" tag:TagInner<Name> "/" Space* ">" {(tag.0, tag.1, vec![])})
 
-HtmlAttribute -> TagAttribute = posl:#position key:TagName "=" value:(QuotedText / TagSafeLiteral) posr:#position {
+HtmlAttribute -> TagAttribute = posl:#position key:TagName Space* "=" Space * value:(QuotedText / TagSafeLiteral) posr:#position {
     TagAttribute::new(Span::new(posl, posr, source_lines), key, value)
 }
 
