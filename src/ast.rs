@@ -1,7 +1,10 @@
-/// Element types used in the abstract syntax tree (AST).
-///
-/// Each element must keep track of its position in the original
-/// input document. After parsing, the document tree can be serialized by serde.
+
+/**
+ * Element types used in the abstract syntax tree (AST).
+ *
+ * Each element must keep track of its position in the original
+ * input document. After parsing, the document tree can be serialized by serde.
+ */
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(tag="type", rename_all="lowercase", deny_unknown_fields)]
 pub enum Element {
@@ -49,11 +52,13 @@ pub enum ListItemKind {
     Ordered
 }
 
-/// Represents a position in the source document.
-///
-/// The PartialEq implementation allows for a "any" position (all zero), which is
-/// equal to any other position. This is used to reduce clutter in tests, where
-/// a default Position ("{}") can be used where the actual representation is irrelevant.
+/**
+ * Represents a position in the source document.
+ *
+ * The PartialEq implementation allows for a "any" position (all zero), which is
+ * equal to any other position. This is used to reduce clutter in tests, where
+ * a default Position ("{}") can be used where the actual representation is irrelevant.
+ */
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all="lowercase", default="Position::any_position", deny_unknown_fields)]
 pub struct Position {
@@ -102,9 +107,10 @@ pub fn get_markup_by_tag_name(tag: &str) -> MarkupType {
     }
 }
 
-/// Compiles a list of start and end positions of the input source lines.
-///
-/// This representation is used to calculate line and column position from the input offset.
+/** Compiles a list of start and end positions of the input source lines.
+ *
+ * This representation is used to calculate line and column position from the input offset.
+ */
 pub fn get_source_lines<'input>(source: &'input str) -> Vec<SourceLine> {
 
     let mut pos = 0;

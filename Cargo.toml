@@ -1,5 +1,5 @@
 [package]
-name = "mediawiki-peg-rust"
+name = "mediawiki_peg_rust"
 version = "0.1.0"
 authors = ["Valentin Roland <valentin@vroland.de>"]
 build = "build.rs"
@@ -7,10 +7,12 @@ build = "build.rs"
 [lib]
 name = "mediawiki_parser"
 path = "src/lib.rs"
+doc = true
 
 [[bin]]
 name = "mwtoast"
 path = "src/main.rs"
+doc = true
 
 [dependencies]
 serde = "1.0"

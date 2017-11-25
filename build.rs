@@ -9,6 +9,7 @@ use std::fs;
 use std::env;
 use std::io::*;
 
+#[allow(dead_code)]
 mod ast {
     include!("src/ast.rs");
 }
