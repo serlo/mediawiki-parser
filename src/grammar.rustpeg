@@ -74,7 +74,7 @@ Template -> Element
     }
 
 TemplateArgument -> Element
-    = posl:#position name:(n:TemplateArgumentName "=" {n})? value:TemplateParagraph+ posr:#position {
+    = posl:#position name:(n:TemplateArgumentName "=" {n})? value:TemplateParagraph* posr:#position {
      
        Element::TemplateArgument {
             position: Span::new(posl, posr, source_lines),
@@ -386,7 +386,7 @@ TemplateName -> String
 Url -> String
     = #quiet<CharString<(!(Space / "]") c:$. {c})>> / #expected("a word of text (e.g. url)")
 TagSafeLiteral -> String
-    = #quiet<CharString<(!(Space / "<" / ">") c:$(.) {c})>> / #expected("tag attribute value")
+    = #quiet<CharString<(!(Space / "<" / "/" / ">") c:$(.) {c})>> / #expected("tag attribute value")
 QuotedText -> String 
     = #quiet<EnclosedLiteral<"\""> / EnclosedLiteral<"'">> / #expected("quoted text")
 TagName -> String 
