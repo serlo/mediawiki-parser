@@ -2,6 +2,9 @@
 extern crate serde_derive;
 extern crate serde;
 
+#[cfg(test)]
+extern crate serde_yaml;
+
 use std::path::Path;
 use std::fs;
 use std::io::prelude::*;
