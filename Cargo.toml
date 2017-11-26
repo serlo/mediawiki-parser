@@ -9,6 +9,10 @@ name = "mediawiki_parser"
 path = "src/lib.rs"
 doc = true
 
+[features]
+default = []
+no_position = []
+
 [[bin]]
 name = "mwtoast"
 path = "src/main.rs"

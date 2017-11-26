@@ -1,3 +1,5 @@
+#[cfg(feature="no_position")]
+use serde::ser::{Serialize, Serializer, SerializeMap};
 
 /**
  * Element types used in the abstract syntax tree (AST).
@@ -68,7 +70,8 @@ pub struct Position {
 }
 
 /// Holds position information (start and end) for one element
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Deserialize, PartialEq, Clone)]
+#[cfg_attr(not(feature="no_position"), derive(Serialize))]
 #[serde(rename_all="lowercase", default="Span::any", deny_unknown_fields)]
 pub struct Span {
     pub start: Position,
@@ -164,6 +167,15 @@ impl Span {
             start: Position::new(posl, source_lines),
             end: Position::new(posr, source_lines),
         }
+    }
+}
+
+#[cfg(feature="no_position")]
+impl Serialize for Span {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer {
+        let map = serializer.serialize_map(None)?;
+        map.end()
     }
 }
 
