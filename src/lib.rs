@@ -33,6 +33,7 @@ const TERMINAL_WIDTH: usize = 80;
 
 /// The parser error with source code context.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all="lowercase", deny_unknown_fields)]
 pub struct ParseError {
     pub position: ast::Position,
     pub expected: Vec<String>,
@@ -142,14 +143,10 @@ impl ParseError {
         };
 
         let mut token_str = vec![];
-
         for token in &err.expected {
-            if is_whitespace(token) {
-                token_str.push(format!("{:?}", String::from(*token)));
-            } else {
-                token_str.push(format!("{}", String::from(*token)));
-            }
+            token_str.push(String::from(*token));
         }
+
 
         let mut context = vec![];
         for sloc in source_lines[start..end + 1].iter() {
@@ -178,8 +175,17 @@ impl fmt::Display for ParseError {
         let error_message = format!("ERROR in line {} at column {}: Could not continue to parse, expected one of: ",
             self.position.line, self.position.col).red().bold();
 
+        let mut token_str = vec![];
+        for token in &self.expected {
+            if is_whitespace(token) {
+                token_str.push(format!("{:?}", token));
+            } else {
+                token_str.push(format!("{}", token));
+            }
+        }
+
         write!(f, "{}", error_message)?;
-        write!(f, "{}\n", self.expected.join(", ").blue().bold())?;
+        write!(f, "{}\n", token_str.join(", ").blue().bold())?;
 
         for (i, content) in self.context.iter().enumerate() {
 
