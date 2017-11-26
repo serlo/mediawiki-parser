@@ -118,10 +118,17 @@ ListItem -> Element
  mediawiki tables
  */
 Table -> Element
-    = posl:#position "{|" attr:TableElementAttributes? (Space / Newline)* caption:TableCaption? rows:TableRow* "|}" posr:#position { 
+    = posl:#position "{|" attr:TableElementAttributes? (Space / Newline)* caption:TableCaption? first_cells:TableCell* rows:TableRow* "|}" posr:#position { 
     
         let (cap_attrs, cap_pars) = caption.unwrap_or((vec![], vec![]));
-
+        let mut rows = rows;
+        if first_cells.len() > 0 {
+            rows.insert(0, Element::TableRow {
+                position: Span::new(0, 0, source_lines),
+                cells: first_cells,
+                attributes: vec![],
+            });
+        }
         Element::Table {
             position: Span::new(posl, posr, source_lines),
             rows: rows,
@@ -143,12 +150,12 @@ TableRowSeparator -> Vec<TagAttribute>
     = "|-" attr:TableElementAttributes Newline {attr}
 
 TableRow -> Element
-    = posl:#position !("|}") sep:TableRowSeparator? c:TableCell+ posr:#position {
+    = posl:#position !("|}") sep:TableRowSeparator c:TableCell* posr:#position {
         
         Element::TableRow {
             position: Span::new(posl, posr, source_lines),
             cells: c,
-            attributes: sep.unwrap_or(vec![]),
+            attributes: sep,
         }
     }
 
