@@ -16,16 +16,18 @@ pub Document -> Element
 }
 
 /** all paragraphs after a heading belong to its content */
+HeadingFormatted -> Element
+    = FormattedTextTemplate<Text<HeadingChar>>
 HeadingParagraph -> Element 
-    = ParagraphTemplate<FormattedTextTemplate<Text<HeadingChar>>>
+    = ParagraphTemplate<HeadingFormatted>
 
 /** A heading is a caption paragraph followed by content paragraphs. */
 Heading -> Element 
-    = posl:#position d:$("="+) Space* caption:HeadingParagraph "="* pars:Paragraph* posr:#position {
+    = posl:#position d:$("="+) Space* caption:HeadingFormatted* "="* Space* Newline pars:Paragraph* posr:#position {
         Element::Heading {
             position: Span::new(posl, posr, source_lines),
             depth: d.len(),
-            caption: Box::new(caption),
+            caption: caption,
             content: pars,
         }
     }

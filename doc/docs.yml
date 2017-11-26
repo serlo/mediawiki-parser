@@ -70,6 +70,7 @@
     input: |
       == Heading 1 ==
       === Heading 2
+      === Heading 3
     out:
       type: document
       position: {}
@@ -78,26 +79,25 @@
           position: {}
           depth: 2
           caption:
-            type: paragraph
-            position: {}
-            content:
-              - type: text
-                position: {}
-                text: "Heading 1 "
-          content:
-            - type: paragraph
+            - type: text
               position: {}
-              content: []
+              text: "Heading 1 "
+          content: []
         - type: heading
           position: {}
           depth: 3
           caption:
-            type: paragraph
-            position: {}
-            content:
-              - type: text
-                position: {}
-                text: "Heading 2"
+            - type: text
+              position: {}
+              text: "Heading 2"
+          content: []
+        - type: heading
+          position: {}
+          depth: 3
+          caption:
+            - type: text
+              position: {}
+              text: "Heading 3"
           content: []
           
 # heading with an ancor
@@ -112,33 +112,27 @@
           position: {}
           depth: 2
           caption:
-            type: paragraph
-            position: {}
-            content:
-              - type: text
-                position: {}
-                text: "Heading "
-              - type: template
-                position: {}
-                name: Anker
-                content:
-                  - type: templateargument
-                    position: {}
-                    name: ""
-                    value:
-                      - type: paragraph
-                        position: {}
-                        content:
-                          - type: text
-                            position: {}
-                            text: foo
-              - type: text
-                position: {}
-                text: " "
-          content:
-            - type: paragraph
+            - type: text
               position: {}
-              content: []
+              text: "Heading "
+            - type: template
+              position: {}
+              name: Anker
+              content:
+                - type: templateargument
+                  position: {}
+                  name: ""
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: foo
+            - type: text
+              position: {}
+              text: " "
+          content: []
           
 # A paragraph with bold words contains a plain formatted element
 # wrapped by ''italic'' formatting.

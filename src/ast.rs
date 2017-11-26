@@ -5,11 +5,11 @@
  * Each element must keep track of its position in the original
  * input document. After parsing, the document tree can be serialized by serde.
  */
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(tag="type", rename_all="lowercase", deny_unknown_fields)]
 pub enum Element {
     Document {position: Span, content: Vec<Element>},
-    Heading {position: Span, depth: usize, caption: Box<Element>, content: Vec<Element>},
+    Heading {position: Span, depth: usize, caption: Vec<Element>, content: Vec<Element>},
     Text {position: Span, text: String},
     Formatted {position: Span, markup: MarkupType, content: Vec<Element>},
     Paragraph {position: Span, content: Vec<Element>},
@@ -27,7 +27,7 @@ pub enum Element {
 }
 
 /// Types of markup a section of text may have.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(rename_all="lowercase")]
 pub enum MarkupType {
     NoWiki,
@@ -43,7 +43,7 @@ pub enum MarkupType {
 
 
 /// Types of markup a section of text may have.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(rename_all="lowercase")]
 pub enum ListItemKind {
     Unordered,
@@ -59,7 +59,7 @@ pub enum ListItemKind {
  * equal to any other position. This is used to reduce clutter in tests, where
  * a default Position ("{}") can be used where the actual representation is irrelevant.
  */
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all="lowercase", default="Position::any_position", deny_unknown_fields)]
 pub struct Position {
     pub offset: usize,
@@ -68,7 +68,7 @@ pub struct Position {
 }
 
 /// Holds position information (start and end) for one element
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(rename_all="lowercase", default="Span::any", deny_unknown_fields)]
 pub struct Span {
     pub start: Position,
@@ -76,7 +76,7 @@ pub struct Span {
 }
 
 /// Represents a pair of html tag attribute and value.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(rename_all="lowercase", deny_unknown_fields)]
 pub struct TagAttribute {
     pub position: Span,
