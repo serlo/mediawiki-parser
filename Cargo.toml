@@ -19,6 +19,7 @@ serde = "1.0"
 serde_yaml = {git = "https://github.com/dtolnay/serde-yaml" }
 serde_derive = "1.0"
 argparse = "0.2"
+colored = "1.6"
 
 [build-dependencies]
 serde = "1.0"

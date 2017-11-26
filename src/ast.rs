@@ -62,33 +62,34 @@ pub enum ListItemKind {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all="lowercase", default="Position::any_position", deny_unknown_fields)]
 pub struct Position {
-    offset: usize,
-    line: usize,
-    col: usize,
+    pub offset: usize,
+    pub line: usize,
+    pub col: usize,
 }
 
 /// Holds position information (start and end) for one element
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all="lowercase", default="Span::any", deny_unknown_fields)]
 pub struct Span {
-    start: Position,
-    end: Position
+    pub start: Position,
+    pub end: Position
 }
 
 /// Represents a pair of html tag attribute and value.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all="lowercase", deny_unknown_fields)]
 pub struct TagAttribute {
-    position: Span,
-    key: String,
-    value: String,
+    pub position: Span,
+    pub key: String,
+    pub value: String,
 }
 
 /// Position of a source line of code.
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct SourceLine<'input> {
-    start: usize,
-    line: &'input str,
-    end: usize,
+    pub start: usize,
+    pub content: &'input str,
+    pub end: usize,
 }
 
 /// Match an HTML tag name to it's markup type
@@ -119,7 +120,7 @@ pub fn get_source_lines<'input>(source: &'input str) -> Vec<SourceLine> {
     for line in source.split("\n") {
         result.push( SourceLine {
             start: pos,
-            line: line,
+            content: line,
             end: pos + line.len() + 1,
         });
         pos += line.len() + 1;
@@ -134,7 +135,7 @@ impl Position {
                 return Position {
                     offset: offset,
                     line: i + 1,
-                    col: sloc.line[0..offset - sloc.start].chars().count() + 1,
+                    col: sloc.content[0..offset - sloc.start].chars().count() + 1,
                 }
             }
         }

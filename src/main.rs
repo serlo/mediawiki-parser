@@ -53,6 +53,6 @@ fn main() {
             serde_yaml::to_writer(io::stdout(), &r).unwrap();
             println!();
         },
-        Err(e) => panic!("Parse error: {:?}", e),
+        Err(e) => eprintln!("{}", e),
     }
 }
