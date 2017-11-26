@@ -71,6 +71,8 @@
       == Heading 1 ==
       === Heading 2
       === Heading 3
+      ==== Heading 4
+      = Heading 5 =
     out:
       type: document
       position: {}
@@ -82,23 +84,41 @@
             - type: text
               position: {}
               text: "Heading 1 "
-          content: []
+          content:
+            - type: heading
+              position: {}
+              depth: 3
+              caption:
+                - type: text
+                  position: {}
+                  text: Heading 2
+              content: []
+            - type: heading
+              position: {}
+              depth: 3
+              caption:
+                - type: text
+                  position: {}
+                  text: Heading 3
+              content:
+                - type: heading
+                  position: {}
+                  depth: 4
+                  caption:
+                    - type: text
+                      position: {}
+                      text: Heading 4
+                  content: []
         - type: heading
           position: {}
-          depth: 3
+          depth: 1
           caption:
             - type: text
               position: {}
-              text: "Heading 2"
+              text: "Heading 5 "
           content: []
-        - type: heading
-          position: {}
-          depth: 3
-          caption:
-            - type: text
-              position: {}
-              text: "Heading 3"
-          content: []
+         
+
           
 # heading with an ancor
   - case: heading with ancor

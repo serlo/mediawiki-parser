@@ -20,6 +20,10 @@ mod tests;
 /// Data structures describing the parsed document.
 pub mod ast;
 
+/// Macros and data structures for source tree transformations.
+#[macro_use]
+pub mod transformations;
+
 mod grammar {
     include!(concat!(env!("OUT_DIR"), "/grammar.rs"));
 }
@@ -101,10 +105,6 @@ fn shorten_str(input: &str) -> String {
     result
 }
 
-/**
- * Print a pretty error message to stderr.
- */
-
 
 /**
  * Parse a mediawiki source document and build a syntax tree.
@@ -112,10 +112,12 @@ fn shorten_str(input: &str) -> String {
 pub fn parse_document(input: &str) -> Result<ast::Element, ParseError> {
     let source_lines = ast::get_source_lines(&input);
 
-    match grammar::Document(&input, &source_lines) {
+    let result = match grammar::Document(&input, &source_lines) {
         Err(e) => Err(ParseError::from(&e, input)),
         Ok(r) => Ok(r)
-    }
+    }?;
+
+    Ok(transformations::test_transformation(&result, &mut vec![]))
 }
 
 impl ParseError {

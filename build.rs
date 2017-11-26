@@ -14,7 +14,6 @@ mod ast {
     include!("src/ast.rs");
 }
 
-
 macro_rules! TEST_SOUCE { () => ("
 // {}
 #[test]
@@ -22,8 +21,7 @@ fn {} () {{
     let input = {:?};
     let target_source = {:?};
 
-    let source_lines = ast::get_source_lines(&input);
-    let result = grammar::Document(&input, &source_lines)
+    let result = parse_document(&input)
         .expect(\"Parsing of the input for {} failed!\");
     let target: ast::Element = serde_yaml::from_str(&target_source)
         .expect(\"Parsing the documentation of {} failed!\");
@@ -37,10 +35,7 @@ macro_rules! TEST_HEADER { () => ("
 
 use ast;
 use serde_yaml;
-
-mod grammar {{
-    include!(concat!(env!(\"OUT_DIR\"), \"/grammar.rs\"));
-}}
+use parse_document;
 
 ")}
 
