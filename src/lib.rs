@@ -117,7 +117,7 @@ pub fn parse_document(input: &str) -> Result<ast::Element, ParseError> {
         Ok(r) => Ok(r)
     }?;
 
-    Ok(transformations::test_transformation(&result, &mut vec![]))
+    Ok(transformations::fold_headings_transformation(result))
 }
 
 impl ParseError {

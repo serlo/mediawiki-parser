@@ -73,6 +73,9 @@
       === Heading 3
       ==== Heading 4
       = Heading 5 =
+      = Heading 7
+      == Heading 8
+      == Heading 9
     out:
       type: document
       position: {}
@@ -117,6 +120,30 @@
               position: {}
               text: "Heading 5 "
           content: []
+        - type: heading
+          position: {}
+          depth: 1
+          caption:
+            - type: text
+              position: {}
+              text: Heading 7
+          content:
+            - type: heading
+              position: {}
+              depth: 2
+              caption:
+                - type: text
+                  position: {}
+                  text: Heading 8
+              content: []
+            - type: heading
+              position: {}
+              depth: 2
+              caption:
+                - type: text
+                  position: {}
+                  text: Heading 9
+              content: []
          
 
           

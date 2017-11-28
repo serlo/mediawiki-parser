@@ -1,13 +1,25 @@
 //! Common structures and macros for implementing parse tree transformations.
 
+use std::usize;
 use ast::*;
 
 /// Apply a given transformation function to a list of elements.
 macro_rules! apply_func {
     ($func:ident, $content:expr, $path:expr) => {{
-        let mut result = Vec::new();
+        let mut result = vec![];
         for child in $content {
             result.push($func(child, $path));
+        }
+        result
+    }}
+}
+
+/// Apply a given transformation to every item in a list, consuming this list.
+macro_rules! apply_func_drain {
+    ($func:ident, $content:expr) => {{
+        let mut result = vec![];
+        for child in $content.drain(..) {
+            result.push($func(child));
         }
         result
     }}
@@ -135,83 +147,66 @@ macro_rules! recurse_ast {
     }}
 }
 
-pub fn test_transformation<'a>(root: &'a Element, path: &Vec<&Element>) -> Element {
+/// Moves flat headings into a hierarchical structure based on their depth.
+pub fn fold_headings_transformation(mut root: Element) -> Element {
 
     /// append following deeper headings than current_depth in content to the result list.
-    fn append_deeper_headings(current_depth: usize, content: &[Element]) -> Vec<Element> {
+    fn append_deeper_headings(root_content: &mut Vec<Element>) -> Vec<Element> {
+
         let mut result = vec![];
-        for child in content.iter() {
-            match *child {
-                Element::Heading {depth, ..} => {
+        let mut current_heading_index = 0;
+
+        // current maximum depth level, every deeper heading will be moved
+        let mut current_depth = usize::MAX;
+
+        for child in root_content.drain(..) {
+            match child {
+                Element::Heading {position, depth, caption, content} => {
+
+                    let new = Element::Heading {
+                        position: position,
+                        depth: depth,
+                        caption: caption,
+                        content: content,
+                    };
 
                     if depth > current_depth {
-                        result.push(child.clone());
+                        match result.get_mut(current_heading_index) {
+                            Some(&mut Element::Heading {ref mut content, ..}) => {
+                                content.push(new);
+                            },
+                            _ => (),
+                        };
+
                     } else {
-                        // quit when equal or more shallow headings where encountered.
-                        return result;
+                        // pick a new reference heading if the new one is equally deep or more shallow
+                        current_heading_index = result.len();
+                        current_depth = depth;
+                        result.push(new);
                     }
                 },
-                _ => (),
-            };
-        }
-        result
-    }
-
-    /// Takes a list of contents and moves deeper headings into the content lists of shallow ones.
-    fn transform_contents_list(content: &Vec<Element>) -> Vec<Element> {
-
-        let mut result = vec![];
-        let mut index = 0;
-
-        while index < content.len() {
-
-            let child = &content[index];
-            let remaining = &content[index + 1..];
-
-            match *child {
-                Element::Heading {ref position, ref content, ref caption, ref depth} => {
-
-                    // A list of headings deeper than the current one.
-                    let mut deeper = append_deeper_headings(*depth, remaining);
-                    index += deeper.len() + 1;
-
-                    let mut new_content = content.clone();
-                    new_content.append(&mut deeper);
-
-                    result.push(Element::Heading {
-                        position: position.clone(),
-                        content: new_content,
-                        caption: caption.clone(),
-                        depth: *depth,
-                    });
-                },
                 _ => {
-                    result.push(child.clone());
-                    index += 1;
+                    result.push(child);
+                    if current_depth > 0 {
+                        eprintln!("fold_headings: a non-heading element was found after a heading. This should not happen.");
+                    }
                 }
             };
         }
         result
     }
 
-    // Create a new root element for headings and documents to reflect the new hierarchy.
-    match *root {
-        Element::Document {ref position, ref content} => {
-            Element::Document {
-                position: position.clone(),
-                content: apply_func!(test_transformation, &transform_contents_list(content), path),
-            }
+    match root {
+        Element::Document {ref mut content, ..} => {
+            let mut new_content = append_deeper_headings(content);
+            content.append(&mut apply_func_drain!(fold_headings_transformation, new_content));
         },
-        Element::Heading {ref position, ref depth, ref caption, ref content} => {
-            Element::Heading {
-                position: position.clone(),
-                depth: *depth,
-                content: apply_func!(test_transformation, &transform_contents_list(content), path),
-                caption: caption.clone(),
-            }
+        Element::Heading {ref mut content, ..} => {
+            let mut new_content = append_deeper_headings(content);
+            content.append(&mut apply_func_drain!(fold_headings_transformation, new_content));
         },
-        _ => {
-            recurse_ast!(test_transformation, root, path)
-        }
+        _ => (),
     }
+    root
 }
+
