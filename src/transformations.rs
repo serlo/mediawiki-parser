@@ -151,7 +151,7 @@ macro_rules! recurse_ast {
 pub fn fold_headings_transformation(mut root: Element) -> Element {
 
     /// append following deeper headings than current_depth in content to the result list.
-    fn append_deeper_headings(root_content: &mut Vec<Element>) -> Vec<Element> {
+    fn move_deeper_headings(root_content: &mut Vec<Element>) -> Vec<Element> {
 
         let mut result = vec![];
         let mut current_heading_index = 0;
@@ -187,7 +187,7 @@ pub fn fold_headings_transformation(mut root: Element) -> Element {
                 },
                 _ => {
                     result.push(child);
-                    if current_depth > 0 {
+                    if current_depth < usize::MAX {
                         eprintln!("fold_headings: a non-heading element was found after a heading. This should not happen.");
                     }
                 }
@@ -198,11 +198,11 @@ pub fn fold_headings_transformation(mut root: Element) -> Element {
 
     match root {
         Element::Document {ref mut content, ..} => {
-            let mut new_content = append_deeper_headings(content);
+            let mut new_content = move_deeper_headings(content);
             content.append(&mut apply_func_drain!(fold_headings_transformation, new_content));
         },
         Element::Heading {ref mut content, ..} => {
-            let mut new_content = append_deeper_headings(content);
+            let mut new_content = move_deeper_headings(content);
             content.append(&mut apply_func_drain!(fold_headings_transformation, new_content));
         },
         _ => (),
