@@ -226,8 +226,10 @@ macro_rules! recurse_ast {
 
 /// Moves flat headings into a hierarchical structure based on their depth.
 pub fn fold_headings_transformation(mut root: Element) -> Result<Element, TransformationError> {
+
     // append following deeper headings than current_depth in content to the result list.
     let move_deeper_headings = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, TransformationError> {
+
         let mut result = vec![];
         let mut current_heading_index = 0;
 
@@ -237,6 +239,7 @@ pub fn fold_headings_transformation(mut root: Element) -> Result<Element, Transf
         for child in root_content.drain(..) {
             match child {
                 Element::Heading { position, depth, caption, content } => {
+
                     let new = Element::Heading {
                         position,
                         depth,
@@ -293,8 +296,10 @@ pub fn fold_headings_transformation(mut root: Element) -> Result<Element, Transf
 /// If a list is started with a deeper item than one, this transformation still applies,
 /// although this should later be a linter error.
 pub fn fold_lists_transformation(mut root: Element) -> Result<Element, TransformationError> {
+
     // move list items which are deeper than the current level into new sub-lists.
     let move_deeper_items = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, TransformationError> {
+
         // the currently least deep list item, every deeper list item will be moved to a new sublist
         let mut lowest_depth = usize::MAX;
         for child in &root_content[..] {
@@ -339,16 +344,27 @@ pub fn fold_lists_transformation(mut root: Element) -> Result<Element, Transform
                             });
                         }
                         let result_len = result.len() - 1;
+
+                        // this error is returned if the sublist to append to was not found
+                        let build_found_error = | origin: &Element | {
+                            TransformationError {
+                                cause: String::from("sublist was not instantiated properly."),
+                                transformation_name: String::from("fold_lists_transformation"),
+                                position: origin.get_position().clone(),
+                                tree: origin.clone(),
+                            }
+                        };
+
                         match result.get_mut(result_len) {
                             Some(&mut Element::ListItem { ref mut content, .. }) => {
                                 match content.get_mut(0) {
                                     Some(&mut Element::List { ref mut content, .. }) => {
                                         content.push(new);
                                     }
-                                    _ => eprintln!("fold_lists: incomplete sublist!"),
+                                    _ => return Err(build_found_error(&new)),
                                 }
                             }
-                            _ => (),
+                            _ => return Err(build_found_error(&new)),
                         };
                     } else {
                         result.push(new);
