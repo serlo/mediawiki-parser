@@ -723,19 +723,35 @@
             - type: listitem
               position: {}
               kind: unordered
-              depth: 3
+              depth: 1
               content:
-                - type: text
+                - type: list
                   position: {}
-                  text: item 2
-            - type: listitem
-              position: {}
-              kind: ordered
-              depth: 2
-              content:
-                - type: text
-                  position: {}
-                  text: item 3
+                  content:
+                    - type: listitem
+                      position: {}
+                      depth: 2
+                      kind: unordered 
+                      content:
+                        - type: list
+                          position: {}
+                          content:
+                            - type: listitem
+                              position: {}
+                              depth: 3
+                              kind: unordered 
+                              content:
+                                - type: text
+                                  position: {}
+                                  text: item 2
+                    - type: listitem
+                      position: {}
+                      depth: 2
+                      kind: ordered 
+                      content:
+                        - type: text
+                          position: {}
+                          text: item 3
         - type: paragraph
           position: {}
           content:

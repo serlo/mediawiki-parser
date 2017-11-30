@@ -112,12 +112,14 @@ fn shorten_str(input: &str) -> String {
 pub fn parse_document(input: &str) -> Result<ast::Element, ParseError> {
     let source_lines = ast::get_source_lines(&input);
 
-    let result = match grammar::Document(&input, &source_lines) {
+    let mut result = match grammar::Document(&input, &source_lines) {
         Err(e) => Err(ParseError::from(&e, input)),
         Ok(r) => Ok(r)
     }?;
 
-    Ok(transformations::fold_headings_transformation(result))
+    result = transformations::fold_headings_transformation(result);
+    result = transformations::fold_lists_transformation(result);
+    Ok(result)
 }
 
 impl ParseError {

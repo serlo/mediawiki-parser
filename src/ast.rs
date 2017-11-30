@@ -29,7 +29,7 @@ pub enum Element {
 }
 
 /// Types of markup a section of text may have.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Copy)]
 #[serde(rename_all="lowercase")]
 pub enum MarkupType {
     NoWiki,
@@ -45,7 +45,7 @@ pub enum MarkupType {
 
 
 /// Types of markup a section of text may have.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Copy)]
 #[serde(rename_all="lowercase")]
 pub enum ListItemKind {
     Unordered,

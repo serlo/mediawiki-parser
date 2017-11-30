@@ -25,6 +25,82 @@ macro_rules! apply_func_drain {
     }}
 }
 
+macro_rules! recurse_ast_inplace {
+    ($func:ident, $root:expr) => {{
+        match $root {
+            Element::Document {ref mut content, ..} => {
+                let mut new_content = apply_func_drain!($func, content);
+                content.append(&mut new_content);
+            },
+            Element::Heading {ref mut caption, ref mut content, ..} => {
+                let mut new_content = apply_func_drain!($func, content);
+                let mut new_caption = apply_func_drain!($func, caption);
+                caption.append(&mut new_caption);
+                content.append(&mut new_content);
+            },
+            Element::Formatted {ref mut content, ..} => {
+                let mut new_content = apply_func_drain!($func, content);
+                content.append(&mut new_content);
+            },
+            Element::Paragraph {ref mut content, ..} => {
+                let mut new_content = apply_func_drain!($func, content);
+                content.append(&mut new_content);
+            },
+            Element::Template {ref mut content, ..} => {
+                let mut new_content = apply_func_drain!($func, content);
+                content.append(&mut new_content);
+            },
+            Element::TemplateArgument {ref mut value, ..} => {
+                let mut new_value = apply_func_drain!($func, value);
+                value.append(&mut new_value);
+            },
+            Element::InternalReference {ref mut target, ref mut options, ref mut caption, ..} => {
+                let transform_option = |mut option: Vec<Element>| {apply_func_drain!($func, option)};
+                let mut new_target = apply_func_drain!($func, target);
+                let mut new_options = apply_func_drain!(transform_option, options);
+                let mut new_caption = apply_func_drain!($func, caption);
+                target.append(&mut new_target);
+                options.append(&mut new_options);
+                caption.append(&mut new_caption);
+            },
+            Element::ExternalReference {ref mut caption, ..} => {
+                let mut new_caption = apply_func_drain!($func, caption);
+                caption.append(&mut new_caption);
+            },
+            Element::ListItem {ref mut content, ..} => {
+                let mut new_content = apply_func_drain!($func, content);
+                content.append(&mut new_content);
+            },
+            Element::List {ref mut content, ..} => {
+                let mut new_content = apply_func_drain!($func, content);
+                content.append(&mut new_content);
+            },
+            Element::Table {ref mut caption, ref mut rows, ..} => {
+                let mut new_caption = apply_func_drain!($func, caption);
+                let mut new_rows = apply_func_drain!($func, rows);
+                rows.append(&mut new_rows);
+                caption.append(&mut new_caption);
+            },
+            Element::TableRow {ref mut cells, ..} => {
+                let mut new_cells = apply_func_drain!($func, cells);
+                cells.append(&mut new_cells);
+            },
+            Element::TableCell {ref mut content, ..} => {
+                let mut new_content = apply_func_drain!($func, content);
+                content.append(&mut new_content);
+            },
+            Element::HtmlTag {ref mut content, ..} => {
+                let mut new_content = apply_func_drain!($func, content);
+                content.append(&mut new_content);
+            },
+            _ => (),
+        };
+        $root
+    }}
+
+}
+
+
 /// Take a root element and recursively apply the transformation function, creating a new document tree.
 macro_rules! recurse_ast {
     ($func:ident, $root:expr, $path:expr) => {{
@@ -210,3 +286,91 @@ pub fn fold_headings_transformation(mut root: Element) -> Element {
     root
 }
 
+/// Moves list items of higher depth into separate sub-lists.
+/// If a list is started with a deeper item than one, this transformation still applies,
+/// although this should later be a linter error.
+pub fn fold_lists_transformation(mut root: Element) -> Element {
+
+    /// move list items which are deeper than the current level into new sub-lists.
+    fn move_deeper_items(root_content: &mut Vec<Element>) -> Vec<Element> {
+        // the currently least deep list item, every deeper list item will be moved to a new sublist
+        let mut lowest_depth = usize::MAX;
+        for child in &root_content[..] {
+            match child {
+                &Element::ListItem {depth, ..} => {
+                    if depth < lowest_depth {
+                        lowest_depth = depth;
+                    }
+                },
+                _ => (),
+            }
+        }
+
+        let mut result = vec![];
+        // create a new sublist when encountering a lower item
+        let mut create_sublist = true;
+
+        for child in root_content.drain(..) {
+            match child {
+                Element::ListItem {position, depth, kind, content} => {
+
+                    // clone the position and item kind to later use it as list position when creating a sublist.
+                    let position_copy = position.clone();
+
+                    let new = Element::ListItem {
+                        position: position,
+                        depth: depth,
+                        kind: kind,
+                        content: content,
+                    };
+                    if depth > lowest_depth {
+                        if create_sublist {
+                            // create a new sublist
+                            create_sublist = false;
+                            result.push(Element::ListItem {
+                                position: position_copy.clone(),
+                                depth: lowest_depth,
+                                kind: kind,
+                                content: vec![Element::List {
+                                    position: position_copy,
+                                    content: vec![],
+                                }],
+                            });
+                        }
+                        let result_len = result.len() - 1;
+                        match result.get_mut(result_len) {
+                            Some(&mut Element::ListItem {ref mut content, ..}) => {
+                                match content.get_mut(0) {
+                                    Some(&mut Element::List {ref mut content, ..}) => {
+                                        content.push(new);
+                                    },
+                                    _ => eprintln!("fold_lists: incomplete sublist!"),
+                                }
+                            },
+                            _ => (),
+                        };
+
+                    } else {
+                        result.push(new);
+                        create_sublist = true;
+                    }
+                },
+                _ => {
+                    result.push(child);
+                }
+            };
+        }
+        result
+    }
+
+    match root {
+        Element::List {ref mut content, ..} => {
+            let mut new_content = move_deeper_items(content);
+            content.append(&mut apply_func_drain!(fold_lists_transformation, new_content));
+        },
+        _ => {
+            root = recurse_ast_inplace!(fold_lists_transformation, root);
+        },
+    }
+    root
+}
