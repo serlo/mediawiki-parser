@@ -38,9 +38,9 @@ fn main() {
 
     let input: String;
     if use_stdin {
-        input = mediawiki_parser::read_stdin();
+        input = mediawiki_parser::util::read_stdin();
     } else if !input_file.is_empty() {
-        input = mediawiki_parser::read_file(&input_file);
+        input = mediawiki_parser::util::read_file(&input_file);
     } else {
         eprintln!("No input source specified!");
         process::exit(1);
