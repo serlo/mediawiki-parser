@@ -52,12 +52,12 @@ fn main() {
         Ok(r) => {
             serde_yaml::to_writer(io::stdout(), &r).unwrap();
             println!();
-        },
+        }
         Err(e) => {
             eprintln!("{}", e);
             serde_yaml::to_writer(io::stdout(), &e).unwrap();
             println!();
             process::exit(1);
-        },
+        }
     }
 }

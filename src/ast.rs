@@ -1,4 +1,4 @@
-#[cfg(feature="no_position")]
+#[cfg(feature = "no_position")]
 use serde::ser::{Serialize, Serializer, SerializeMap};
 
 /**
@@ -8,29 +8,34 @@ use serde::ser::{Serialize, Serializer, SerializeMap};
  * input document. After parsing, the document tree can be serialized by serde.
  */
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
-#[serde(tag="type", rename_all="lowercase", deny_unknown_fields)]
+#[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
 pub enum Element {
-    Document {position: Span, content: Vec<Element>},
-    Heading {position: Span, depth: usize, caption: Vec<Element>, content: Vec<Element>},
-    Text {position: Span, text: String},
-    Formatted {position: Span, markup: MarkupType, content: Vec<Element>},
-    Paragraph {position: Span, content: Vec<Element>},
-    Template {position: Span, name: String, content: Vec<Element>},
-    TemplateArgument {position: Span, name: String, value: Vec<Element>},
-    InternalReference {position: Span, target: Vec<Element>, options: Vec<Vec<Element>>, caption: Vec<Element>},
-    ExternalReference {position: Span, target: String, caption: Vec<Element>},
-    ListItem {position: Span, depth: usize, kind: ListItemKind, content: Vec<Element>},
-    List {position: Span, content: Vec<Element>},
-    Table {position: Span, attributes: Vec<TagAttribute>, caption: Vec<Element>, caption_attributes: Vec<TagAttribute>, rows: Vec<Element>},
-    TableRow {position: Span, attributes: Vec<TagAttribute>, cells: Vec<Element>},
-    TableCell {position: Span, header: bool, attributes: Vec<TagAttribute>, content: Vec<Element>},
-    Comment {position: Span, text: String},
-    HtmlTag {position: Span, name: String, attributes: Vec<TagAttribute>, content: Vec<Element>},
+    Document { position: Span, content: Vec<Element> },
+    Heading { position: Span, depth: usize, caption: Vec<Element>,
+        content: Vec<Element> },
+    Text { position: Span, text: String },
+    Formatted { position: Span, markup: MarkupType, content: Vec<Element> },
+    Paragraph { position: Span, content: Vec<Element> },
+    Template { position: Span, name: String, content: Vec<Element> },
+    TemplateArgument { position: Span, name: String, value: Vec<Element> },
+    InternalReference { position: Span, target: Vec<Element>,
+        options: Vec<Vec<Element>>, caption: Vec<Element> },
+    ExternalReference { position: Span, target: String, caption: Vec<Element> },
+    ListItem { position: Span, depth: usize, kind: ListItemKind, content: Vec<Element> },
+    List { position: Span, content: Vec<Element> },
+    Table { position: Span, attributes: Vec<TagAttribute>, caption: Vec<Element>,
+        caption_attributes: Vec<TagAttribute>, rows: Vec<Element> },
+    TableRow { position: Span, attributes: Vec<TagAttribute>, cells: Vec<Element> },
+    TableCell { position: Span, header: bool, attributes: Vec<TagAttribute>,
+        content: Vec<Element> },
+    Comment { position: Span, text: String },
+    HtmlTag { position: Span, name: String, attributes: Vec<TagAttribute>,
+        content: Vec<Element> },
 }
 
 /// Types of markup a section of text may have.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Copy)]
-#[serde(rename_all="lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum MarkupType {
     NoWiki,
     Bold,
@@ -46,7 +51,7 @@ pub enum MarkupType {
 
 /// Types of markup a section of text may have.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Copy)]
-#[serde(rename_all="lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum ListItemKind {
     Unordered,
     Definition,
@@ -62,7 +67,7 @@ pub enum ListItemKind {
  * a default Position ("{}") can be used where the actual representation is irrelevant.
  */
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all="lowercase", default="Position::any_position", deny_unknown_fields)]
+#[serde(rename_all = "lowercase", default = "Position::any_position", deny_unknown_fields)]
 pub struct Position {
     pub offset: usize,
     pub line: usize,
@@ -71,8 +76,8 @@ pub struct Position {
 
 /// Holds position information (start and end) for one element
 #[derive(Debug, Deserialize, PartialEq, Clone)]
-#[cfg_attr(not(feature="no_position"), derive(Serialize))]
-#[serde(rename_all="lowercase", default="Span::any", deny_unknown_fields)]
+#[cfg_attr(not(feature = "no_position"), derive(Serialize))]
+#[serde(rename_all = "lowercase", default = "Span::any", deny_unknown_fields)]
 pub struct Span {
     pub start: Position,
     pub end: Position
@@ -80,7 +85,7 @@ pub struct Span {
 
 /// Represents a pair of html tag attribute and value.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
-#[serde(rename_all="lowercase", deny_unknown_fields)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
 pub struct TagAttribute {
     pub position: Span,
     pub key: String,
@@ -116,22 +121,22 @@ impl Element {
     /// returns the source code position of an element.
     pub fn get_position(&self) -> &Span {
         match self {
-            &Element::Document {ref position, ..} => position,
-            &Element::Heading {ref position, ..} => position,
-            &Element::Text {ref position, ..} => position,
-            &Element::Formatted {ref position, ..} => position,
-            &Element::Paragraph {ref position, ..} => position,
-            &Element::Template {ref position, ..} => position,
-            &Element::TemplateArgument {ref position, ..} => position,
-            &Element::InternalReference {ref position, ..} => position,
-            &Element::ExternalReference {ref position, ..} => position,
-            &Element::List {ref position, ..} => position,
-            &Element::ListItem {ref position, ..} => position,
-            &Element::Table {ref position, ..} => position,
-            &Element::TableRow {ref position, ..} => position,
-            &Element::TableCell {ref position, ..} => position,
-            &Element::Comment {ref position, ..} => position,
-            &Element::HtmlTag {ref position, ..} => position,
+            &Element::Document { ref position, .. } => position,
+            &Element::Heading { ref position, .. } => position,
+            &Element::Text { ref position, .. } => position,
+            &Element::Formatted { ref position, .. } => position,
+            &Element::Paragraph { ref position, .. } => position,
+            &Element::Template { ref position, .. } => position,
+            &Element::TemplateArgument { ref position, .. } => position,
+            &Element::InternalReference { ref position, .. } => position,
+            &Element::ExternalReference { ref position, .. } => position,
+            &Element::List { ref position, .. } => position,
+            &Element::ListItem { ref position, .. } => position,
+            &Element::Table { ref position, .. } => position,
+            &Element::TableRow { ref position, .. } => position,
+            &Element::TableCell { ref position, .. } => position,
+            &Element::Comment { ref position, .. } => position,
+            &Element::HtmlTag { ref position, .. } => position,
         }
     }
 }
@@ -142,13 +147,13 @@ impl Position {
         for (i, sloc) in slocs.iter().enumerate() {
             if offset >= sloc.start && offset < sloc.end {
                 return Position {
-                    offset: offset,
+                    offset,
                     line: i + 1,
                     col: sloc.content[0..offset - sloc.start].chars().count() + 1,
-                }
+                };
             }
         }
-        Position {offset: offset, line: slocs.len() + 1, col: 0}
+        Position { offset, line: slocs.len() + 1, col: 0 }
     }
 
     pub fn any_position() -> Self {
@@ -178,7 +183,7 @@ impl Span {
 }
 
 
-#[cfg(feature="no_position")]
+#[cfg(feature = "no_position")]
 impl Serialize for Span {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer {
@@ -191,23 +196,23 @@ impl PartialEq for Position {
     fn eq(&self, other: &Position) -> bool {
         // comparing with "any" position is always true
         if (other.offset == 0 && other.line == 0 && other.col == 0) ||
-           (self.offset == 0 && self.line == 0 && self.col == 0) {
+            (self.offset == 0 && self.line == 0 && self.col == 0) {
             return true;
         }
 
         return self.offset == other.offset && self.line == other.line && self.col == other.col;
     }
 
-    fn ne(&self, other: &Position) -> bool {!self.eq(other)}
+    fn ne(&self, other: &Position) -> bool { !self.eq(other) }
 }
 
 
 impl TagAttribute {
     pub fn new(position: Span, key: String, value: String) -> Self {
         TagAttribute {
-            position: position,
-            key: key,
-            value: value,
+            position,
+            key,
+            value,
         }
     }
 }

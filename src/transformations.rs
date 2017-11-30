@@ -226,10 +226,8 @@ macro_rules! recurse_ast {
 
 /// Moves flat headings into a hierarchical structure based on their depth.
 pub fn fold_headings_transformation(mut root: Element) -> Result<Element, TransformationError> {
-
     // append following deeper headings than current_depth in content to the result list.
     let move_deeper_headings = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, TransformationError> {
-
         let mut result = vec![];
         let mut current_heading_index = 0;
 
@@ -238,30 +236,28 @@ pub fn fold_headings_transformation(mut root: Element) -> Result<Element, Transf
 
         for child in root_content.drain(..) {
             match child {
-                Element::Heading {position, depth, caption, content} => {
-
+                Element::Heading { position, depth, caption, content } => {
                     let new = Element::Heading {
-                        position: position,
-                        depth: depth,
-                        caption: caption,
-                        content: content,
+                        position,
+                        depth,
+                        caption,
+                        content,
                     };
 
                     if depth > current_depth {
                         match result.get_mut(current_heading_index) {
-                            Some(&mut Element::Heading {ref mut content, ..}) => {
+                            Some(&mut Element::Heading { ref mut content, .. }) => {
                                 content.push(new);
-                            },
+                            }
                             _ => (),
                         };
-
                     } else {
                         // pick a new reference heading if the new one is equally deep or more shallow
                         current_heading_index = result.len();
                         current_depth = depth;
                         result.push(new);
                     }
-                },
+                }
                 _ => {
                     if current_depth < usize::MAX {
                         let err = TransformationError {
@@ -280,14 +276,14 @@ pub fn fold_headings_transformation(mut root: Element) -> Result<Element, Transf
     };
 
     match root {
-        Element::Document {ref mut content, ..} => {
+        Element::Document { ref mut content, .. } => {
             let mut new_content = move_deeper_headings(content)?;
             content.append(&mut apply_func_drain!(fold_headings_transformation, new_content)?);
-        },
-        Element::Heading {ref mut content, ..} => {
+        }
+        Element::Heading { ref mut content, .. } => {
             let mut new_content = move_deeper_headings(content)?;
             content.append(&mut apply_func_drain!(fold_headings_transformation, new_content)?);
-        },
+        }
         _ => (),
     }
     Ok(root)
@@ -297,18 +293,17 @@ pub fn fold_headings_transformation(mut root: Element) -> Result<Element, Transf
 /// If a list is started with a deeper item than one, this transformation still applies,
 /// although this should later be a linter error.
 pub fn fold_lists_transformation(mut root: Element) -> Result<Element, TransformationError> {
-
     // move list items which are deeper than the current level into new sub-lists.
     let move_deeper_items = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, TransformationError> {
         // the currently least deep list item, every deeper list item will be moved to a new sublist
         let mut lowest_depth = usize::MAX;
         for child in &root_content[..] {
             match child {
-                &Element::ListItem {depth, ..} => {
+                &Element::ListItem { depth, .. } => {
                     if depth < lowest_depth {
                         lowest_depth = depth;
                     }
-                },
+                }
                 _ => (),
             }
         }
@@ -319,16 +314,15 @@ pub fn fold_lists_transformation(mut root: Element) -> Result<Element, Transform
 
         for child in root_content.drain(..) {
             match child {
-                Element::ListItem {position, depth, kind, content} => {
-
+                Element::ListItem { position, depth, kind, content } => {
                     // clone the position and item kind to later use it as list position when creating a sublist.
                     let position_copy = position.clone();
 
                     let new = Element::ListItem {
-                        position: position,
-                        depth: depth,
-                        kind: kind,
-                        content: content,
+                        position,
+                        depth,
+                        kind,
+                        content,
                     };
                     if depth > lowest_depth {
                         if create_sublist {
@@ -337,7 +331,7 @@ pub fn fold_lists_transformation(mut root: Element) -> Result<Element, Transform
                             result.push(Element::ListItem {
                                 position: position_copy.clone(),
                                 depth: lowest_depth,
-                                kind: kind,
+                                kind,
                                 content: vec![Element::List {
                                     position: position_copy,
                                     content: vec![],
@@ -346,22 +340,21 @@ pub fn fold_lists_transformation(mut root: Element) -> Result<Element, Transform
                         }
                         let result_len = result.len() - 1;
                         match result.get_mut(result_len) {
-                            Some(&mut Element::ListItem {ref mut content, ..}) => {
+                            Some(&mut Element::ListItem { ref mut content, .. }) => {
                                 match content.get_mut(0) {
-                                    Some(&mut Element::List {ref mut content, ..}) => {
+                                    Some(&mut Element::List { ref mut content, .. }) => {
                                         content.push(new);
-                                    },
+                                    }
                                     _ => eprintln!("fold_lists: incomplete sublist!"),
                                 }
-                            },
+                            }
                             _ => (),
                         };
-
                     } else {
                         result.push(new);
                         create_sublist = true;
                     }
-                },
+                }
                 _ => {
                     result.push(child);
                 }
@@ -371,13 +364,13 @@ pub fn fold_lists_transformation(mut root: Element) -> Result<Element, Transform
     };
 
     match root {
-        Element::List {ref mut content, ..} => {
+        Element::List { ref mut content, .. } => {
             let mut new_content = move_deeper_items(content)?;
             content.append(&mut apply_func_drain!(fold_lists_transformation, new_content)?);
-        },
+        }
         _ => {
             root = recurse_ast_inplace!(fold_lists_transformation, root)?;
-        },
+        }
     }
     Ok(root)
 }
