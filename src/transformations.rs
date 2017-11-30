@@ -2,6 +2,7 @@
 
 use std::usize;
 use ast::*;
+use error::TransformationError;
 
 /// Apply a given transformation function to a list of elements.
 macro_rules! apply_func {
@@ -19,9 +20,9 @@ macro_rules! apply_func_drain {
     ($func:ident, $content:expr) => {{
         let mut result = vec![];
         for child in $content.drain(..) {
-            result.push($func(child));
+            result.push($func(child)?);
         }
-        result
+        Ok(result)
     }}
 }
 
@@ -29,73 +30,73 @@ macro_rules! recurse_ast_inplace {
     ($func:ident, $root:expr) => {{
         match $root {
             Element::Document {ref mut content, ..} => {
-                let mut new_content = apply_func_drain!($func, content);
+                let mut new_content = apply_func_drain!($func, content)?;
                 content.append(&mut new_content);
             },
             Element::Heading {ref mut caption, ref mut content, ..} => {
-                let mut new_content = apply_func_drain!($func, content);
-                let mut new_caption = apply_func_drain!($func, caption);
+                let mut new_content = apply_func_drain!($func, content)?;
+                let mut new_caption = apply_func_drain!($func, caption)?;
                 caption.append(&mut new_caption);
                 content.append(&mut new_content);
             },
             Element::Formatted {ref mut content, ..} => {
-                let mut new_content = apply_func_drain!($func, content);
+                let mut new_content = apply_func_drain!($func, content)?;
                 content.append(&mut new_content);
             },
             Element::Paragraph {ref mut content, ..} => {
-                let mut new_content = apply_func_drain!($func, content);
+                let mut new_content = apply_func_drain!($func, content)?;
                 content.append(&mut new_content);
             },
             Element::Template {ref mut content, ..} => {
-                let mut new_content = apply_func_drain!($func, content);
+                let mut new_content = apply_func_drain!($func, content)?;
                 content.append(&mut new_content);
             },
             Element::TemplateArgument {ref mut value, ..} => {
-                let mut new_value = apply_func_drain!($func, value);
+                let mut new_value = apply_func_drain!($func, value)?;
                 value.append(&mut new_value);
             },
             Element::InternalReference {ref mut target, ref mut options, ref mut caption, ..} => {
                 let transform_option = |mut option: Vec<Element>| {apply_func_drain!($func, option)};
-                let mut new_target = apply_func_drain!($func, target);
-                let mut new_options = apply_func_drain!(transform_option, options);
-                let mut new_caption = apply_func_drain!($func, caption);
+                let mut new_target = apply_func_drain!($func, target)?;
+                let mut new_options = apply_func_drain!(transform_option, options)?;
+                let mut new_caption = apply_func_drain!($func, caption)?;
                 target.append(&mut new_target);
                 options.append(&mut new_options);
                 caption.append(&mut new_caption);
             },
             Element::ExternalReference {ref mut caption, ..} => {
-                let mut new_caption = apply_func_drain!($func, caption);
+                let mut new_caption = apply_func_drain!($func, caption)?;
                 caption.append(&mut new_caption);
             },
             Element::ListItem {ref mut content, ..} => {
-                let mut new_content = apply_func_drain!($func, content);
+                let mut new_content = apply_func_drain!($func, content)?;
                 content.append(&mut new_content);
             },
             Element::List {ref mut content, ..} => {
-                let mut new_content = apply_func_drain!($func, content);
+                let mut new_content = apply_func_drain!($func, content)?;
                 content.append(&mut new_content);
             },
             Element::Table {ref mut caption, ref mut rows, ..} => {
-                let mut new_caption = apply_func_drain!($func, caption);
-                let mut new_rows = apply_func_drain!($func, rows);
+                let mut new_caption = apply_func_drain!($func, caption)?;
+                let mut new_rows = apply_func_drain!($func, rows)?;
                 rows.append(&mut new_rows);
                 caption.append(&mut new_caption);
             },
             Element::TableRow {ref mut cells, ..} => {
-                let mut new_cells = apply_func_drain!($func, cells);
+                let mut new_cells = apply_func_drain!($func, cells)?;
                 cells.append(&mut new_cells);
             },
             Element::TableCell {ref mut content, ..} => {
-                let mut new_content = apply_func_drain!($func, content);
+                let mut new_content = apply_func_drain!($func, content)?;
                 content.append(&mut new_content);
             },
             Element::HtmlTag {ref mut content, ..} => {
-                let mut new_content = apply_func_drain!($func, content);
+                let mut new_content = apply_func_drain!($func, content)?;
                 content.append(&mut new_content);
             },
             _ => (),
         };
-        $root
+        Ok($root)
     }}
 
 }
@@ -224,10 +225,10 @@ macro_rules! recurse_ast {
 }
 
 /// Moves flat headings into a hierarchical structure based on their depth.
-pub fn fold_headings_transformation(mut root: Element) -> Element {
+pub fn fold_headings_transformation(mut root: Element) -> Result<Element, TransformationError> {
 
-    /// append following deeper headings than current_depth in content to the result list.
-    fn move_deeper_headings(root_content: &mut Vec<Element>) -> Vec<Element> {
+    // append following deeper headings than current_depth in content to the result list.
+    let move_deeper_headings = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, TransformationError> {
 
         let mut result = vec![];
         let mut current_heading_index = 0;
@@ -262,37 +263,43 @@ pub fn fold_headings_transformation(mut root: Element) -> Element {
                     }
                 },
                 _ => {
-                    result.push(child);
                     if current_depth < usize::MAX {
-                        eprintln!("fold_headings: a non-heading element was found after a heading. This should not happen.");
+                        let err = TransformationError {
+                            cause: String::from("a non-heading element was found after a heading. This should not happen."),
+                            position: child.get_position().clone(),
+                            transformation_name: String::from("fold_headings_transformation"),
+                            tree: child.clone()
+                        };
+                        return Err(err);
                     }
+                    result.push(child);
                 }
             };
         }
-        result
-    }
+        Ok(result)
+    };
 
     match root {
         Element::Document {ref mut content, ..} => {
-            let mut new_content = move_deeper_headings(content);
-            content.append(&mut apply_func_drain!(fold_headings_transformation, new_content));
+            let mut new_content = move_deeper_headings(content)?;
+            content.append(&mut apply_func_drain!(fold_headings_transformation, new_content)?);
         },
         Element::Heading {ref mut content, ..} => {
-            let mut new_content = move_deeper_headings(content);
-            content.append(&mut apply_func_drain!(fold_headings_transformation, new_content));
+            let mut new_content = move_deeper_headings(content)?;
+            content.append(&mut apply_func_drain!(fold_headings_transformation, new_content)?);
         },
         _ => (),
     }
-    root
+    Ok(root)
 }
 
 /// Moves list items of higher depth into separate sub-lists.
 /// If a list is started with a deeper item than one, this transformation still applies,
 /// although this should later be a linter error.
-pub fn fold_lists_transformation(mut root: Element) -> Element {
+pub fn fold_lists_transformation(mut root: Element) -> Result<Element, TransformationError> {
 
-    /// move list items which are deeper than the current level into new sub-lists.
-    fn move_deeper_items(root_content: &mut Vec<Element>) -> Vec<Element> {
+    // move list items which are deeper than the current level into new sub-lists.
+    let move_deeper_items = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, TransformationError> {
         // the currently least deep list item, every deeper list item will be moved to a new sublist
         let mut lowest_depth = usize::MAX;
         for child in &root_content[..] {
@@ -360,18 +367,18 @@ pub fn fold_lists_transformation(mut root: Element) -> Element {
                 }
             };
         }
-        result
-    }
+        Ok(result)
+    };
 
     match root {
         Element::List {ref mut content, ..} => {
-            let mut new_content = move_deeper_items(content);
-            content.append(&mut apply_func_drain!(fold_lists_transformation, new_content));
+            let mut new_content = move_deeper_items(content)?;
+            content.append(&mut apply_func_drain!(fold_lists_transformation, new_content)?);
         },
         _ => {
-            root = recurse_ast_inplace!(fold_lists_transformation, root);
+            root = recurse_ast_inplace!(fold_lists_transformation, root)?;
         },
     }
-    root
+    Ok(root)
 }
 

@@ -34,7 +34,7 @@ pub struct TransformationError {
 impl ParseError {
     pub fn from(err: &grammar::ParseError, input: &str) -> Self {
 
-        let source_lines = ast::get_source_lines(&input);
+        let source_lines = util::get_source_lines(&input);
         let line_count = source_lines.len();
 
         let line = if err.line <= line_count {

@@ -3,6 +3,8 @@ use std::fs;
 use std::io::prelude::*;
 use std::io;
 
+use ast;
+
 /// The terminal width.
 const TERMINAL_WIDTH: usize = 80;
 
@@ -15,6 +17,7 @@ fn read_from_reader(reader: &mut io::Read) -> String {
         .expect("Could not read fron file!");
     content
 }
+
 
 /// Read a file from disk and store to string.
 pub fn read_file(filename: &str) -> String {
@@ -29,6 +32,27 @@ pub fn read_stdin() -> String {
     read_from_reader(&mut io::stdin())
 }
 
+
+/// Compiles a list of start and end positions of the input source lines.
+///
+/// This representation is used to calculate line and column position from the input offset.
+pub fn get_source_lines<'input>(source: &'input str) -> Vec<ast::SourceLine> {
+
+    let mut pos = 0;
+    let mut result = Vec::new();
+
+    for line in source.split("\n") {
+        result.push( ast::SourceLine {
+            start: pos,
+            content: line,
+            end: pos + line.len() + 1,
+        });
+        pos += line.len() + 1;
+    }
+    result
+}
+
+
 /// Tests if a string is entirely whitespace
 pub fn is_whitespace(input: &str) -> bool {
     for c in input.chars() {
@@ -38,6 +62,7 @@ pub fn is_whitespace(input: &str) -> bool {
     }
     true
 }
+
 
 /// Shorten a string to fit into TERMINAL_WIDTH.
 pub fn shorten_str(input: &str) -> String {
@@ -65,5 +90,4 @@ pub fn shorten_str(input: &str) -> String {
     }
     result
 }
-
 

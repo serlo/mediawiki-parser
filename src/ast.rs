@@ -95,7 +95,7 @@ pub struct SourceLine<'input> {
     pub end: usize,
 }
 
-/// Match an HTML tag name to it's markup type
+/// Match an HTML tag name to it's markup type.
 pub fn get_markup_by_tag_name(tag: &str) -> MarkupType {
     match &tag.to_lowercase()[..] {
         "math" => MarkupType::Math,
@@ -111,25 +111,31 @@ pub fn get_markup_by_tag_name(tag: &str) -> MarkupType {
     }
 }
 
-/** Compiles a list of start and end positions of the input source lines.
- *
- * This representation is used to calculate line and column position from the input offset.
- */
-pub fn get_source_lines<'input>(source: &'input str) -> Vec<SourceLine> {
 
-    let mut pos = 0;
-    let mut result = Vec::new();
-
-    for line in source.split("\n") {
-        result.push( SourceLine {
-            start: pos,
-            content: line,
-            end: pos + line.len() + 1,
-        });
-        pos += line.len() + 1;
+impl Element {
+    /// returns the source code position of an element.
+    pub fn get_position(&self) -> &Span {
+        match self {
+            &Element::Document {ref position, ..} => position,
+            &Element::Heading {ref position, ..} => position,
+            &Element::Text {ref position, ..} => position,
+            &Element::Formatted {ref position, ..} => position,
+            &Element::Paragraph {ref position, ..} => position,
+            &Element::Template {ref position, ..} => position,
+            &Element::TemplateArgument {ref position, ..} => position,
+            &Element::InternalReference {ref position, ..} => position,
+            &Element::ExternalReference {ref position, ..} => position,
+            &Element::List {ref position, ..} => position,
+            &Element::ListItem {ref position, ..} => position,
+            &Element::Table {ref position, ..} => position,
+            &Element::TableRow {ref position, ..} => position,
+            &Element::TableCell {ref position, ..} => position,
+            &Element::Comment {ref position, ..} => position,
+            &Element::HtmlTag {ref position, ..} => position,
+        }
     }
-    result
 }
+
 
 impl Position {
     pub fn new(offset: usize, slocs: &Vec<SourceLine>) -> Self {
@@ -154,6 +160,7 @@ impl Position {
     }
 }
 
+
 impl Span {
     pub fn any() -> Self {
         Span {
@@ -169,6 +176,7 @@ impl Span {
         }
     }
 }
+
 
 #[cfg(feature="no_position")]
 impl Serialize for Span {
@@ -192,6 +200,7 @@ impl PartialEq for Position {
 
     fn ne(&self, other: &Position) -> bool {!self.eq(other)}
 }
+
 
 impl TagAttribute {
     pub fn new(position: Span, key: String, value: String) -> Self {
