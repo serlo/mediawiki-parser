@@ -36,6 +36,7 @@ pub fn parse_document(input: &str) -> Result<ast::Element, error::MWError> {
 
     result = transformations::fold_headings_transformation(result)?;
     result = transformations::fold_lists_transformation(result)?;
+    result = transformations::whitespace_paragraphs_to_empty(result)?;
     Ok(result)
 }
 
