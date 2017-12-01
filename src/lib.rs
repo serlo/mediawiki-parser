@@ -32,6 +32,8 @@ fn apply_general_transformations(mut root: ast::Element) -> transformations::TRe
     root = general_transformations::fold_headings_transformation(root)?;
     root = general_transformations::fold_lists_transformation(root)?;
     root = general_transformations::whitespace_paragraphs_to_empty(root)?;
+    root = general_transformations::collapse_paragraphs(root)?;
+    root = general_transformations::collapse_consecutive_text(root)?;
     Ok(root)
 }
 

@@ -121,8 +121,6 @@ pub fn fold_lists_transformation(mut root: Element) -> TResult {
                                 }],
                             });
                         }
-                        let result_len = result.len() - 1;
-
                         // this error is returned if the sublist to append to was not found
                         let build_found_error = | origin: &Element | {
                             TransformationError {
@@ -133,7 +131,7 @@ pub fn fold_lists_transformation(mut root: Element) -> TResult {
                             }
                         };
 
-                        match result.get_mut(result_len) {
+                        match result.last_mut() {
                             Some(&mut Element::ListItem { ref mut content, .. }) => {
                                 match content.get_mut(0) {
                                     Some(&mut Element::List { ref mut content, .. }) => {
@@ -199,7 +197,70 @@ pub fn whitespace_paragraphs_to_empty(mut root: Element) -> TResult {
     Ok(root)
 }
 
-// Reduce consecutive empty paragraphs into one.
-//pub fn collapse_empty_paragraphs(mut root: Element) -> Result<Element, TransformationError> {
-//    match root
-//}
+/// Reduce consecutive paragraphs into one, if not separated by a blank paragraph.
+pub fn collapse_paragraphs(mut root: Element) -> Result<Element, TransformationError> {
+    fn squash_empty_paragraphs(trans: &TFuncInplace, root_content: &mut Vec<Element>) -> TListResult {
+        let mut result = vec![];
+        let mut last_empty = false;
+
+        for mut child in root_content.drain(..) {
+            match &mut child {
+                &mut Element::Paragraph{ ref mut content, .. } => {
+                    if content.is_empty() {
+                        last_empty = true;
+                        continue;
+                    }
+                    // if the last paragraph was not empty, append to it.
+                    if !last_empty {
+                        let current_content = content;
+                        match result.last_mut() {
+                            Some(&mut Element::Paragraph { ref mut content, ..}) => {
+                                content.append(current_content);
+                                continue;
+                            },
+                            _ => (),
+                        }
+                    }
+                },
+                _ => (),
+            };
+            result.push(child);
+            last_empty = false;
+        }
+        result = apply_func_drain(trans, &mut result)?;
+        Ok(result)
+    }
+    root = recurse_inplace_template(&collapse_paragraphs, root, &squash_empty_paragraphs)?;
+    Ok(root)
+}
+
+
+/// Collapse consecutive text tags into one.
+pub fn collapse_consecutive_text(mut root: Element) -> Result<Element, TransformationError> {
+    fn squash_text(trans: &TFuncInplace, root_content: &mut Vec<Element>) -> TListResult {
+        let mut result = vec![];
+
+        for mut child in root_content.drain(..) {
+            match &mut child {
+                &mut Element::Text { ref mut text, .. } => {
+
+                    let new_text = text;
+                    match result.last_mut() {
+                        Some(&mut Element::Text { ref mut text, ..}) => {
+                            text.push_str(" ");
+                            text.push_str(&new_text);
+                            continue;
+                        },
+                        _ => (),
+                    }
+                },
+                _ => (),
+            };
+            result.push(child);
+        }
+        result = apply_func_drain(trans, &mut result)?;
+        Ok(result)
+    }
+    root = recurse_inplace_template(&collapse_consecutive_text, root, &squash_text)?;
+    Ok(root)
+}
