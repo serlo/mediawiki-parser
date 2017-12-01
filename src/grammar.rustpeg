@@ -163,7 +163,7 @@ TableRow -> Element
 
 TableCell -> Element
     = posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableElementAttributes 
-      "|" !("|") {a})? Space* content:TableParagraph+ posr:#position {
+      "|" !("|") {a})? Space* content:TableParagraph* posr:#position {
 
         Element::TableCell {
             position: Span::new(posl, posr, source_lines),

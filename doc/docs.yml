@@ -1241,7 +1241,7 @@
   - case: table inline cells
     input: |
         {|
-        | attributevalue = "test" | test || cell 2 || attribute=3 | cell 3
+        | attributevalue = "test" | test || cell 2 || || attribute=3 | cell 3
         |}
     out:
       type: document
@@ -1282,6 +1282,11 @@
                         - type: text
                           position: {}
                           text: "cell 2 "
+                - type: tablecell
+                  position: {}
+                  attributes: []
+                  header: false
+                  content: []
                 - type: tablecell
                   position: {}
                   attributes: 
