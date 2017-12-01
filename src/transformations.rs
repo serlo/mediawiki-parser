@@ -2,7 +2,7 @@
 
 use std::usize;
 use ast::*;
-use error::TransformationError;
+use error::*;
 
 /// Apply a given transformation function to a list of elements.
 macro_rules! apply_func {
@@ -225,10 +225,10 @@ macro_rules! recurse_ast {
 }
 
 /// Moves flat headings into a hierarchical structure based on their depth.
-pub fn fold_headings_transformation(mut root: Element) -> Result<Element, TransformationError> {
+pub fn fold_headings_transformation(mut root: Element) -> Result<Element, MWError> {
 
     // append following deeper headings than current_depth in content to the result list.
-    let move_deeper_headings = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, TransformationError> {
+    let move_deeper_headings = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, MWError> {
 
         let mut result = vec![];
         let mut current_heading_index = 0;
@@ -269,7 +269,7 @@ pub fn fold_headings_transformation(mut root: Element) -> Result<Element, Transf
                             transformation_name: String::from("fold_headings_transformation"),
                             tree: child.clone()
                         };
-                        return Err(err);
+                        return Err(MWError::TransformationError(err));
                     }
                     result.push(child);
                 }
@@ -295,10 +295,10 @@ pub fn fold_headings_transformation(mut root: Element) -> Result<Element, Transf
 /// Moves list items of higher depth into separate sub-lists.
 /// If a list is started with a deeper item than one, this transformation still applies,
 /// although this should later be a linter error.
-pub fn fold_lists_transformation(mut root: Element) -> Result<Element, TransformationError> {
+pub fn fold_lists_transformation(mut root: Element) -> Result<Element, MWError> {
 
     // move list items which are deeper than the current level into new sub-lists.
-    let move_deeper_items = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, TransformationError> {
+    let move_deeper_items = |root_content: &mut Vec<Element>| -> Result<Vec<Element>, MWError> {
 
         // the currently least deep list item, every deeper list item will be moved to a new sublist
         let mut lowest_depth = usize::MAX;
@@ -347,12 +347,13 @@ pub fn fold_lists_transformation(mut root: Element) -> Result<Element, Transform
 
                         // this error is returned if the sublist to append to was not found
                         let build_found_error = | origin: &Element | {
-                            TransformationError {
+                            let err = TransformationError {
                                 cause: String::from("sublist was not instantiated properly."),
                                 transformation_name: String::from("fold_lists_transformation"),
                                 position: origin.get_position().clone(),
                                 tree: origin.clone(),
-                            }
+                            };
+                            MWError::TransformationError(err)
                         };
 
                         match result.get_mut(result_len) {

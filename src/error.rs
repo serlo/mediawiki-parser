@@ -8,7 +8,13 @@ use grammar;
 /// The number of lines to display as error context.
 const ERROR_CONTEXT_LINES: usize = 5;
 
-
+/// Generic error type for high-level errors of this libaray.
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all="lowercase", deny_unknown_fields)]
+pub enum MWError {
+    ParseError(ParseError),
+    TransformationError(TransformationError),
+}
 
 /// The parser error with source code context.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -136,5 +142,23 @@ impl fmt::Display for TransformationError {
             self.position.end.line, self.position.end.col, self.cause
         );
         writeln!(f, "{}", message.red().bold())
+    }
+}
+
+impl error::Error for MWError {
+    fn description(&self) -> &str {
+        match self {
+            &MWError::ParseError(ref e) => e.description(),
+            &MWError::TransformationError(ref e) => e.description(),
+        }
+    }
+}
+
+impl fmt::Display for MWError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match self {
+            &MWError::ParseError(ref e) => write!(f, "{}", e),
+            &MWError::TransformationError(ref e) => write!(f, "{}", e),
+        }
     }
 }

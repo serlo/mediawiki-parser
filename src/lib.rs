@@ -26,18 +26,16 @@ mod grammar;
 
 
 /// Parse a mediawiki source document and build a syntax tree.
-pub fn parse_document(input: &str) -> Result<ast::Element, error::ParseError> {
+pub fn parse_document(input: &str) -> Result<ast::Element, error::MWError> {
     let source_lines = util::get_source_lines(&input);
 
     let mut result = match grammar::Document(&input, &source_lines) {
-        Err(e) => Err(error::ParseError::from(&e, input)),
+        Err(e) => Err(error::MWError::ParseError(error::ParseError::from(&e, input))),
         Ok(r) => Ok(r)
     }?;
 
-    result = transformations::fold_headings_transformation(result)
-        .expect("transformation error");
-    result = transformations::fold_lists_transformation(result)
-        .expect("transformation error");
+    result = transformations::fold_headings_transformation(result)?;
+    result = transformations::fold_lists_transformation(result)?;
     Ok(result)
 }
 
