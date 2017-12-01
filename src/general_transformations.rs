@@ -205,7 +205,7 @@ pub fn collapse_paragraphs(mut root: Element) -> Result<Element, TransformationE
 
         for mut child in root_content.drain(..) {
             match &mut child {
-                &mut Element::Paragraph{ ref mut content, .. } => {
+                &mut Element::Paragraph{ ref mut content, ref mut position } => {
                     if content.is_empty() {
                         last_empty = true;
                         continue;
@@ -213,9 +213,11 @@ pub fn collapse_paragraphs(mut root: Element) -> Result<Element, TransformationE
                     // if the last paragraph was not empty, append to it.
                     if !last_empty {
                         let current_content = content;
+                        let current_position = position;
                         match result.last_mut() {
-                            Some(&mut Element::Paragraph { ref mut content, ..}) => {
+                            Some(&mut Element::Paragraph { ref mut content, ref mut position}) => {
                                 content.append(current_content);
+                                position.end = current_position.end.clone();
                                 continue;
                             },
                             _ => (),
@@ -242,13 +244,15 @@ pub fn collapse_consecutive_text(mut root: Element) -> Result<Element, Transform
 
         for mut child in root_content.drain(..) {
             match &mut child {
-                &mut Element::Text { ref mut text, .. } => {
+                &mut Element::Text { ref mut text, ref mut position } => {
 
                     let new_text = text;
+                    let new_position = position;
                     match result.last_mut() {
-                        Some(&mut Element::Text { ref mut text, ..}) => {
+                        Some(&mut Element::Text { ref mut text, ref mut position}) => {
                             text.push_str(" ");
                             text.push_str(&new_text);
+                            position.end = new_position.end.clone();
                             continue;
                         },
                         _ => (),
