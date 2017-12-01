@@ -8,7 +8,7 @@ use error::*;
 pub fn fold_headings_transformation(mut root: Element) -> TResult {
 
     // append following deeper headings than current_depth in content to the result list.
-    let move_deeper_headings = |root_content: &mut Vec<Element>| -> TListResult {
+    fn move_deeper_headings(trans: &TFuncInplace, root_content: &mut Vec<Element>) -> TListResult {
 
         let mut result = vec![];
         let mut current_heading_index = 0;
@@ -54,20 +54,12 @@ pub fn fold_headings_transformation(mut root: Element) -> TResult {
                 }
             };
         }
+
+        // recurse transformation
+        result = apply_func_drain(trans, &mut result)?;
         Ok(result)
     };
-
-    match root {
-        Element::Document { ref mut content, .. } => {
-            let mut new_content = move_deeper_headings(content)?;
-            content.append(&mut apply_func_drain(&fold_headings_transformation, &mut new_content)?);
-        }
-        Element::Heading { ref mut content, .. } => {
-            let mut new_content = move_deeper_headings(content)?;
-            content.append(&mut apply_func_drain(&fold_headings_transformation, &mut new_content)?);
-        }
-        _ => (),
-    }
+    root = recurse_inplace_template(&fold_headings_transformation, root, &move_deeper_headings)?;
     Ok(root)
 }
 
@@ -77,7 +69,7 @@ pub fn fold_headings_transformation(mut root: Element) -> TResult {
 pub fn fold_lists_transformation(mut root: Element) -> TResult {
 
     // move list items which are deeper than the current level into new sub-lists.
-    let move_deeper_items = |root_content: &mut Vec<Element>| -> TListResult {
+    fn move_deeper_items(trans: &TFuncInplace, root_content: &mut Vec<Element>) -> TListResult {
 
         // the currently least deep list item, every deeper list item will be moved to a new sublist
         let mut lowest_depth = usize::MAX;
@@ -88,7 +80,14 @@ pub fn fold_lists_transformation(mut root: Element) -> TResult {
                         lowest_depth = depth;
                     }
                 }
-                _ => (),
+                _ => {
+                    return Err(TransformationError {
+                        cause: String::from("A list should not contain non-listitems."),
+                        transformation_name: String::from("fold_lists_transformation"),
+                        position: child.get_position().clone(),
+                        tree: child.clone(),
+                    })
+                },
             }
         }
 
@@ -155,14 +154,14 @@ pub fn fold_lists_transformation(mut root: Element) -> TResult {
                 }
             };
         }
+        result = apply_func_drain(trans, &mut result)?;
         Ok(result)
     };
 
     match root {
-        Element::List { ref mut content, .. } => {
-            let mut new_content = move_deeper_items(content)?;
-            content.append(&mut apply_func_drain(&fold_lists_transformation, &mut new_content)?);
-        }
+        Element::List { .. } => {
+            root = recurse_inplace_template(&fold_lists_transformation, root, &move_deeper_items)?;
+        },
         _ => {
             root = recurse_ast_inplace(&fold_lists_transformation, root)?;
         }
