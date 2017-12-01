@@ -22,22 +22,32 @@ pub mod util;
 #[macro_use]
 pub mod transformations;
 
+mod general_transformations;
+
 mod grammar;
 
+
+fn apply_general_transformations(mut root: ast::Element) -> transformations::TResult {
+
+    root = general_transformations::fold_headings_transformation(root)?;
+    root = general_transformations::fold_lists_transformation(root)?;
+    root = general_transformations::whitespace_paragraphs_to_empty(root)?;
+    Ok(root)
+}
 
 /// Parse a mediawiki source document and build a syntax tree.
 pub fn parse_document(input: &str) -> Result<ast::Element, error::MWError> {
     let source_lines = util::get_source_lines(&input);
 
-    let mut result = match grammar::Document(&input, &source_lines) {
+    let result = match grammar::Document(&input, &source_lines) {
         Err(e) => Err(error::MWError::ParseError(error::ParseError::from(&e, input))),
         Ok(r) => Ok(r)
     }?;
 
-    result = transformations::fold_headings_transformation(result)?;
-    result = transformations::fold_lists_transformation(result)?;
-    result = transformations::whitespace_paragraphs_to_empty(result)?;
-    Ok(result)
+    match apply_general_transformations(result) {
+        Err(e) => Err(error::MWError::TransformationError(e)),
+        Ok(r) => Ok(r)
+    }
 }
 
 
