@@ -161,7 +161,7 @@ pub fn fold_lists_transformation(mut root: Element) -> TResult {
             root = recurse_inplace_template(&fold_lists_transformation, root, &move_deeper_items)?;
         },
         _ => {
-            root = recurse_ast_inplace(&fold_lists_transformation, root)?;
+            root = recurse_inplace(&fold_lists_transformation, root)?;
         }
     }
     Ok(root)
@@ -191,7 +191,7 @@ pub fn whitespace_paragraphs_to_empty(mut root: Element) -> TResult {
             }
         },
         _ => {
-            root = recurse_ast_inplace(&whitespace_paragraphs_to_empty, root)?;
+            root = recurse_inplace(&whitespace_paragraphs_to_empty, root)?;
         }
     }
     Ok(root)

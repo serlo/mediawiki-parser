@@ -36,7 +36,7 @@ pub fn apply_func_drain(func: &TFuncInplace, content: &mut Vec<Element>) -> TLis
 }
 
 /// Recursively apply a transformation function `func` to all children of element `root`.
-pub fn recurse_ast_inplace(func: &TFuncInplace, root: Element) -> TResult {
+pub fn recurse_inplace(func: &TFuncInplace, root: Element) -> TResult {
     recurse_inplace_template(func, root, &apply_func_drain)
 }
 
