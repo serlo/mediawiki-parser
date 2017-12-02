@@ -63,9 +63,11 @@ pub fn recurse_inplace_template(func: &TFuncInplace, mut root: Element,
             let mut new_content = content_func(func, content)?;
             content.append(&mut new_content);
         },
-        Element::Template {ref mut content, ..} => {
+        Element::Template {ref mut content, ref mut name, ..} => {
             let mut new_content = content_func(func, content)?;
+            let mut new_name = content_func(func, name)?;
             content.append(&mut new_content);
+            name.append(&mut new_name);
         },
         Element::TemplateArgument {ref mut value, ..} => {
             let mut new_value = content_func(func, value)?;
@@ -166,7 +168,7 @@ pub fn recurse_clone_template(func: &TFunc, root: &Element, path: &Vec<&Element>
             Element::Template {ref position, ref name, ref content} => {
                 Element::Template {
                     position: position.clone(),
-                    name: name.clone(),
+                    name: content_func(func, name, &path)?,
                     content: content_func(func, content, &path)?,
                 }
             },

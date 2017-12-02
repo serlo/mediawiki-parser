@@ -59,14 +59,19 @@ Paragraph -> Element
 /*
  *Template parsing
  */
+TemplateFormatted -> Element
+    = FormattedTextTemplate<Text<TemplateContentChar>>
+
 TemplateParagraph -> Element
-    = ParagraphTemplate<FormattedTextTemplate<Text<TemplateContentChar>>>
+    = ParagraphTemplate<TemplateFormatted>
 
 /** 
- * mediawiki templates have a name followed by a sequence of arguments 
+ * mediawiki templates have a name followed by a sequence of arguments.
+ * template name and arguments may also be separated with colon, but every supsequent
+ * argument can only be separated by pipes.
  */
 Template -> Element 
-    = posl:#position "{{" Space* n:TemplateName (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" posr:#position {
+    = posl:#position "{{" Space* n:TemplateFormatted* (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" posr:#position {
         
         Element::Template {
             position: Span::new(posl, posr, source_lines),
@@ -390,8 +395,6 @@ CodeText -> Element
     = #quiet<Text<(!(TagClose<"code"i>) $(.))>> / #expected("any text")
 PreformattedText -> Element
     = #quiet<Text<(!(TagClose<"pre"i>) $(.))>> / #expected ("any text")
-TemplateName -> String
-    = #quiet<CharString<TemplateNameChar>> / #expected("template name")
 Url -> String
     = #quiet<CharString<(!(Space / "]") c:$. {c})>> / #expected("a word of text (e.g. url)")
 TagSafeLiteral -> String
@@ -410,7 +413,6 @@ Char -> &'input str = !(Newline / Emph / "{" / "}" / AnyTag / AnyOpen / AnyClose
 HeadingChar -> &'input str = !(Newline / Emph / "{" / "}" /AnyTag / AnyOpen / AnyClose / HtmlComment / "[" / "]" / "=") c:$. {c}
 TableChar -> &'input str = !(Newline / Emph / "{" / "}" / "!!" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
 TemplateContentChar -> &'input str = !(Newline / Emph / "{" / "}" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
-TemplateNameChar -> &'input str = !(Newline / "{{" / "}}" / "|") c:$. {c}
 TemplateAttributeNameChar -> &'input str = $([A-Za-z0-9 ])
 
 // a paragraph may not start with these symbols as they indicate other elements

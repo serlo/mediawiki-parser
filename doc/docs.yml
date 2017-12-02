@@ -193,7 +193,10 @@
               text: "Heading "
             - type: template
               position: {}
-              name: Anker
+              name:
+                - type: text
+                  position: {}
+                  text: Anker
               content:
                 - type: templateargument
                   position: {}
@@ -798,7 +801,10 @@
           content:
             - type: template
               position: {}
-              name: name
+              name:
+                - type: text
+                  position: {}
+                  text: name
               content: []
 
 
@@ -819,7 +825,10 @@
           content:
             - type: template
               position: {}
-              name: templatename
+              name:
+                - type: text
+                  position: {}
+                  text: templatename
               content:
                 - type: templateargument
                   position: {}
@@ -864,7 +873,10 @@
           content:
             - type: template
               position: {}
-              name: name
+              name:
+                - type: text
+                  position: {}
+                  text: name
               content:
                 - type: templateargument
                   position: {}
@@ -889,7 +901,10 @@
           content:
             - type: template
               position: {}
-              name: templatename
+              name:
+                - type: text
+                  position: {}
+                  text: templatename
               content:
                 - type: templateargument
                   position: {}
@@ -934,7 +949,10 @@
           content:
             - type: template
               position: {}
-              name: "template1"
+              name:
+                - type: text
+                  position: {}
+                  text: template1
               content:
                 - type: templateargument
                   position: {}
@@ -966,6 +984,41 @@
                         - type: text
                           position: {}
                           text: "item4"
+
+# Nested templates
+  - case: nested templates
+    input: "{{Thankyou in {{preferred language}}|signature=Me}}"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: template
+              position: {}
+              name:
+                - type: text
+                  position: {}
+                  text: "Thankyou in "
+                - type: template
+                  position: {}
+                  name: 
+                    - type: text
+                      position: {}
+                      text: "preferred language"
+                  content: []
+              content:
+                - type: templateargument
+                  position: {}
+                  name: signature
+                  value:
+                    - type: paragraph
+                      position: {}
+                      content:
+                        - type: text
+                          position: {}
+                          text: Me
 
 # A simple internal reference
   - case: simple internal ref

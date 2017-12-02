@@ -16,7 +16,7 @@ pub enum Element {
     Text { position: Span, text: String },
     Formatted { position: Span, markup: MarkupType, content: Vec<Element> },
     Paragraph { position: Span, content: Vec<Element> },
-    Template { position: Span, name: String, content: Vec<Element> },
+    Template { position: Span, name: Vec<Element>, content: Vec<Element> },
     TemplateArgument { position: Span, name: String, value: Vec<Element> },
     InternalReference { position: Span, target: Vec<Element>,
         options: Vec<Vec<Element>>, caption: Vec<Element> },
