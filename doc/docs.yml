@@ -44,12 +44,9 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: text
           position: {}
-          content:
-            - type: text
-              position: {}
-              text: this is a äüöß == test. "" ʕ•ᴥ•ʔ
+          text: this is a äüöß == test. "" ʕ•ᴥ•ʔ
               
 # A single paragraph with some special characters.
   - case: special chars in inline context
@@ -58,12 +55,9 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: text
           position: {}
-          content:
-            - type: text
-              position: {}
-              text: "hey!!! this is a test! <3 |x|"
+          text: "hey!!! this is a test! <3 |x|"
 
 # A multiline paragraph.
   - case: multiline paragraph
@@ -94,8 +88,8 @@
               position: {}
               text: This is the next one.
               
-# two simple headings.
-  - case: two simple headings
+# some simple headings.
+  - case: some simple headings
     input: |
       == Heading 1 ==
       === Heading 2
@@ -202,12 +196,9 @@
                   position: {}
                   name: ""
                   value:
-                    - type: paragraph
+                    - type: text
                       position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: foo
+                      text: foo
             - type: text
               position: {}
               text: " "
@@ -221,21 +212,38 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: formatted
           position: {}
+          markup: italic
           content:
-            - type: formatted
+            - type: text
               position: {}
-              markup: italic
-              content:
-                - type: text
-                  position: {}
-                  text: this is italic
+              text: this is italic
 
 # A paragraph with bold words contains a plain formatted element
 # wrapped by '''bold''' formatting.
   - case: single bold text
     input: "'''this is bold'''"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: formatted
+          position: {}
+          markup: bold
+          content: 
+            - type: text
+              position: {}
+              text: this is bold
+
+# Multiline bold markup
+  - case: multiline bold markup
+    input: |
+      '''
+      bla
+      ''italic''
+      bla2
+      '''
     out:
       type: document
       position: {}
@@ -246,10 +254,23 @@
             - type: formatted
               position: {}
               markup: bold
-              content: 
-                - type: text
+              content:
+                - type: paragraph
                   position: {}
-                  text: this is bold
+                  content:
+                    - type: text
+                      position: {}
+                      text: bla
+                    - type: formatted
+                      position: {}
+                      markup: italic
+                      content:
+                        - type: text
+                          position: {}
+                          text: italic
+                    - type: text
+                      position: {}
+                      text: bla2
 
 # A paragraph with nested markup.
   - case: nested markup italic
@@ -258,37 +279,34 @@
         type: document
         position: {} 
         content: 
-          - type: paragraph
+          - type: text
             position: {}
+            text: "prelude "
+          - type: formatted
+            position: {}
+            markup: italic
             content: 
               - type: text
                 position: {}
-                text: "prelude "
+                text: "italic paragraph with "
+            
               - type: formatted
                 position: {}
-                markup: italic
+                markup: bold
                 content: 
-                  - type: text
-                    position: {}
-                    text: "italic paragraph with "
-                
                   - type: formatted
-                    position: {}
-                    markup: bold
+                    position: {} 
+                    markup: italic
                     content: 
-                      - type: formatted
-                        position: {} 
-                        markup: italic
-                        content: 
-                          - type: text
-                            position: {}
-                            text: nested
                       - type: text
-                        position: {} 
-                        text: " bold and italic"
-              - type: text
-                position: {}
-                text: " and normal text."
+                        position: {}
+                        text: nested
+                  - type: text
+                    position: {} 
+                    text: " bold and italic"
+          - type: text
+            position: {}
+            text: " and normal text."
 
 # An apostrophe after markup
   - case: markup and apostrophe
@@ -297,26 +315,23 @@
         type: document
         position: {} 
         content: 
-          - type: paragraph
+          - type: text
             position: {}
+            text: "The "
+          - type: formatted
+            position: {}
+            markup: bold
             content: 
-              - type: text
-                position: {}
-                text: "The "
               - type: formatted
                 position: {}
-                markup: bold
+                markup: italic
                 content: 
-                  - type: formatted
-                    position: {}
-                    markup: italic
-                    content: 
-                      - type: text
-                        position: {} 
-                        text: "dog"
-              - type: text
-                position: {}
-                text: "\'s bone"
+                  - type: text
+                    position: {} 
+                    text: "dog"
+          - type: text
+            position: {}
+            text: "\'s bone"
                 
 # A simple inline math tag.
   - case: simple inline math
@@ -325,16 +340,13 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: formatted
           position: {}
+          markup: math
           content:
-            - type: formatted
+            - type: text
               position: {}
-              markup: math
-              content:
-                - type: text
-                  position: {}
-                  text: x^2
+              text: x^2
 
 # Math tag with special characters
   - case: special inline math
@@ -343,16 +355,13 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: formatted
           position: {}
+          markup: math
           content:
-            - type: formatted
+            - type: text
               position: {}
-              markup: math
-              content:
-                - type: text
-                  position: {}
-                  text: "$\\{{bla}} x'=c"
+              text: "$\\{{bla}} x'=c"
 
 # An empty math tag.
   - case: empty math
@@ -361,13 +370,10 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: formatted
           position: {}
-          content:
-            - type: formatted
-              position: {}
-              markup: math
-              content: []
+          markup: math
+          content: []
 
 # Simple hyperlink without a caption.
   - case: hyperlink without caption
@@ -376,13 +382,10 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: externalreference
           position: {}
-          content:
-            - type: externalreference
-              position: {}
-              target: https://www.example.com/
-              caption: []
+          target: https://www.example.com/
+          caption: []
 
 # Simple hyperlink with a caption.
   - case: hyperlink with caption
@@ -391,16 +394,13 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: externalreference
           position: {}
-          content:
-            - type: externalreference
+          target: https://www.example.com/
+          caption:
+            - type: text
               position: {}
-              target: https://www.example.com/
-              caption:
-                - type: text
-                  position: {}
-                  text: "Example dot com"
+              text: "Example dot com"
 
 # Simple hyperlink without a caption.
   - case: hyperlink with formatted caption
@@ -409,24 +409,21 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: externalreference
           position: {}
-          content:
-            - type: externalreference
+          target: https://www.example.com/
+          caption:
+            - type: text
               position: {}
-              target: https://www.example.com/
-              caption:
+              text: "Example "
+
+            - type: formatted
+              position: {}
+              markup: bold
+              content:
                 - type: text
                   position: {}
-                  text: "Example "
-
-                - type: formatted
-                  position: {}
-                  markup: bold
-                  content:
-                    - type: text
-                      position: {}
-                      text: dot com
+                  text: dot com
 
 # An arbitrary html tag
   - case: nested html tag
@@ -470,13 +467,10 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: formatted
           position: {}
-          content:
-            - type: formatted
-              position: {}
-              markup: nowiki
-              content: []
+          markup: nowiki
+          content: []
               
 # A HTML comment
   - case: html comment
@@ -485,15 +479,12 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: text
           position: {}
-          content:
-            - type: text
-              position: {}
-              text: "bla "
-            - type: comment
-              position: {}
-              text: " comment ³½}³¹ðđ æđ||đð@³¼¶²{{}} content "
+          text: "bla "
+        - type: comment
+          position: {}
+          text: " comment ³½}³¹ðđ æđ||đð@³¼¶²{{}} content "
               
 # The nowiki tag should ignore everything.
   - case: nowiki
@@ -549,20 +540,17 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: htmltag
           position: {}
-          content:
-            - type: htmltag
+          name: dfn
+          attributes:
+            - key: title
+              value: Riemannsumme
               position: {}
-              name: dfn
-              attributes:
-                - key: title
-                  value: Riemannsumme
-                  position: {}
-              content:
-                - type: text
-                  position: {}
-                  text: Riemannsumme
+          content:
+            - type: text
+              position: {}
+              text: Riemannsumme
                       
 # Underline text
   - case: underline markup
@@ -571,16 +559,13 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: formatted
           position: {}
+          markup: underline
           content:
-            - type: formatted
+            - type: text
               position: {}
-              markup: underline
-              content:
-                - type: text
-                  position: {}
-                  text: Inserted
+              text: Inserted
                       
 # Fixed-width text
   - case: fixed width markup
@@ -589,16 +574,13 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: formatted
           position: {}
+          markup: code
           content:
-            - type: formatted
+            - type: text
               position: {}
-              markup: code
-              content:
-                - type: text
-                  position: {}
-                  text: Fixed width text
+              text: Fixed width text
                       
 # Blockquote
   - case: blockquote markup
@@ -607,16 +589,13 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: formatted
           position: {}
+          markup: blockquote
           content:
-            - type: formatted
+            - type: text
               position: {}
-              markup: blockquote
-              content:
-                - type: text
-                  position: {}
-                  text: Blockquote
+              text: Blockquote
                       
 # Pre-formatted Text
   - case: pre formatted text
@@ -796,16 +775,13 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: template
           position: {}
-          content:
-            - type: template
+          name:
+            - type: text
               position: {}
-              name:
-                - type: text
-                  position: {}
-                  text: name
-              content: []
+              text: name
+          content: []
 
 
 # A sequence of unnamed template arguments
@@ -826,9 +802,12 @@
             - type: template
               position: {}
               name:
-                - type: text
+                - type: paragraph
                   position: {}
-                  text: templatename
+                  content:
+                    - type: text
+                      position: {}
+                      text: templatename
               content:
                 - type: templateargument
                   position: {}
@@ -868,26 +847,20 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: template
           position: {}
-          content:
-            - type: template
+          name:
+            - type: text
               position: {}
-              name:
+              text: name
+          content:
+            - type: templateargument
+              position: {}
+              name: caption
+              value:
                 - type: text
                   position: {}
-                  text: name
-              content:
-                - type: templateargument
-                  position: {}
-                  name: caption
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: üäö test
+                  text: üäö test
 
 # Multiple named template arguments
   - case: multiple named template arguments
@@ -896,46 +869,34 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: template
           position: {}
-          content:
-            - type: template
+          name:
+            - type: text
               position: {}
-              name:
+              text: templatename
+          content:
+            - type: templateargument
+              position: {}
+              name: item2
+              value:
                 - type: text
                   position: {}
-                  text: templatename
-              content:
-                - type: templateargument
+                  text: "2"
+            - type: templateargument
+              position: {}
+              name: item3
+              value:
+                - type: text
                   position: {}
-                  name: item2
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "2"
-                - type: templateargument
+                  text: "3"
+            - type: templateargument
+              position: {}
+              name: item4
+              value:
+                - type: text
                   position: {}
-                  name: item3
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "3"
-                - type: templateargument
-                  position: {}
-                  name: item4
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "4"
+                  text: "4"
 
 # Mixed named and unnamed arguments
   - case: mixed template arguments
@@ -944,46 +905,34 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: template
           position: {}
-          content:
-            - type: template
+          name:
+            - type: text
               position: {}
-              name:
+              text: template1
+          content:
+            - type: templateargument
+              position: {}
+              name: item2
+              value:
                 - type: text
                   position: {}
-                  text: template1
-              content:
-                - type: templateargument
+                  text: "2"
+            - type: templateargument
+              position: {}
+              name: item3
+              value:
+                - type: text
                   position: {}
-                  name: item2
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "2"
-                - type: templateargument
+                  text: "3"
+            - type: templateargument
+              position: {}
+              name: ""
+              value:
+                - type: text
                   position: {}
-                  name: item3
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "3"
-                - type: templateargument
-                  position: {}
-                  name: ""
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "item4"
+                  text: "item4"
 
 # Nested templates
   - case: nested templates
@@ -992,33 +941,27 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: template
           position: {}
-          content:
+          name:
+            - type: text
+              position: {}
+              text: "Thankyou in "
             - type: template
               position: {}
-              name:
+              name: 
                 - type: text
                   position: {}
-                  text: "Thankyou in "
-                - type: template
+                  text: "preferred language"
+              content: []
+          content:
+            - type: templateargument
+              position: {}
+              name: signature
+              value:
+                - type: text
                   position: {}
-                  name: 
-                    - type: text
-                      position: {}
-                      text: "preferred language"
-                  content: []
-              content:
-                - type: templateargument
-                  position: {}
-                  name: signature
-                  value:
-                    - type: paragraph
-                      position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: Me
+                  text: Me
 
 # A simple internal reference
   - case: simple internal ref
@@ -1027,17 +970,14 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: internalreference
           position: {}
-          content:
-            - type: internalreference
+          target: 
+            - type: text
               position: {}
-              target: 
-                - type: text
-                  position: {}
-                  text: File:Abc
-              options: []
-              caption: []
+              text: File:Abc
+          options: []
+          caption: []
 
 # An empty internal reference
   - case: empty internal ref
@@ -1046,14 +986,11 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: internalreference
           position: {}
-          content:
-            - type: internalreference
-              position: {}
-              target: []
-              options: []
-              caption: []
+          target: []
+          options: []
+          caption: []
 
 # A simple internal reference with caption
   - case: internal ref with caption
@@ -1062,20 +999,17 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: internalreference
           position: {}
-          content:
-            - type: internalreference
+          target: 
+            - type: text
               position: {}
-              target: 
-                - type: text
-                  position: {}
-                  text: File:Abc
-              options: []
-              caption: 
-                - type: text
-                  position: {}
-                  text: this is a caption
+              text: File:Abc
+          options: []
+          caption: 
+            - type: text
+              position: {}
+              text: this is a caption
 
 # A simple internal reference with options
   - case: internal ref with options
@@ -1084,36 +1018,33 @@
       type: document
       position: {}
       content:
-        - type: paragraph
+        - type: internalreference
           position: {}
-          content:
-            - type: internalreference
+          target: 
+            - type: text
               position: {}
-              target: 
+              text: "File:Abc"
+          options: 
+            - - type: text
+                position: {}
+                text: "opt1=value1"
+            - - type: text
+                position: {}
+                text: "opt2=123"
+          caption: 
+            - type: text
+              position: {}
+              text: "this is a caption with "
+            - type: formatted
+              position: {}
+              markup: bold
+              content:
                 - type: text
                   position: {}
-                  text: "File:Abc"
-              options: 
-                - - type: text
-                    position: {}
-                    text: "opt1=value1"
-                - - type: text
-                    position: {}
-                    text: "opt2=123"
-              caption: 
-                - type: text
-                  position: {}
-                  text: "this is a caption with "
-                - type: formatted
-                  position: {}
-                  markup: bold
-                  content:
-                    - type: text
-                      position: {}
-                      text: "bold and |special|"
-                - type: text
-                  position: {}
-                  text: " markup"                     
+                  text: "bold and |special|"
+            - type: text
+              position: {}
+              text: " markup"                     
 
 # Simple table with one cell
   - case: single cell table
@@ -1335,23 +1266,17 @@
                       value: test
                   header: false
                   content:
-                    - type: paragraph
+                    - type: text
                       position: {}
-                      content: 
-                        - type: text
-                          position: {}
-                          text: "test "
+                      text: "test "
                 - type: tablecell
                   position: {}
                   attributes: []
                   header: false
                   content:
-                    - type: paragraph
+                    - type: text
                       position: {}
-                      content: 
-                        - type: text
-                          position: {}
-                          text: "cell 2 "
+                      text: "cell 2 "
                 - type: tablecell
                   position: {}
                   attributes: []
@@ -1367,7 +1292,7 @@
                   content:
                     - type: paragraph
                       position: {}
-                      content: 
+                      content:
                         - type: text
                           position: {}
                           text: cell 3
@@ -1400,12 +1325,9 @@
                   header: true
                   attributes: []
                   content:
-                    - type: paragraph
+                    - type: text
                       position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "Orange "
+                      text: "Orange "
                 - type: tablecell
                   position: {}
                   header: true
@@ -1429,23 +1351,17 @@
                   header: false
                   attributes: []
                   content:
-                    - type: paragraph
+                    - type: text
                       position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "Bread  "
+                      text: "Bread  "
                 - type: tablecell
                   position: {}
                   header: false
                   attributes: []
                   content:
-                    - type: paragraph
+                    - type: text
                       position: {}
-                      content:
-                        - type: text
-                          position: {}
-                          text: "Pie "
+                      text: "Pie "
                 - type: tablecell
                   position: {}
                   header: true

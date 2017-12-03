@@ -4,11 +4,13 @@ use ast::*;
 
 /** the main document structure */
 pub Document -> Element 
-    = posl:#position top:Paragraph* content:Heading* posr:#position {
+    = posl:#position top:Paragraph* content:Heading* end:FormattedText* posr:#position {
         let mut res = top;
         let mut content = content;
+        let mut end = end;
         res.append(&mut content);
- 
+        res.append(&mut end);
+
         Element::Document {
             position: Span::new(posl, posr, source_lines),
             content: res, 
@@ -33,15 +35,13 @@ Heading -> Element
     }
 
 /**
- * a paragraph is a block element, some or no text followed by a newline or just some text.
+ * a paragraph is a block element, some or no text followed by a newline.
  * The FormattedRule parameter is only applied to plain top-level text. All nested formatting
  * uses the standart FormattedText rule. This keeps formatted text or html tags from beeing
  * ripped apart.
  */
 ParagraphTemplate<FormattedRule> 
-    = List / Table / posl:#position PAR_START_GUARD text:(
-        (t:FormattedRule* Newline {t}) / (f:FormattedRule+ Newline? {f})
-      ) posr:#position {
+    = List / Table / posl:#position PAR_START_GUARD text:FormattedRule* Newline posr:#position {
        
          Element::Paragraph {
             position: Span::new(posl, posr, source_lines),
@@ -61,7 +61,6 @@ Paragraph -> Element
  */
 TemplateFormatted -> Element
     = FormattedTextTemplate<Text<TemplateContentChar>>
-
 TemplateParagraph -> Element
     = ParagraphTemplate<TemplateFormatted>
 
@@ -71,7 +70,7 @@ TemplateParagraph -> Element
  * argument can only be separated by pipes.
  */
 Template -> Element 
-    = posl:#position "{{" Space* n:TemplateFormatted* (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" posr:#position {
+    = posl:#position "{{" Space* n:(TemplateParagraph / TemplateFormatted)* (Space / Newline)* attrs:("|" t:TemplateArgument {t})* "}}" posr:#position {
         
         Element::Template {
             position: Span::new(posl, posr, source_lines),
@@ -81,7 +80,7 @@ Template -> Element
     }
 
 TemplateArgument -> Element
-    = posl:#position name:(n:TemplateArgumentName "=" {n})? value:TemplateParagraph* posr:#position {
+    = posl:#position name:(n:TemplateArgumentName "=" {n})? value:(TemplateParagraph / TemplateFormatted)* posr:#position {
      
        Element::TemplateArgument {
             position: Span::new(posl, posr, source_lines),
@@ -147,10 +146,12 @@ Table -> Element
 
 TableElementAttributes -> Vec<TagAttribute>
     = Space* attr:(HtmlAttribute ** (Space+)) Space* {attr}
+TableFormatted -> Element
+    = !("!") FormattedTextTemplate<Text<TableChar>>
 TableParagraph -> Element
-    = ParagraphTemplate<FormattedTextTemplate<Text<TableChar>>>
+    = ParagraphTemplate<TableFormatted>
 TableCaption -> (Vec<TagAttribute>, Vec<Element>) =
-    "|+" attr:(t:TableElementAttributes "|" {t})? Space* pars:TableParagraph* {(attr.unwrap_or(vec![]), pars)}
+    "|+" attr:(t:TableElementAttributes "|" {t})? Space* pars:(TableParagraph / TableFormatted)* {(attr.unwrap_or(vec![]), pars)}
 TableCellSeparator -> &'input str
     = $("||") / $("!!") / $("|") / $("!")
 TableRowSeparator -> Vec<TagAttribute>
@@ -168,7 +169,7 @@ TableRow -> Element
 
 TableCell -> Element
     = posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableElementAttributes 
-      "|" !("|") {a})? Space* content:TableParagraph* posr:#position {
+      "|" !("|") {a})? Space* content:(TableParagraph / TableFormatted)* posr:#position {
 
         Element::TableCell {
             position: Span::new(posl, posr, source_lines),
@@ -185,9 +186,11 @@ TableCell -> Element
 /* internal references, may have pipe-separated options */
 InternalReferenceFormatted -> Element
     = FormattedTextTemplate<Text<TemplateContentChar>>
+InternalRefParagraph -> Element
+    = ParagraphTemplate<InternalReferenceFormatted>
 
 ReferenceInternal -> Element
-    = posl:#position "[[" t:((tar:InternalReferenceFormatted* {tar}) ++ "|") "]]" posr:#position {
+    = posl:#position "[[" t:((tar:(InternalRefParagraph / InternalReferenceFormatted)* {tar}) ++ "|") "]]" posr:#position {
         
         let mut t = t;
         Element::InternalReference {
@@ -200,7 +203,7 @@ ReferenceInternal -> Element
 
 /* external references (hyperlink) with only url and optional caption */
 ReferenceExternal -> Element
-    = posl:#position "[" url:Url Space* caption:FormattedText* "]" posr:#position {
+    = posl:#position "[" url:Url Space* caption:(Paragraph / FormattedText)* "]" posr:#position {
 
         Element::ExternalReference {
             position: Span::new(posl, posr, source_lines),
@@ -214,8 +217,16 @@ ReferenceExternal -> Element
  */
 
 /* text markup */
+
+/* formatted text cannot start with a single quote, except they are "Included" */
+QuoteFormattedTemplate<Included> = text:((!("'") t:FormattedText {t}) / Included) {text}
+StrongFormatted -> Element
+    = QuoteFormattedTemplate<EmphText>
+EmphFormatted -> Element
+    = QuoteFormattedTemplate<StrongText>
+
 StrongText -> Element
-    = posl:#position Strong inner:( !("'") t:FormattedText {t} / e:EmphText {e} )+ Strong posr:#position {
+    = posl:#position Strong inner:(ParagraphTemplate<StrongFormatted> / StrongFormatted)+ Strong posr:#position {
 
         Element::Formatted {
             position: Span::new(posl, posr, source_lines),
@@ -225,7 +236,7 @@ StrongText -> Element
     }
 
 EmphText -> Element
-    = posl:#position Emph inner:( !("'") t:FormattedText {t} / s:StrongText {s} )+ Emph posr:#position {
+    = posl:#position Emph inner:(ParagraphTemplate<EmphFormatted> / EmphFormatted)+ Emph posr:#position {
       
         Element::Formatted {
             position: Span::new(posl, posr, source_lines),
@@ -238,19 +249,19 @@ EmphText -> Element
 InlineMath -> Element
     = inner:MarkupTag<"math"i, MathText*> {inner}
 StrikeThroughMarkup -> Element
-    = inner:MarkupTag<"del"i, (FormattedText / Paragraph)*> {inner}
-    / inner:MarkupTag<"s"i, (FormattedText / Paragraph)*> {inner}
+    = inner:MarkupTag<"del"i, (Paragraph / FormattedText)*> {inner}
+    / inner:MarkupTag<"s"i, (Paragraph / FormattedText)*> {inner}
 
 UnderlineMarkup -> Element
-    = inner:MarkupTag<"ins"i, (FormattedText / Paragraph)*> {inner}
-    / inner:MarkupTag<"u"i, (FormattedText / Paragraph)*> {inner}
+    = inner:MarkupTag<"ins"i, (Paragraph / FormattedText)*> {inner}
+    / inner:MarkupTag<"u"i, (Paragraph / FormattedText)*> {inner}
 
 NoWikiMarkup -> Element
     = inner:MarkupTag<"nowiki"i, NowikiText*> {inner}
 CodeMarkup -> Element
     = inner:MarkupTag<"code"i, CodeText*> {inner}
 BlockquoteMarkup -> Element
-    = inner:MarkupTag<"blockquote"i, (FormattedText / Paragraph)*> {inner}
+    = inner:MarkupTag<"blockquote"i, (Paragraph / FormattedText)*> {inner}
 PreformattedMarkup -> Element
     = inner:MarkupTag<"pre"i, PreformattedText*> {inner}
 
@@ -312,7 +323,7 @@ AnyClose
 
 /** matches any valid html tag with inner Text / Paragraph / Heading, creating a HtmlTag Element. */
 AnyTag -> Element 
-    = posl:#position t:HtmlTag<TagName, (FormattedText / Paragraph / Heading)*> posr:#position {
+    = posl:#position t:HtmlTag<TagName, (Paragraph / FormattedText / Heading)*> posr:#position {
     
         Element::HtmlTag {
             position: Span::new(posl, posr, source_lines),
@@ -409,7 +420,7 @@ TagName -> String
  * These characters are allowed within certain contexts, excluded characters have special meaning and break texts
  */
 MathChar -> &'input str = !(TagClose<"math"i>) c:$. {c}
-Char -> &'input str = !(Newline / Emph / "{" / "}" / AnyTag / AnyOpen / AnyClose / HtmlComment / "[" / "]") c:$. {c} // general inline context
+Char -> &'input str = !(Newline / Emph / Strong / "{" / "}" / AnyTag / AnyOpen / AnyClose / HtmlComment / "[" / "]") c:$. {c} // general inline context
 HeadingChar -> &'input str = !(Newline / Emph / "{" / "}" /AnyTag / AnyOpen / AnyClose / HtmlComment / "[" / "]" / "=") c:$. {c}
 TableChar -> &'input str = !(Newline / Emph / "{" / "}" / "!!" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
 TemplateContentChar -> &'input str = !(Newline / Emph / "{" / "}" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
