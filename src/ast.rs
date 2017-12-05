@@ -10,27 +10,88 @@ use serde::ser::{Serialize, Serializer, SerializeMap};
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
 pub enum Element {
-    Document { position: Span, content: Vec<Element> },
-    Heading { position: Span, depth: usize, caption: Vec<Element>,
-        content: Vec<Element> },
-    Text { position: Span, text: String },
-    Formatted { position: Span, markup: MarkupType, content: Vec<Element> },
-    Paragraph { position: Span, content: Vec<Element> },
-    Template { position: Span, name: Vec<Element>, content: Vec<Element> },
-    TemplateArgument { position: Span, name: String, value: Vec<Element> },
-    InternalReference { position: Span, target: Vec<Element>,
-        options: Vec<Vec<Element>>, caption: Vec<Element> },
-    ExternalReference { position: Span, target: String, caption: Vec<Element> },
-    ListItem { position: Span, depth: usize, kind: ListItemKind, content: Vec<Element> },
-    List { position: Span, content: Vec<Element> },
-    Table { position: Span, attributes: Vec<TagAttribute>, caption: Vec<Element>,
-        caption_attributes: Vec<TagAttribute>, rows: Vec<Element> },
-    TableRow { position: Span, attributes: Vec<TagAttribute>, cells: Vec<Element> },
-    TableCell { position: Span, header: bool, attributes: Vec<TagAttribute>,
-        content: Vec<Element> },
-    Comment { position: Span, text: String },
-    HtmlTag { position: Span, name: String, attributes: Vec<TagAttribute>,
-        content: Vec<Element> },
+    Document {
+         position: Span,
+         content: Vec<Element>
+    },
+    Heading {
+        position: Span,
+        depth: usize,
+        caption: Vec<Element>,
+        content: Vec<Element>
+    },
+    Text {
+        position: Span,
+        text: String
+    },
+    Formatted {
+        position: Span,
+        markup: MarkupType,
+        content: Vec<Element>
+    },
+    Paragraph {
+        position: Span,
+        content: Vec<Element>
+    },
+    Template {
+        position: Span,
+        name: Vec<Element>,
+        content: Vec<Element>
+    },
+    TemplateArgument {
+        position: Span,
+        name: String,
+        value: Vec<Element>
+    },
+    InternalReference {
+        position: Span,
+        target: Vec<Element>,
+        options: Vec<Vec<Element>>,
+        caption: Vec<Element>
+    },
+    ExternalReference {
+        position: Span,
+        target: String,
+        caption: Vec<Element>
+    },
+    ListItem {
+        position: Span,
+        depth: usize,
+        kind: ListItemKind,
+        content: Vec<Element>
+    },
+    List {
+        position: Span,
+        content: Vec<Element>
+    },
+    Table {
+        position: Span,
+        attributes: Vec<TagAttribute>,
+        caption: Vec<Element>,
+        caption_attributes: Vec<TagAttribute>,
+        rows: Vec<Element>
+    },
+    TableRow {
+        position: Span,
+        attributes: Vec<TagAttribute>,
+        cells: Vec<Element>
+    },
+    TableCell {
+        position: Span,
+        header: bool,
+        attributes: Vec<TagAttribute>,
+        content: Vec<Element>
+    },
+    Comment {
+        position: Span,
+        text: String
+    },
+    HtmlTag {
+        position: Span,
+        name: String,
+        attributes: Vec<TagAttribute>,
+        content: Vec<Element>
+    },
 }
 
 /// Types of markup a section of text may have.
