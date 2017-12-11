@@ -729,11 +729,6 @@
                 - type: text
                   position: {}
                   text: item 11
-            - type: listitem
-              position: {}
-              kind: unordered
-              depth: 1
-              content:
                 - type: list
                   position: {}
                   content:

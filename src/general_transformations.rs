@@ -108,19 +108,7 @@ pub fn fold_lists_transformation(mut root: Element) -> TResult {
                         content,
                     };
                     if depth > lowest_depth {
-                        if create_sublist {
-                            // create a new sublist
-                            create_sublist = false;
-                            result.push(Element::ListItem {
-                                position: position_copy.clone(),
-                                depth: lowest_depth,
-                                kind,
-                                content: vec![Element::List {
-                                    position: position_copy,
-                                    content: vec![],
-                                }],
-                            });
-                        }
+
                         // this error is returned if the sublist to append to was not found
                         let build_found_error = | origin: &Element | {
                             TransformationError {
@@ -131,9 +119,32 @@ pub fn fold_lists_transformation(mut root: Element) -> TResult {
                             }
                         };
 
+                        if create_sublist {
+                            // create a new sublist
+                            create_sublist = false;
+
+                            if result.is_empty() {
+                                result.push(Element::ListItem {
+                                    position: position_copy.clone(),
+                                    depth: lowest_depth,
+                                    kind,
+                                    content: vec![],
+                                });
+                            }
+                            match result.last_mut() {
+                                Some(&mut Element::ListItem { ref mut content, .. }) => {
+                                    content.push(Element::List {
+                                        position: position_copy,
+                                        content: vec![],
+                                    });
+                                },
+                                _ => return Err(build_found_error(&new)),
+                            };
+                        }
+
                         match result.last_mut() {
                             Some(&mut Element::ListItem { ref mut content, .. }) => {
-                                match content.get_mut(0) {
+                                match content.last_mut() {
                                     Some(&mut Element::List { ref mut content, .. }) => {
                                         content.push(new);
                                     }
