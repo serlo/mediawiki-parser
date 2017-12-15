@@ -29,11 +29,12 @@ mod grammar;
 
 fn apply_general_transformations(mut root: ast::Element) -> transformations::TResult {
 
-    root = general_transformations::fold_headings_transformation(root)?;
-    root = general_transformations::fold_lists_transformation(root)?;
-    root = general_transformations::whitespace_paragraphs_to_empty(root)?;
-    root = general_transformations::collapse_paragraphs(root)?;
-    root = general_transformations::collapse_consecutive_text(root)?;
+    let settings = general_transformations::GeneralSettings {};
+    root = general_transformations::fold_headings_transformation(root, &settings)?;
+    root = general_transformations::fold_lists_transformation(root, &settings)?;
+    root = general_transformations::whitespace_paragraphs_to_empty(root, &settings)?;
+    root = general_transformations::collapse_paragraphs(root, &settings)?;
+    root = general_transformations::collapse_consecutive_text(root, &settings)?;
     Ok(root)
 }
 
