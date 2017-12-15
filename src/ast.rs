@@ -92,6 +92,10 @@ pub enum Element {
         attributes: Vec<TagAttribute>,
         content: Vec<Element>
     },
+    Error {
+        position: Span,
+        message: String,
+    }
 }
 
 /// Types of markup a section of text may have.
@@ -198,6 +202,7 @@ impl Element {
             &Element::TableCell { ref position, .. } => position,
             &Element::Comment { ref position, .. } => position,
             &Element::HtmlTag { ref position, .. } => position,
+            &Element::Error { ref position, .. } => position,
         }
     }
 }

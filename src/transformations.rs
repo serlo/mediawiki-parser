@@ -245,6 +245,9 @@ pub fn recurse_clone_template<S: Copy>(func: &TFunc<S>, root: &Element, path: &V
                     attributes: attributes.clone(),
                     content: content_func(func, content, &path, settings)?,
                 }
+            },
+            Element::Error { .. } => {
+                root.clone()
             }
         };
         path.pop();
