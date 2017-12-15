@@ -43,14 +43,14 @@ pub fn parse_document(input: &str) -> Result<ast::Element, error::MWError> {
     let source_lines = util::get_source_lines(&input);
 
     let result = match grammar::Document(&input, &source_lines) {
-        Err(e) => Err(error::MWError::ParseError(error::ParseError::from(&e, input))),
-        Ok(r) => Ok(r)
+        Err(e) => Err(error::MWError::ParseError(
+            error::ParseError::from(&e, input),
+        )),
+        Ok(r) => Ok(r),
     }?;
 
     match apply_general_transformations(result) {
         Err(e) => Err(error::MWError::TransformationError(e)),
-        Ok(r) => Ok(r)
+        Ok(r) => Ok(r),
     }
 }
-
-

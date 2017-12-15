@@ -10,7 +10,7 @@ const ERROR_CONTEXT_LINES: usize = 5;
 
 /// Generic error type for high-level errors of this libaray.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all="lowercase", deny_unknown_fields)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
 pub enum MWError {
     ParseError(ParseError),
     TransformationError(TransformationError),
@@ -18,7 +18,7 @@ pub enum MWError {
 
 /// The parser error with source code context.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all="lowercase", deny_unknown_fields)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
 pub struct ParseError {
     pub position: ast::Position,
     pub expected: Vec<String>,
@@ -29,7 +29,7 @@ pub struct ParseError {
 
 /// Error structure for syntax tree transformations.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all="lowercase", deny_unknown_fields)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
 pub struct TransformationError {
     pub cause: String,
     pub position: ast::Span,
@@ -75,7 +75,7 @@ impl ParseError {
         ParseError {
             position: ast::Position::new(err.offset, &source_lines),
             context: context,
-            expected:  token_str,
+            expected: token_str,
             context_start: start,
             context_end: end,
         }
@@ -89,10 +89,13 @@ impl error::Error for ParseError {
 }
 
 impl fmt::Display for ParseError {
-
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        let error_message = format!("ERROR in line {} at column {}: Could not continue to parse, expected one of: ",
-            self.position.line, self.position.col).red().bold();
+        let error_message = format!(
+            "ERROR in line {} at column {}: Could not continue to parse, expected one of: ",
+            self.position.line,
+            self.position.col
+        ).red()
+            .bold();
 
         let mut token_str = vec![];
         for token in &self.expected {
@@ -135,11 +138,15 @@ impl error::Error for TransformationError {
 }
 
 impl fmt::Display for TransformationError {
-
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        let message = format!("ERROR applying transformation \"{}\" to Elemtn at {}:{} to {}:{}: {}",
-            self.transformation_name, self.position.start.line, self.position.start.col,
-            self.position.end.line, self.position.end.col, self.cause
+        let message = format!(
+            "ERROR applying transformation \"{}\" to Elemtn at {}:{} to {}:{}: {}",
+            self.transformation_name,
+            self.position.start.line,
+            self.position.start.col,
+            self.position.end.line,
+            self.position.end.col,
+            self.cause
         );
         writeln!(f, "{}", message.red().bold())
     }

@@ -27,11 +27,17 @@ fn main() {
     {
         let mut ap = ArgumentParser::new();
         ap.set_description(DESCRIPTION!());
-        ap.refer(&mut use_stdin)
-            .add_option(&["-s", "--stdin"], StoreTrue, "Use stdin as input file");
+        ap.refer(&mut use_stdin).add_option(
+            &["-s", "--stdin"],
+            StoreTrue,
+            "Use stdin as input file",
+        );
 
-        ap.refer(&mut input_file)
-            .add_option(&["-i", "--input"], Store, "Path to the input file");
+        ap.refer(&mut input_file).add_option(
+            &["-i", "--input"],
+            Store,
+            "Path to the input file",
+        );
 
         ap.parse_args_or_exit();
     }

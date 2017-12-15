@@ -13,16 +13,16 @@ const TERMINAL_WIDTH: usize = 80;
 fn read_from_reader(reader: &mut io::Read) -> String {
     let mut buffer = io::BufReader::new(reader);
     let mut content = String::new();
-    buffer.read_to_string(&mut content)
-        .expect("Could not read fron file!");
+    buffer.read_to_string(&mut content).expect(
+        "Could not read fron file!",
+    );
     content
 }
 
 
 /// Read a file from disk and store to string.
 pub fn read_file(filename: &str) -> String {
-    let mut file = fs::File::open(Path::new(filename))
-        .expect("Could not open file!");
+    let mut file = fs::File::open(Path::new(filename)).expect("Could not open file!");
     read_from_reader(&mut file)
 }
 
@@ -42,7 +42,7 @@ pub fn get_source_lines<'input>(source: &'input str) -> Vec<ast::SourceLine> {
     let mut result = Vec::new();
 
     for line in source.split("\n") {
-        result.push( ast::SourceLine {
+        result.push(ast::SourceLine {
             start: pos,
             content: line,
             end: pos + line.len() + 1,
@@ -90,4 +90,3 @@ pub fn shorten_str(input: &str) -> String {
     }
     result
 }
-

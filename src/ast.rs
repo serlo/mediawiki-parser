@@ -11,91 +11,82 @@ use serde::ser::{Serialize, Serializer, SerializeMap};
 #[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
 pub enum Element {
     Document {
-         position: Span,
-         content: Vec<Element>
+        position: Span,
+        content: Vec<Element>,
     },
     Heading {
         position: Span,
         depth: usize,
         caption: Vec<Element>,
-        content: Vec<Element>
+        content: Vec<Element>,
     },
-    Text {
-        position: Span,
-        text: String
-    },
+    Text { position: Span, text: String },
     Formatted {
         position: Span,
         markup: MarkupType,
-        content: Vec<Element>
+        content: Vec<Element>,
     },
     Paragraph {
         position: Span,
-        content: Vec<Element>
+        content: Vec<Element>,
     },
     Template {
         position: Span,
         name: Vec<Element>,
-        content: Vec<Element>
+        content: Vec<Element>,
     },
     TemplateArgument {
         position: Span,
         name: String,
-        value: Vec<Element>
+        value: Vec<Element>,
     },
     InternalReference {
         position: Span,
         target: Vec<Element>,
         options: Vec<Vec<Element>>,
-        caption: Vec<Element>
+        caption: Vec<Element>,
     },
     ExternalReference {
         position: Span,
         target: String,
-        caption: Vec<Element>
+        caption: Vec<Element>,
     },
     ListItem {
         position: Span,
         depth: usize,
         kind: ListItemKind,
-        content: Vec<Element>
+        content: Vec<Element>,
     },
     List {
         position: Span,
-        content: Vec<Element>
+        content: Vec<Element>,
     },
     Table {
         position: Span,
         attributes: Vec<TagAttribute>,
         caption: Vec<Element>,
         caption_attributes: Vec<TagAttribute>,
-        rows: Vec<Element>
+        rows: Vec<Element>,
     },
     TableRow {
         position: Span,
         attributes: Vec<TagAttribute>,
-        cells: Vec<Element>
+        cells: Vec<Element>,
     },
     TableCell {
         position: Span,
         header: bool,
         attributes: Vec<TagAttribute>,
-        content: Vec<Element>
+        content: Vec<Element>,
     },
-    Comment {
-        position: Span,
-        text: String
-    },
+    Comment { position: Span, text: String },
     HtmlTag {
         position: Span,
         name: String,
         attributes: Vec<TagAttribute>,
-        content: Vec<Element>
+        content: Vec<Element>,
     },
-    Error {
-        position: Span,
-        message: String,
-    }
+    Error { position: Span, message: String },
 }
 
 /// Types of markup a section of text may have.
@@ -121,7 +112,7 @@ pub enum ListItemKind {
     Unordered,
     Definition,
     DefinitionTerm,
-    Ordered
+    Ordered,
 }
 
 /**
@@ -145,7 +136,7 @@ pub struct Position {
 #[serde(rename_all = "lowercase", default = "Span::any", deny_unknown_fields)]
 pub struct Span {
     pub start: Position,
-    pub end: Position
+    pub end: Position,
 }
 
 /// Represents a pair of html tag attribute and value.
@@ -163,6 +154,16 @@ pub struct SourceLine<'input> {
     pub start: usize,
     pub content: &'input str,
     pub end: usize,
+}
+
+/// checks if `pos` is at a line start
+pub fn starts_line(pos: usize, slocs: &Vec<SourceLine>) -> bool {
+    for sloc in slocs {
+        if sloc.start == pos {
+            return true;
+        }
+    }
+    return false;
 }
 
 /// Match an HTML tag name to it's markup type.
@@ -219,7 +220,11 @@ impl Position {
                 };
             }
         }
-        Position { offset, line: slocs.len() + 1, col: 0 }
+        Position {
+            offset,
+            line: slocs.len() + 1,
+            col: 0,
+        }
     }
 
     pub fn any_position() -> Self {
@@ -252,7 +257,9 @@ impl Span {
 #[cfg(feature = "no_position")]
 impl Serialize for Span {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer {
+    where
+        S: Serializer,
+    {
         let map = serializer.serialize_map(None)?;
         map.end()
     }
@@ -262,14 +269,17 @@ impl PartialEq for Position {
     fn eq(&self, other: &Position) -> bool {
         // comparing with "any" position is always true
         if (other.offset == 0 && other.line == 0 && other.col == 0) ||
-            (self.offset == 0 && self.line == 0 && self.col == 0) {
+            (self.offset == 0 && self.line == 0 && self.col == 0)
+        {
             return true;
         }
 
         return self.offset == other.offset && self.line == other.line && self.col == other.col;
     }
 
-    fn ne(&self, other: &Position) -> bool { !self.eq(other) }
+    fn ne(&self, other: &Position) -> bool {
+        !self.eq(other)
+    }
 }
 
 

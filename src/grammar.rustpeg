@@ -102,21 +102,26 @@ List -> Element
     }
 
 ListItem -> Element
-    = Space* posl:#position s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* Newline? posr:#position {
-    
-        let kind = match s[s.len() - 1] {
-            "*" => ListItemKind::Unordered,
-            "#" => ListItemKind::Ordered,
-            ":" => ListItemKind::Definition,
-            ";" => ListItemKind::DefinitionTerm,
-            _ => ListItemKind::Unordered,
-        };
+    = posl:#position s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* Newline? posr:#position {?
+        // check if this element is at line start
+        if !starts_line(posl, source_lines) {
+            Err ("List item must start on a new line")
+        } else {
+        
+            let kind = match s[s.len() - 1] {
+                "*" => ListItemKind::Unordered,
+                "#" => ListItemKind::Ordered,
+                ":" => ListItemKind::Definition,
+                ";" => ListItemKind::DefinitionTerm,
+                _ => ListItemKind::Unordered,
+            };
 
-        Element::ListItem {
-            position: Span::new(posl, posr, source_lines),
-            depth: s.len(),
-            kind: kind,
-            content: content,
+            Ok(Element::ListItem {
+                position: Span::new(posl, posr, source_lines),
+                depth: s.len(),
+                kind: kind,
+                content: content,
+            })
         }
     }
 

@@ -636,7 +636,6 @@
                   position: {}
                   text: item
 
-
 # A ordered list and a unordered list of one item
   - case: two simple lists
     input: |
@@ -777,6 +776,28 @@
               position: {}
               text: name
           content: []
+
+
+# A template with list-like name
+  - case: template listlike name
+    input: |
+        {{:name
+        
+        }}
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: template
+              position: {}
+              name:
+                - type: text
+                  position: {}
+                  text: ":name"
+              content: []
 
 
 # A sequence of unnamed template arguments
