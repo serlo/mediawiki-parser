@@ -805,7 +805,7 @@
     input: |
         {{templatename
         |attribute2
-        |attribute3
+        |atträöüß3
         |attribute4
         }}
     out:
@@ -844,7 +844,7 @@
                       content:
                         - type: text
                           position: {}
-                          text: attribute3
+                          text: atträöüß3
                 - type: templateargument
                   position: {}
                   name: ""
@@ -880,7 +880,7 @@
 
 # Multiple named template arguments
   - case: multiple named template arguments
-    input: "{{templatename|item2=2|item3=3|item4=4}}"
+    input: "{{templatename|äöütem=2|item3=3|item4=4}}"
     out:
       type: document
       position: {}
@@ -894,7 +894,7 @@
           content:
             - type: templateargument
               position: {}
-              name: item2
+              name: äöütem
               value:
                 - type: text
                   position: {}

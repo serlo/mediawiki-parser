@@ -429,7 +429,7 @@ Char -> &'input str = !(Newline / Emph / Strong / "{" / "}" / AnyTag / AnyOpen /
 HeadingChar -> &'input str = !(Newline / Emph / "{" / "}" /AnyTag / AnyOpen / AnyClose / HtmlComment / "[" / "]" / "=") c:$. {c}
 TableChar -> &'input str = !(Newline / Emph / "{" / "}" / "!!" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
 TemplateContentChar -> &'input str = !(Newline / Emph / "{" / "}" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
-TemplateAttributeNameChar -> &'input str = $([A-Za-z0-9 ])
+TemplateAttributeNameChar -> &'input str = !(Newline / "{" / "}" / "|" / "<" / ">" / "[" / "]" / "=" / "!" / "*" / "#" / ":" / ";" / "/") c:$. {c}
 
 // a paragraph may not start with these symbols as they indicate other elements
 PAR_START_GUARD = !("=" / "!" / "|" / "*" / "#" / ":" / ";")
