@@ -242,7 +242,8 @@ pub fn whitespace_paragraphs_to_empty(mut root: Element, settings: &GeneralSetti
     Ok(root)
 }
 
-/// Reduce consecutive paragraphs into one, if not separated by a blank paragraph.
+/// Reduce consecutive paragraphs and absorb trailing text into one,
+/// if not separated by a blank paragraph.
 pub fn collapse_paragraphs(
     mut root: Element,
     settings: &GeneralSettings,
@@ -259,7 +260,7 @@ pub fn collapse_paragraphs(
             match &mut child {
                 &mut Element::Paragraph {
                     ref mut content,
-                    ref mut position,
+                    ref mut position
                 } => {
                     if content.is_empty() {
                         last_empty = true;
@@ -269,18 +270,34 @@ pub fn collapse_paragraphs(
                     if !last_empty {
                         let current_content = content;
                         let current_position = position;
-                        match result.last_mut() {
-                            Some(&mut Element::Paragraph {
-                                     ref mut content,
-                                     ref mut position,
-                                 }) => {
-                                content.append(current_content);
-                                position.end = current_position.end.clone();
-                                continue;
-                            }
-                            _ => (),
+                        if let Some(&mut Element::Paragraph {
+                            ref mut content,
+                            ref mut position,
+                        }) = result.last_mut() {
+                            content.append(current_content);
+                            position.end = current_position.end.clone();
+                            continue;
                         }
                     }
+
+                },
+                &mut Element::Text { ref position, ref text } => {
+                    // if the last paragraph was not empty, append to it.
+                    if !last_empty {
+                        let current_position = position;
+                        if let Some(&mut Element::Paragraph {
+                            ref mut content,
+                            ref mut position,
+                        }) = result.last_mut() {
+                            content.push(Element::Text {
+                                position: current_position.clone(),
+                                text: text.clone(),
+                            });
+                            position.end = current_position.end.clone();
+                            continue;
+                        }
+                    }
+
                 }
                 _ => (),
             };
