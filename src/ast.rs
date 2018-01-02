@@ -206,6 +206,29 @@ impl Element {
             &Element::Error { ref position, .. } => position,
         }
     }
+
+    /// returns the variant name of an element.
+    pub fn get_variant_name(&self) -> &str {
+        match self {
+            &Element::Document { .. } => "Document",
+            &Element::Heading { .. } => "Heading",
+            &Element::Text { .. } => "Text",
+            &Element::Formatted { .. } => "Formatted",
+            &Element::Paragraph { .. } => "Paragraph",
+            &Element::Template { .. } => "Template",
+            &Element::TemplateArgument { .. } => "TemplateArgument",
+            &Element::InternalReference { .. } => "InternalReference",
+            &Element::ExternalReference { .. } => "ExternalReference",
+            &Element::List { .. } => "List",
+            &Element::ListItem { .. } => "ListItem",
+            &Element::Table { .. } => "Table",
+            &Element::TableRow { .. } => "TableRow",
+            &Element::TableCell { .. } => "TableCell",
+            &Element::Comment { .. } => "Comment",
+            &Element::HtmlTag { .. } => "HtmlTag",
+            &Element::Error { .. } => "Error",
+        }
+    }
 }
 
 
