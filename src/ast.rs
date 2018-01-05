@@ -207,6 +207,29 @@ impl Element {
         }
     }
 
+    /// returns a mutable reference the source code position of an element.
+    pub fn get_position_mut(&mut self) -> &mut Span {
+        match self {
+            &mut Element::Document { ref mut position, .. } => position,
+            &mut Element::Heading { ref mut position, .. } => position,
+            &mut Element::Text { ref mut position, .. } => position,
+            &mut Element::Formatted { ref mut position, .. } => position,
+            &mut Element::Paragraph { ref mut position, .. } => position,
+            &mut Element::Template { ref mut position, .. } => position,
+            &mut Element::TemplateArgument { ref mut position, .. } => position,
+            &mut Element::InternalReference { ref mut position, .. } => position,
+            &mut Element::ExternalReference { ref mut position, .. } => position,
+            &mut Element::List { ref mut position, .. } => position,
+            &mut Element::ListItem { ref mut position, .. } => position,
+            &mut Element::Table { ref mut position, .. } => position,
+            &mut Element::TableRow { ref mut position, .. } => position,
+            &mut Element::TableCell { ref mut position, .. } => position,
+            &mut Element::Comment { ref mut position, .. } => position,
+            &mut Element::HtmlTag { ref mut position, .. } => position,
+            &mut Element::Error { ref mut position, .. } => position,
+        }
+    }
+
     /// returns the variant name of an element.
     pub fn get_variant_name(&self) -> &str {
         match self {
