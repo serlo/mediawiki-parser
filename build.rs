@@ -1,8 +1,7 @@
 extern crate peg;
 extern crate serde;
 extern crate serde_yaml;
-#[macro_use]
-extern crate serde_derive;
+#[macro_use] extern crate serde_derive;
 
 use std::path::{Path, PathBuf};
 use std::fs;
@@ -21,7 +20,7 @@ fn {} () {{
     let input = {:?};
     let target_source = {:?};
 
-    let result = parse_document(&input)
+    let result = parse(&input)
         .expect(\"Parsing of the input for {} failed!\");
     let target: ast::Element = serde_yaml::from_str(&target_source)
         .expect(\"Parsing the documentation of {} failed!\");
@@ -35,7 +34,7 @@ macro_rules! TEST_HEADER { () => ("
 
 use ast;
 use serde_yaml;
-use parse_document;
+use parse;
 
 ")}
 
