@@ -1,36 +1,10 @@
-use std::path::Path;
-use std::fs;
-use std::io::prelude::*;
-use std::io;
+//! Utility functions and types
 
 use ast;
 
 /// The terminal width.
 const TERMINAL_WIDTH: usize = 80;
 
-
-/// read contents of a io::Reader into a string
-fn read_from_reader(reader: &mut io::Read) -> String {
-    let mut buffer = io::BufReader::new(reader);
-    let mut content = String::new();
-    buffer.read_to_string(&mut content).expect(
-        "Could not read fron file!",
-    );
-    content
-}
-
-
-/// Read a file from disk and store to string.
-pub fn read_file(filename: &str) -> String {
-    let mut file = fs::File::open(Path::new(filename)).expect("Could not open file!");
-    read_from_reader(&mut file)
-}
-
-
-/// Read a file from stdin from to string.
-pub fn read_stdin() -> String {
-    read_from_reader(&mut io::stdin())
-}
 
 
 /// Compiles a list of start and end positions of the input source lines.

@@ -9,37 +9,28 @@ extern crate serde_yaml;
 #[cfg(test)]
 mod tests;
 
-/// Data structures describing the parsed document.
-pub mod ast;
-
-/// Error structures
-pub mod error;
-
-/// Utility functions and types
-pub mod util;
-
-/// Macros and data structures for source tree transformations.
-#[macro_use]
-pub mod transformations;
-
-mod general_transformations;
-
+mod traversion;
+mod ast;
+mod error;
+mod util;
 mod grammar;
 
 
-fn apply_general_transformations(mut root: ast::Element) -> transformations::TResult {
+// public exports
+pub use ast::*;
+pub use traversion::Traversion;
+pub use error::*;
 
-    let settings = general_transformations::GeneralSettings {};
-    root = general_transformations::fold_headings_transformation(root, &settings)?;
-    root = general_transformations::fold_lists_transformation(root, &settings)?;
-    root = general_transformations::whitespace_paragraphs_to_empty(root, &settings)?;
-    root = general_transformations::collapse_paragraphs(root, &settings)?;
-    root = general_transformations::collapse_consecutive_text(root, &settings)?;
-    Ok(root)
-}
+pub mod transformations;
 
-/// Parse a mediawiki source document and build a syntax tree.
-pub fn parse_document(input: &str) -> Result<ast::Element, error::MWError> {
+mod default_transformations;
+use default_transformations::*;
+
+
+/// Parse the input document to generate a document tree.
+/// After parsing, some transformations are applied to the result.
+pub fn parse(input: &str) -> Result<Element, MWError> {
+
     let source_lines = util::get_source_lines(&input);
 
     let result = match grammar::Document(&input, &source_lines) {
@@ -49,8 +40,20 @@ pub fn parse_document(input: &str) -> Result<ast::Element, error::MWError> {
         Ok(r) => Ok(r),
     }?;
 
-    match apply_general_transformations(result) {
+    let settings = GeneralSettings {};
+    match apply_transformations(result, &settings) {
         Err(e) => Err(error::MWError::TransformationError(e)),
         Ok(r) => Ok(r),
     }
+}
+
+fn apply_transformations(mut root: Element, settings: &GeneralSettings)
+    -> transformations::TResult {
+
+    root = fold_headings_transformation(root, settings)?;
+    root = fold_lists_transformation(root, settings)?;
+    root = whitespace_paragraphs_to_empty(root, settings)?;
+    root = collapse_paragraphs(root, settings)?;
+    root = collapse_consecutive_text(root, settings)?;
+    Ok(root)
 }

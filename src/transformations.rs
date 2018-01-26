@@ -1,4 +1,4 @@
-//! Common structures and macros for implementing parse tree transformations.
+//! Functions and types for source tree transformations.
 
 use ast::*;
 use error::*;

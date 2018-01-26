@@ -104,7 +104,7 @@ List -> Element
 ListItem -> Element
     = posl:#position s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* Newline? posr:#position {?
         // check if this element is at line start
-        if !starts_line(posl, source_lines) {
+        if !SourceLine::starts_line(posl, source_lines) {
             Err ("List item must start on a new line")
         } else {
         
@@ -345,7 +345,7 @@ MarkupTag<Name, Inner>
         Element::Formatted {
             position: Span::new(posl, posr, source_lines),
             content: tag_info.2,
-            markup: get_markup_by_tag_name(tag_info.0),
+            markup: MarkupType::by_tag_name(tag_info.0),
         }
     }
 

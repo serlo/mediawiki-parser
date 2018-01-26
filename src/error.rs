@@ -1,3 +1,5 @@
+//! Error structures
+
 use ast;
 use std::fmt;
 use std::error;

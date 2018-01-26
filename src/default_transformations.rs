@@ -57,9 +57,8 @@ pub fn fold_headings_transformation(mut root: Element, settings: &GeneralSetting
                 _ => {
                     if current_depth < usize::MAX {
                         return Err(TransformationError {
-                            cause: String::from(
-                                "a non-heading element was found after a heading. This should not happen.",
-                            ),
+                            cause: "a non-heading element was found after a heading. \
+                                    This should not happen.".to_string(),
                             position: child.get_position().clone(),
                             transformation_name: String::from("fold_headings_transformation"),
                             tree: child.clone(),

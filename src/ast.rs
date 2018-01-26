@@ -1,3 +1,5 @@
+/// Data structures describing the parsed document.
+
 #[cfg(feature = "no_position")]
 use serde::ser::{Serialize, Serializer, SerializeMap};
 
@@ -10,57 +12,74 @@ use serde::ser::{Serialize, Serializer, SerializeMap};
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
 pub enum Element {
+    /// The document root.
     Document {
         position: Span,
         content: Vec<Element>,
     },
+    /// Headings make a hierarchical document structure.
+    /// Headings of higher depths have other headings as parents.
     Heading {
         position: Span,
         depth: usize,
         caption: Vec<Element>,
         content: Vec<Element>,
     },
+    /// Simple text.
     Text { position: Span, text: String },
+    /// A formatting wrapper, usually around text.
     Formatted {
         position: Span,
         markup: MarkupType,
         content: Vec<Element>,
     },
+    /// Paragraphs are separated by newlines in the input document.
     Paragraph {
         position: Span,
         content: Vec<Element>,
     },
+    /// A mediawiki template.
     Template {
         position: Span,
         name: Vec<Element>,
         content: Vec<Element>,
     },
+    /// Argument of a mediawiki template.
+    /// Empty name indicate anonymous arguments.
     TemplateArgument {
         position: Span,
         name: String,
         value: Vec<Element>,
     },
+    /// A reference to internal data, such as embedded files
+    /// or other articles.
     InternalReference {
         position: Span,
         target: Vec<Element>,
         options: Vec<Vec<Element>>,
         caption: Vec<Element>,
     },
+    /// External reference, usually hyperlinks.
     ExternalReference {
         position: Span,
         target: String,
         caption: Vec<Element>,
     },
+    /// List item of a certain `ListItemKind`.
     ListItem {
         position: Span,
         depth: usize,
         kind: ListItemKind,
         content: Vec<Element>,
     },
+    /// List of items. The `ListItemKind` of its children
+    /// can be heterogenous.
     List {
         position: Span,
         content: Vec<Element>,
     },
+    /// A mediawiki table. `attributes` represent html
+    /// attributes assigned to the table.
     Table {
         position: Span,
         attributes: Vec<TagAttribute>,
@@ -68,24 +87,32 @@ pub enum Element {
         caption_attributes: Vec<TagAttribute>,
         rows: Vec<Element>,
     },
+    /// A table row. `attributes` represent html
+    /// attributes assigned to the table.
     TableRow {
         position: Span,
         attributes: Vec<TagAttribute>,
         cells: Vec<Element>,
     },
+    /// A single table cell. `attributes` represent html
+    /// attributes assigned to the table. `header` is true
+    /// if this cell is marked as a header cell.
     TableCell {
         position: Span,
         header: bool,
         attributes: Vec<TagAttribute>,
         content: Vec<Element>,
     },
+    /// Comments in the input document.
     Comment { position: Span, text: String },
+    /// Html tags not encoding formatting elements.
     HtmlTag {
         position: Span,
         name: String,
         attributes: Vec<TagAttribute>,
         content: Vec<Element>,
     },
+    /// Indicates an erroneous part of the document tree.
     Error { position: Span, message: String },
 }
 
@@ -156,29 +183,33 @@ pub struct SourceLine<'input> {
     pub end: usize,
 }
 
-/// checks if `pos` is at a line start
-pub fn starts_line(pos: usize, slocs: &Vec<SourceLine>) -> bool {
-    for sloc in slocs {
-        if sloc.start == pos {
-            return true;
+impl<'input> SourceLine<'input> {
+    /// checks if `pos` is at a line start
+    pub fn starts_line(pos: usize, slocs: &Vec<SourceLine>) -> bool {
+        for sloc in slocs {
+            if sloc.start == pos {
+                return true;
+            }
         }
+        return false;
     }
-    return false;
 }
 
-/// Match an HTML tag name to it's markup type.
-pub fn get_markup_by_tag_name(tag: &str) -> MarkupType {
-    match &tag.to_lowercase()[..] {
-        "math" => MarkupType::Math,
-        "del" => MarkupType::StrikeThrough,
-        "s" => MarkupType::StrikeThrough,
-        "nowiki" => MarkupType::NoWiki,
-        "u" => MarkupType::Underline,
-        "ins" => MarkupType::Underline,
-        "code" => MarkupType::Code,
-        "blockquote" => MarkupType::Blockquote,
-        "pre" => MarkupType::Preformatted,
-        _ => panic!("markup type lookup not implemented for {}!", tag),
+impl MarkupType {
+    /// Match an HTML tag name to it's markup type.
+    pub fn by_tag_name(tag: &str) -> MarkupType {
+        match &tag.to_lowercase()[..] {
+            "math" => MarkupType::Math,
+            "del" => MarkupType::StrikeThrough,
+            "s" => MarkupType::StrikeThrough,
+            "nowiki" => MarkupType::NoWiki,
+            "u" => MarkupType::Underline,
+            "ins" => MarkupType::Underline,
+            "code" => MarkupType::Code,
+            "blockquote" => MarkupType::Blockquote,
+            "pre" => MarkupType::Preformatted,
+            _ => panic!("markup type lookup not implemented for {}!", tag),
+        }
     }
 }
 
