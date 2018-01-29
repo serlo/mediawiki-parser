@@ -112,6 +112,12 @@ pub enum Element {
         attributes: Vec<TagAttribute>,
         content: Vec<Element>,
     },
+    /// Gallery of images (or interal references in general).
+    Gallery {
+        position: Span,
+        attributes: Vec<TagAttribute>,
+        content: Vec<Element>,
+    },
     /// Indicates an erroneous part of the document tree.
     Error { position: Span, message: String },
 }
@@ -234,6 +240,7 @@ impl Element {
             &Element::TableCell { ref position, .. } => position,
             &Element::Comment { ref position, .. } => position,
             &Element::HtmlTag { ref position, .. } => position,
+            &Element::Gallery { ref position, .. } => position,
             &Element::Error { ref position, .. } => position,
         }
     }
@@ -257,6 +264,7 @@ impl Element {
             &mut Element::TableCell { ref mut position, .. } => position,
             &mut Element::Comment { ref mut position, .. } => position,
             &mut Element::HtmlTag { ref mut position, .. } => position,
+            &mut Element::Gallery { ref mut position, .. } => position,
             &mut Element::Error { ref mut position, .. } => position,
         }
     }
@@ -280,6 +288,7 @@ impl Element {
             &Element::TableCell { .. } => "TableCell",
             &Element::Comment { .. } => "Comment",
             &Element::HtmlTag { .. } => "HtmlTag",
+            &Element::Gallery { .. } => "Gallery",
             &Element::Error { .. } => "Error",
         }
     }

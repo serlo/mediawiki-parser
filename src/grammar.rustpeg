@@ -41,7 +41,7 @@ Heading -> Element
  * ripped apart.
  */
 ParagraphTemplate<FormattedRule> 
-    = List / Table / posl:#position PAR_START_GUARD text:FormattedRule* Newline posr:#position {
+    = List / Table / Gallery / posl:#position PAR_START_GUARD text:FormattedRule* Newline posr:#position {
        
          Element::Paragraph {
             position: Span::new(posl, posr, source_lines),
@@ -218,6 +218,30 @@ ReferenceExternal -> Element
     }
 
 /*
+ * Galleries
+ */
+GallerySep = (Space* Newline Space*)+
+
+Gallery -> Element 
+    = posl:#position attr:TagOpen<"gallery"i> GallerySep* files:(
+        (flp:#position content:(f:InternalReferenceFormatted+ {f}) ++ "|" frp:#position {
+            let mut content = content;
+            Element::InternalReference {
+                position: Span::new(flp, frp, source_lines),
+                target: content.remove(0),
+                caption: content.pop().unwrap_or(vec![]),
+                options: content,
+            }
+        })
+    ** GallerySep) GallerySep* TagClose<"gallery"i> posr:#position {
+    Element::Gallery {
+        position: Span::new(posl, posr, source_lines),
+        attributes: attr.1,
+        content: files,
+    }
+}
+
+/*
  * Inline markup
  */
 
@@ -279,7 +303,7 @@ FormattedTextTemplate<TextRule>
     / Template
     / ReferenceInternal
     / ReferenceExternal
-   
+
     / HtmlComment 
     / InlineMath
     / NoWikiMarkup
@@ -326,9 +350,9 @@ AnyOpen
 AnyClose
     = TagClose<TagName?> {()}
 
-/** matches any valid html tag with inner Text / Paragraph / Heading, creating a HtmlTag Element. */
+/** matches any valid html tag (except builtins like "gallery" with inner Text / Paragraph / Heading, creating a HtmlTag Element. */
 AnyTag -> Element 
-    = posl:#position t:HtmlTag<TagName, (Paragraph / FormattedText / Heading)*> posr:#position {
+    = posl:#position t:HtmlTag<(!HTML_BLOCK_ELEMENTS n:TagName {n}), (Paragraph / FormattedText / Heading)*> posr:#position {
     
         Element::HtmlTag {
             position: Span::new(posl, posr, source_lines),
@@ -433,4 +457,5 @@ TemplateAttributeNameChar -> &'input str = !(Newline / "{" / "}" / "|" / "<" / "
 
 // a paragraph may not start with these symbols as they indicate other elements
 PAR_START_GUARD = !("=" / "!" / "|" / "*" / "#" / ":" / ";")
-
+// tags which should be parsed as block elements, rather than html tags.
+HTML_BLOCK_ELEMENTS = ("gallery"i)

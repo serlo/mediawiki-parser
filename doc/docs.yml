@@ -1404,3 +1404,115 @@
                         - type: text
                           position: {}
                           text: footer
+
+# a simple gallery tag
+  - case: simple gallery
+    input: |
+        <gallery>
+        File:Abc
+        </gallery>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: gallery
+          position: {}
+          attributes: []
+          content:
+            - type: internalreference
+              position: {}
+              target: 
+                - type: text
+                  position: {}
+                  text: File:Abc
+              options: []
+              caption: []
+
+# an empty gallery
+  - case: empty gallery
+    input: |
+        <gallery>
+        </gallery>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: gallery
+          position: {}
+          attributes: []
+          content: []
+
+# empty gallery with whitespace
+  - case: empty whitespace gallery
+    input: "<gallery>  \n \n\n\n    \n\t\n </gallery>"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: gallery
+          position: {}
+          attributes: []
+          content: []
+
+# simple gallery with whitespace
+  - case: simple whitespace gallery
+    input: "<gallery>  \n \nFile:ABC \n\n    \n\t\n </gallery>"
+    out:
+      type: document
+      position: {}
+      content:
+        - type: gallery
+          position: {}
+          attributes: []
+          content: 
+            - type: internalreference
+              position: {}
+              target: 
+                - type: text
+                  position: {}
+                  text: "File:ABC "
+              caption: []
+              options: []
+
+# a gallery with figure captions
+  - case: caption gallery
+    input: |
+        <gallery>
+        File:Abc|this is a figure [[caption]]
+        File:This is a new file
+        </gallery>
+    out:
+      type: document
+      position: {}
+      content:
+        - type: gallery
+          position: {}
+          attributes: []
+          content:
+            - type: internalreference
+              position: {}
+              target: 
+                - type: text
+                  position: {}
+                  text: File:Abc
+              options: []
+              caption:
+                - type: text
+                  position: {}
+                  text: "this is a figure "
+                - type: internalreference
+                  position: {}
+                  target: 
+                    - type: text
+                      position: {}
+                      text: caption
+                  caption: []
+                  options: []
+            - type: internalreference
+              position: {}
+              target:
+                - type: text
+                  position: {}
+                  text: File:This is a new file
+              caption: []
+              options: []

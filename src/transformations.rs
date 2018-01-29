@@ -144,7 +144,13 @@ pub fn recurse_inplace_template<S: Copy>(
             let mut new_content = content_func(func, content, settings)?;
             content.append(&mut new_content);
         }
-        _ => (),
+        Element::Gallery { ref mut content, .. } => {
+            let mut new_content = content_func(func, content, settings)?;
+            content.append(&mut new_content);
+        },
+        Element::Text { .. } => (),
+        Element::Comment { .. } => (),
+        Element::Error { .. } => (),
     };
     Ok(root)
 }
@@ -342,6 +348,17 @@ pub fn recurse_clone_template<S: Copy>(
                 content: content_func(func, content, &path, settings)?,
             }
         }
+        Element::Gallery {
+            ref position,
+            ref attributes,
+            ref content,
+        } => {
+            Element::Gallery {
+                position: position.clone(),
+                attributes: attributes.clone(),
+                content: content_func(func, content, &path, settings)?,
+            }
+        },
         Element::Error { .. } => root.clone(),
     };
     path.pop();

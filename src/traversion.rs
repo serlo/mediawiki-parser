@@ -129,6 +129,9 @@ pub trait Traversion<'a, S: Copy> {
             &Element::HtmlTag { ref content, .. } => {
                 self.run_vec(content, settings, out)?;
             },
+            &Element::Gallery { ref content, .. } => {
+                self.run_vec(content, settings, out)?;
+            },
             &Element::Error { .. } => (),
         }
         self.path_pop();
