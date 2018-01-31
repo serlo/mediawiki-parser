@@ -13,7 +13,8 @@ mod traversion;
 mod ast;
 mod error;
 mod util;
-#[cfg_attr(feature = "cargo-clippy", allow(unit_arg, cyclomatic_complexity, len_zero))]
+#[cfg_attr(feature = "cargo-clippy", allow(unit_arg, cyclomatic_complexity,
+     len_zero, single_match, naive_bytecount))]
 mod grammar;
 
 

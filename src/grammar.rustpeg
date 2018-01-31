@@ -84,7 +84,7 @@ TemplateArgument -> Element
      
        Element::TemplateArgument {
             position: Span::new(posl, posr, source_lines),
-            name: name.unwrap_or(String::new()),
+            name: name.unwrap_or_default(),
             value: value,
         }    
     } 
@@ -113,7 +113,8 @@ ListItem -> Element
                 "#" => ListItemKind::Ordered,
                 ":" => ListItemKind::Definition,
                 ";" => ListItemKind::DefinitionTerm,
-                _ => ListItemKind::Unordered,
+                _ => panic!("undefined list start: {} \
+                            this should never parse until here!", s[s.len() - 1])
             };
 
             Ok(Element::ListItem {
@@ -131,7 +132,7 @@ ListItem -> Element
 Table -> Element
     = posl:#position "{|" attr:TableElementAttributes? (Space / Newline)* caption:TableCaption? first_cells:TableCell* rows:TableRow* "|}" posr:#position { 
     
-        let (cap_attrs, cap_pars) = caption.unwrap_or((vec![], vec![]));
+        let (cap_attrs, cap_pars) = caption.unwrap_or_default();
         let mut rows = rows;
         if first_cells.len() > 0 {
             rows.insert(0, Element::TableRow {
@@ -143,7 +144,7 @@ Table -> Element
         Element::Table {
             position: Span::new(posl, posr, source_lines),
             rows: rows,
-            attributes: attr.unwrap_or(vec![]),
+            attributes: attr.unwrap_or_default(),
             caption: cap_pars,
             caption_attributes: cap_attrs,
         }
@@ -156,7 +157,7 @@ TableFormatted -> Element
 TableParagraph -> Element
     = ParagraphTemplate<TableFormatted>
 TableCaption -> (Vec<TagAttribute>, Vec<Element>) =
-    "|+" attr:(t:TableElementAttributes "|" {t})? Space* pars:(TableParagraph / TableFormatted)* {(attr.unwrap_or(vec![]), pars)}
+    "|+" attr:(t:TableElementAttributes "|" {t})? Space* pars:(TableParagraph / TableFormatted)* {(attr.unwrap_or_default(), pars)}
 TableCellSeparator -> &'input str
     = $("||") / $("!!") / $("|") / $("!")
 TableRowSeparator -> Vec<TagAttribute>
@@ -179,8 +180,8 @@ TableCell -> Element
         Element::TableCell {
             position: Span::new(posl, posr, source_lines),
             content: content,
-            attributes: attr.unwrap_or(vec![]),
-            header: sep.starts_with("!"),
+            attributes: attr.unwrap_or_default(),
+            header: sep.starts_with('!'),
         }
     }
 
@@ -201,7 +202,7 @@ ReferenceInternal -> Element
         Element::InternalReference {
             position: Span::new(posl, posr, source_lines),
             target: t.remove(0),
-            caption: t.pop().unwrap_or(vec![]),
+            caption: t.pop().unwrap_or_default(),
             options: t, 
         }      
     }
@@ -229,7 +230,7 @@ Gallery -> Element
             Element::InternalReference {
                 position: Span::new(flp, frp, source_lines),
                 target: content.remove(0),
-                caption: content.pop().unwrap_or(vec![]),
+                caption: content.pop().unwrap_or_default(),
                 options: content,
             }
         })
@@ -356,7 +357,7 @@ AnyTag -> Element
     
         Element::HtmlTag {
             position: Span::new(posl, posr, source_lines),
-            name: String::from(t.0),
+            name: t.0,
             attributes: t.1,
             content: t.2,
         }
@@ -380,7 +381,7 @@ HtmlComment -> Element
    
         Element::Comment {
             position: Span::new(posl, posr, source_lines),
-            text: s.unwrap_or(String::new()),
+            text: s.unwrap_or_default(),
         }
 }
 
