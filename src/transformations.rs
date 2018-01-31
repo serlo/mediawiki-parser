@@ -13,14 +13,14 @@ pub type TListResult = Result<Vec<Element>, TransformationError>;
 pub type TFuncInplace<S> = Fn(Element, S) -> TResult;
 
 /// Signature of a cloning transformation function
-pub type TFunc<S> = Fn(&Element, &Vec<&Element>, S) -> TResult;
+pub type TFunc<S> = Fn(&Element, &[&Element], S) -> TResult;
 
 
 /// Apply a given transformation function to a list of elements, without mutating the original.
 pub fn apply_func_clone<S: Copy>(
     func: &TFunc<S>,
-    content: &Vec<Element>,
-    path: &Vec<&Element>,
+    content: &[Element],
+    path: &[&Element],
     settings: S,
 ) -> TListResult {
     let mut result = vec![];
@@ -57,7 +57,15 @@ pub fn recurse_inplace_template<S: Copy>(
 ) -> TResult {
 
     match root {
-        Element::Document { ref mut content, .. } => {
+        Element::Document { ref mut content, .. }
+        | Element::Formatted { ref mut content, .. }
+        | Element::Paragraph { ref mut content, .. }
+        | Element::ListItem { ref mut content, .. }
+        | Element::List { ref mut content, .. }
+        | Element::TableCell { ref mut content, .. }
+        | Element::HtmlTag { ref mut content, .. }
+        | Element::Gallery { ref mut content, .. }
+         => {
             let mut new_content = content_func(func, content, settings)?;
             content.append(&mut new_content);
         }
@@ -69,14 +77,6 @@ pub fn recurse_inplace_template<S: Copy>(
             let mut new_content = content_func(func, content, settings)?;
             let mut new_caption = content_func(func, caption, settings)?;
             caption.append(&mut new_caption);
-            content.append(&mut new_content);
-        }
-        Element::Formatted { ref mut content, .. } => {
-            let mut new_content = content_func(func, content, settings)?;
-            content.append(&mut new_content);
-        }
-        Element::Paragraph { ref mut content, .. } => {
-            let mut new_content = content_func(func, content, settings)?;
             content.append(&mut new_content);
         }
         Element::Template {
@@ -114,14 +114,6 @@ pub fn recurse_inplace_template<S: Copy>(
             let mut new_caption = content_func(func, caption, settings)?;
             caption.append(&mut new_caption);
         }
-        Element::ListItem { ref mut content, .. } => {
-            let mut new_content = content_func(func, content, settings)?;
-            content.append(&mut new_content);
-        }
-        Element::List { ref mut content, .. } => {
-            let mut new_content = content_func(func, content, settings)?;
-            content.append(&mut new_content);
-        }
         Element::Table {
             ref mut caption,
             ref mut rows,
@@ -136,21 +128,10 @@ pub fn recurse_inplace_template<S: Copy>(
             let mut new_cells = content_func(func, cells, settings)?;
             cells.append(&mut new_cells);
         }
-        Element::TableCell { ref mut content, .. } => {
-            let mut new_content = content_func(func, content, settings)?;
-            content.append(&mut new_content);
-        }
-        Element::HtmlTag { ref mut content, .. } => {
-            let mut new_content = content_func(func, content, settings)?;
-            content.append(&mut new_content);
-        }
-        Element::Gallery { ref mut content, .. } => {
-            let mut new_content = content_func(func, content, settings)?;
-            content.append(&mut new_content);
-        },
-        Element::Text { .. } => (),
-        Element::Comment { .. } => (),
-        Element::Error { .. } => (),
+        Element::Text { .. }
+        | Element::Comment { .. }
+        | Element::Error { .. }
+        => (),
     };
     Ok(root)
 }
@@ -159,7 +140,7 @@ pub fn recurse_inplace_template<S: Copy>(
 pub fn recurse_clone<S: Copy>(
     func: &TFunc<S>,
     root: &Element,
-    path: &Vec<&Element>,
+    path: &[&Element],
     settings: S,
 ) -> TResult {
 
@@ -171,12 +152,12 @@ pub fn recurse_clone<S: Copy>(
 pub fn recurse_clone_template<S: Copy>(
     func: &TFunc<S>,
     root: &Element,
-    path: &Vec<&Element>,
+    path: &[&Element],
     settings: S,
-    content_func: &Fn(&TFunc<S>, &Vec<Element>, &Vec<&Element>, S) -> TListResult,
+    content_func: &Fn(&TFunc<S>, &[Element], &[&Element], S) -> TListResult,
 ) -> TResult {
 
-    let mut path = path.clone();
+    let mut path = path.to_owned();
     path.push(root);
     let new = match *root {
         Element::Document {
@@ -202,7 +183,6 @@ pub fn recurse_clone_template<S: Copy>(
                 content: content_func(func, content, &path, settings)?,
             }
         }
-        Element::Text { .. } => root.clone(),
         Element::Formatted {
             ref position,
             ref markup,
@@ -210,7 +190,7 @@ pub fn recurse_clone_template<S: Copy>(
         } => {
             Element::Formatted {
                 position: position.clone(),
-                markup: markup.clone(),
+                markup: *markup,
                 content: content_func(func, content, &path, settings)?,
             }
         }
@@ -282,7 +262,7 @@ pub fn recurse_clone_template<S: Copy>(
             Element::ListItem {
                 position: position.clone(),
                 depth: *depth,
-                kind: kind.clone(),
+                kind: *kind,
                 content: content_func(func, content, &path, settings)?,
             }
         }
@@ -334,7 +314,10 @@ pub fn recurse_clone_template<S: Copy>(
                 content: content_func(func, content, &path, settings)?,
             }
         }
-        Element::Comment { .. } => root.clone(),
+        Element::Comment { .. }
+        | Element::Text { .. }
+        | Element::Error { .. } => root.clone(),
+
         Element::HtmlTag {
             ref position,
             ref name,
@@ -359,7 +342,6 @@ pub fn recurse_clone_template<S: Copy>(
                 content: content_func(func, content, &path, settings)?,
             }
         },
-        Element::Error { .. } => root.clone(),
     };
     path.pop();
     Ok(new)
