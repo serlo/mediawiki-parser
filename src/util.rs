@@ -10,12 +10,12 @@ const TERMINAL_WIDTH: usize = 80;
 /// Compiles a list of start and end positions of the input source lines.
 ///
 /// This representation is used to calculate line and column position from the input offset.
-pub fn get_source_lines<'input>(source: &'input str) -> Vec<ast::SourceLine> {
+pub fn get_source_lines(source: &str) -> Vec<ast::SourceLine> {
 
     let mut pos = 0;
     let mut result = Vec::new();
 
-    for line in source.split("\n") {
+    for line in source.split('\n') {
         result.push(ast::SourceLine {
             start: pos,
             content: line,
@@ -38,7 +38,7 @@ pub fn is_whitespace(input: &str) -> bool {
 }
 
 
-/// Shorten a string to fit into TERMINAL_WIDTH.
+/// Shorten a string to fit into `TERMINAL_WIDTH`.
 pub fn shorten_str(input: &str) -> String {
 
     let input_len = input.chars().count();

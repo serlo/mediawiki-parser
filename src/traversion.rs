@@ -31,7 +31,7 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
     /// children of the vector's elements are not considered,
     /// otherwise `work()` is recursively called for all children.
     fn work_vec(&mut self,
-            _root: &'a Vec<Element>,
+            _root: &'a [Element],
             _settings: S,
             _out: &mut io::Write) -> io::Result<bool> {
         Ok(true)
@@ -40,7 +40,7 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
 
     /// run this traversion for a vector of elements.
     fn run_vec(&mut self,
-               content: &'a Vec<Element>,
+               content: &'a [Element],
                settings: S,
                out: &mut io::Write) -> io::Result<()> {
 
@@ -64,11 +64,19 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
         if !self.work(root, settings, out)? {
             return Ok(());
         }
-        match root {
-            &Element::Document { ref content, .. } => {
+        match *root {
+            Element::Document { ref content, .. }
+            | Element::Formatted { ref content, .. }
+            | Element::Paragraph { ref content, .. }
+            | Element::ListItem { ref content, .. }
+            | Element::List { ref content, .. }
+            | Element::TableCell { ref content, .. }
+            | Element::HtmlTag { ref content, .. }
+            | Element::Gallery { ref content, .. }
+            => {
                 self.run_vec(content, settings, out)?;
             }
-            &Element::Heading {
+            Element::Heading {
                 ref caption,
                 ref content,
                 ..
@@ -76,21 +84,14 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
                 self.run_vec(caption, settings, out)?;
                 self.run_vec(content, settings, out)?;
             }
-            &Element::Text { .. } => (),
-            &Element::Formatted { ref content, .. } => {
-                self.run_vec(content, settings, out)?;
-            }
-            &Element::Paragraph { ref content, .. } => {
-                self.run_vec(content, settings, out)?;
-            }
-            &Element::Template { ref content, ref name, .. } => {
+            Element::Template { ref content, ref name, .. } => {
                 self.run_vec(content, settings, out)?;
                 self.run_vec(name, settings, out)?;
             }
-            &Element::TemplateArgument { ref value, .. } => {
+            Element::TemplateArgument { ref value, .. } => {
                 self.run_vec(value, settings, out)?;
             }
-            &Element::InternalReference {
+            Element::InternalReference {
                 ref target,
                 ref options,
                 ref caption,
@@ -102,16 +103,10 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
                 }
                 self.run_vec(caption, settings, out)?;
             }
-            &Element::ExternalReference { ref caption, .. } => {
+            Element::ExternalReference { ref caption, .. } => {
                 self.run_vec(caption, settings, out)?;
             }
-            &Element::ListItem { ref content, .. } => {
-                self.run_vec(content, settings, out)?;
-            }
-            &Element::List { ref content, .. } => {
-                self.run_vec(content, settings, out)?;
-            }
-            &Element::Table {
+            Element::Table {
                 ref caption,
                 ref rows,
                 ..
@@ -119,20 +114,13 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
                 self.run_vec(caption, settings, out)?;
                 self.run_vec(rows, settings, out)?;
             }
-            &Element::TableRow { ref cells, .. } => {
+            Element::TableRow { ref cells, .. } => {
                 self.run_vec(cells, settings, out)?;
             }
-            &Element::TableCell { ref content, .. } => {
-                self.run_vec(content, settings, out)?;
-            }
-            &Element::Comment { .. } => (),
-            &Element::HtmlTag { ref content, .. } => {
-                self.run_vec(content, settings, out)?;
-            },
-            &Element::Gallery { ref content, .. } => {
-                self.run_vec(content, settings, out)?;
-            },
-            &Element::Error { .. } => (),
+            Element::Text { .. }
+            | Element::Comment { .. }
+            | Element::Error { .. }
+            => (),
         }
         self.path_pop();
         Ok(())

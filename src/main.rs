@@ -1,4 +1,4 @@
-//! This program takes MediaWiki source code and produces a yaml syntax tree.
+//! This program takes Media Wiki source code and produces a yaml syntax tree.
 //!
 //! It aims to provide fast offline processing with debug information
 //! (element position) included. The resulting tree represents the input

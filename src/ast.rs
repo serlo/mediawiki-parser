@@ -151,7 +151,7 @@ pub enum ListItemKind {
 /**
  * Represents a position in the source document.
  *
- * The PartialEq implementation allows for a "any" position (all zero), which is
+ * The `PartialEq` implementation allows for a "any" position (all zero), which is
  * equal to any other position. This is used to reduce clutter in tests, where
  * a default Position ("{}") can be used where the actual representation is irrelevant.
  */
@@ -197,7 +197,7 @@ impl<'input> SourceLine<'input> {
                 return true;
             }
         }
-        return false;
+        false
     }
 }
 
@@ -206,11 +206,9 @@ impl MarkupType {
     pub fn by_tag_name(tag: &str) -> MarkupType {
         match &tag.to_lowercase()[..] {
             "math" => MarkupType::Math,
-            "del" => MarkupType::StrikeThrough,
-            "s" => MarkupType::StrikeThrough,
+            "del" | "s" => MarkupType::StrikeThrough,
             "nowiki" => MarkupType::NoWiki,
-            "u" => MarkupType::Underline,
-            "ins" => MarkupType::Underline,
+            "u" | "ins" => MarkupType::Underline,
             "code" => MarkupType::Code,
             "blockquote" => MarkupType::Blockquote,
             "pre" => MarkupType::Preformatted,
@@ -223,73 +221,75 @@ impl MarkupType {
 impl Element {
     /// returns the source code position of an element.
     pub fn get_position(&self) -> &Span {
-        match self {
-            &Element::Document { ref position, .. } => position,
-            &Element::Heading { ref position, .. } => position,
-            &Element::Text { ref position, .. } => position,
-            &Element::Formatted { ref position, .. } => position,
-            &Element::Paragraph { ref position, .. } => position,
-            &Element::Template { ref position, .. } => position,
-            &Element::TemplateArgument { ref position, .. } => position,
-            &Element::InternalReference { ref position, .. } => position,
-            &Element::ExternalReference { ref position, .. } => position,
-            &Element::List { ref position, .. } => position,
-            &Element::ListItem { ref position, .. } => position,
-            &Element::Table { ref position, .. } => position,
-            &Element::TableRow { ref position, .. } => position,
-            &Element::TableCell { ref position, .. } => position,
-            &Element::Comment { ref position, .. } => position,
-            &Element::HtmlTag { ref position, .. } => position,
-            &Element::Gallery { ref position, .. } => position,
-            &Element::Error { ref position, .. } => position,
+        match *self {
+            Element::Document { ref position, .. }
+            | Element::Heading { ref position, .. }
+            | Element::Text { ref position, .. }
+            | Element::Formatted { ref position, .. }
+            | Element::Paragraph { ref position, .. }
+            | Element::Template { ref position, .. }
+            | Element::TemplateArgument { ref position, .. }
+            | Element::InternalReference { ref position, .. }
+            | Element::ExternalReference { ref position, .. }
+            | Element::List { ref position, .. }
+            | Element::ListItem { ref position, .. }
+            | Element::Table { ref position, .. }
+            | Element::TableRow { ref position, .. }
+            | Element::TableCell { ref position, .. }
+            | Element::Comment { ref position, .. }
+            | Element::HtmlTag { ref position, .. }
+            | Element::Gallery { ref position, .. }
+            | Element::Error { ref position, .. }
+            => position,
         }
     }
 
     /// returns a mutable reference the source code position of an element.
     pub fn get_position_mut(&mut self) -> &mut Span {
-        match self {
-            &mut Element::Document { ref mut position, .. } => position,
-            &mut Element::Heading { ref mut position, .. } => position,
-            &mut Element::Text { ref mut position, .. } => position,
-            &mut Element::Formatted { ref mut position, .. } => position,
-            &mut Element::Paragraph { ref mut position, .. } => position,
-            &mut Element::Template { ref mut position, .. } => position,
-            &mut Element::TemplateArgument { ref mut position, .. } => position,
-            &mut Element::InternalReference { ref mut position, .. } => position,
-            &mut Element::ExternalReference { ref mut position, .. } => position,
-            &mut Element::List { ref mut position, .. } => position,
-            &mut Element::ListItem { ref mut position, .. } => position,
-            &mut Element::Table { ref mut position, .. } => position,
-            &mut Element::TableRow { ref mut position, .. } => position,
-            &mut Element::TableCell { ref mut position, .. } => position,
-            &mut Element::Comment { ref mut position, .. } => position,
-            &mut Element::HtmlTag { ref mut position, .. } => position,
-            &mut Element::Gallery { ref mut position, .. } => position,
-            &mut Element::Error { ref mut position, .. } => position,
+        match *self {
+            Element::Document { ref mut position, .. }
+            | Element::Heading { ref mut position, .. }
+            | Element::Text { ref mut position, .. }
+            | Element::Formatted { ref mut position, .. }
+            | Element::Paragraph { ref mut position, .. }
+            | Element::Template { ref mut position, .. }
+            | Element::TemplateArgument { ref mut position, .. }
+            | Element::InternalReference { ref mut position, .. }
+            | Element::ExternalReference { ref mut position, .. }
+            | Element::List { ref mut position, .. }
+            | Element::ListItem { ref mut position, .. }
+            | Element::Table { ref mut position, .. }
+            | Element::TableRow { ref mut position, .. }
+            | Element::TableCell { ref mut position, .. }
+            | Element::Comment { ref mut position, .. }
+            | Element::HtmlTag { ref mut position, .. }
+            | Element::Gallery { ref mut position, .. }
+            | Element::Error { ref mut position, .. }
+            => position,
         }
     }
 
     /// returns the variant name of an element.
     pub fn get_variant_name(&self) -> &str {
-        match self {
-            &Element::Document { .. } => "Document",
-            &Element::Heading { .. } => "Heading",
-            &Element::Text { .. } => "Text",
-            &Element::Formatted { .. } => "Formatted",
-            &Element::Paragraph { .. } => "Paragraph",
-            &Element::Template { .. } => "Template",
-            &Element::TemplateArgument { .. } => "TemplateArgument",
-            &Element::InternalReference { .. } => "InternalReference",
-            &Element::ExternalReference { .. } => "ExternalReference",
-            &Element::List { .. } => "List",
-            &Element::ListItem { .. } => "ListItem",
-            &Element::Table { .. } => "Table",
-            &Element::TableRow { .. } => "TableRow",
-            &Element::TableCell { .. } => "TableCell",
-            &Element::Comment { .. } => "Comment",
-            &Element::HtmlTag { .. } => "HtmlTag",
-            &Element::Gallery { .. } => "Gallery",
-            &Element::Error { .. } => "Error",
+        match *self {
+            Element::Document { .. } => "Document",
+            Element::Heading { .. } => "Heading",
+            Element::Text { .. } => "Text",
+            Element::Formatted { .. } => "Formatted",
+            Element::Paragraph { .. } => "Paragraph",
+            Element::Template { .. } => "Template",
+            Element::TemplateArgument { .. } => "TemplateArgument",
+            Element::InternalReference { .. } => "InternalReference",
+            Element::ExternalReference { .. } => "ExternalReference",
+            Element::List { .. } => "List",
+            Element::ListItem { .. } => "ListItem",
+            Element::Table { .. } => "Table",
+            Element::TableRow { .. } => "TableRow",
+            Element::TableCell { .. } => "TableCell",
+            Element::Comment { .. } => "Comment",
+            Element::HtmlTag { .. } => "HtmlTag",
+            Element::Gallery { .. } => "Gallery",
+            Element::Error { .. } => "Error",
         }
     }
 }
@@ -360,11 +360,7 @@ impl PartialEq for Position {
             return true;
         }
 
-        return self.offset == other.offset && self.line == other.line && self.col == other.col;
-    }
-
-    fn ne(&self, other: &Position) -> bool {
-        !self.eq(other)
+        self.offset == other.offset && self.line == other.line && self.col == other.col
     }
 }
 

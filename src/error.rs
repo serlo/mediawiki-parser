@@ -42,7 +42,7 @@ pub struct TransformationError {
 impl ParseError {
     pub fn from(err: &grammar::ParseError, input: &str) -> Self {
 
-        let source_lines = util::get_source_lines(&input);
+        let source_lines = util::get_source_lines(input);
         let line_count = source_lines.len();
 
         let line = if err.line <= line_count {
@@ -156,18 +156,18 @@ impl fmt::Display for TransformationError {
 
 impl error::Error for MWError {
     fn description(&self) -> &str {
-        match self {
-            &MWError::ParseError(ref e) => e.description(),
-            &MWError::TransformationError(ref e) => e.description(),
+        match *self {
+            MWError::ParseError(ref e) => e.description(),
+            MWError::TransformationError(ref e) => e.description(),
         }
     }
 }
 
 impl fmt::Display for MWError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        match self {
-            &MWError::ParseError(ref e) => write!(f, "{}", e),
-            &MWError::TransformationError(ref e) => write!(f, "{}", e),
+        match *self {
+            MWError::ParseError(ref e) => write!(f, "{}", e),
+            MWError::TransformationError(ref e) => write!(f, "{}", e),
         }
     }
 }
