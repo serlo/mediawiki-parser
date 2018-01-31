@@ -191,7 +191,7 @@ pub struct SourceLine<'input> {
 
 impl<'input> SourceLine<'input> {
     /// checks if `pos` is at a line start
-    pub fn starts_line(pos: usize, slocs: &Vec<SourceLine>) -> bool {
+    pub fn starts_line(pos: usize, slocs: &[SourceLine]) -> bool {
         for sloc in slocs {
             if sloc.start == pos {
                 return true;
@@ -296,7 +296,7 @@ impl Element {
 
 
 impl Position {
-    pub fn new(offset: usize, slocs: &Vec<SourceLine>) -> Self {
+    pub fn new(offset: usize, slocs: &[SourceLine]) -> Self {
         for (i, sloc) in slocs.iter().enumerate() {
             if offset >= sloc.start && offset < sloc.end {
                 return Position {
@@ -331,7 +331,7 @@ impl Span {
         }
     }
 
-    pub fn new(posl: usize, posr: usize, source_lines: &Vec<SourceLine>) -> Self {
+    pub fn new(posl: usize, posr: usize, source_lines: &[SourceLine]) -> Self {
         Span {
             start: Position::new(posl, source_lines),
             end: Position::new(posr, source_lines),

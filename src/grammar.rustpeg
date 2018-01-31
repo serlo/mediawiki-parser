@@ -1,6 +1,6 @@
 use ast::*;
 
-#![arguments(source_lines: &Vec<SourceLine>)]
+#![arguments(source_lines: &[SourceLine])]
 
 /** the main document structure */
 pub Document -> Element 

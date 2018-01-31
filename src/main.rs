@@ -2,8 +2,9 @@
 //!
 //! It aims to provide fast offline processing with debug information
 //! (element position) included. The resulting tree represents the input
-//! document on a syntactic level. Please refer to the mediawiki_parser
-//! documentation for a description of possible elements of the abstract //! syntax tree.
+//! document on a syntactic level. Please refer to the `mediawiki_parser`
+//! documentation for a description of possible elements of the abstract
+//! syntax tree.
 
 extern crate mediawiki_parser;
 extern crate serde_yaml;
@@ -23,7 +24,7 @@ macro_rules! DESCRIPTION {
 )
 }
 
-/// read contents of a io::Reader into a string
+/// read contents of a `io::Reader` into a string
 fn read_from_reader(reader: &mut io::Read) -> String {
     let mut buffer = io::BufReader::new(reader);
     let mut content = String::new();
