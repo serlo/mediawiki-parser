@@ -8,7 +8,7 @@ use std::io;
 ///
 /// All fields of the traversion struct can be mutated,
 /// external settings cannot.
-pub trait Traversion<'a, S: Copy> {
+pub trait Traversion<'a, S: Copy + Sized> {
     /// push to the traversion path.
     fn path_push(&mut self, &'a Element);
     /// pop from the traversion path.
