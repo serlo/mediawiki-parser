@@ -1516,3 +1516,44 @@
                   text: File:This is a new file
               caption: []
               options: []
+
+# template with a heading as content
+  - case: template with heading content
+    input: |
+      {{noprint|
+      == caption
+      content
+      }}
+    out:
+      type: document
+      position: {}
+      content:
+        - type: paragraph
+          position: {}
+          content:
+            - type: template
+              position: {}
+              name:
+                - type: text
+                  position: {}
+                  text: noprint
+              content:
+                - type: templateargument
+                  position: {}
+                  name: ""
+                  value:
+                    - type: heading
+                      position: {}
+                      depth: 2
+                      caption: 
+                        - type: text
+                          position: {}
+                          text: caption
+                      content:
+                        - type: paragraph
+                          position: {}
+                          content:
+                            - type: text
+                              position: {}
+                              text: content
+                            

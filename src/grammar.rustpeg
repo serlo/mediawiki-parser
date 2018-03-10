@@ -80,7 +80,7 @@ Template -> Element
     }
 
 TemplateArgument -> Element
-    = posl:#position name:(n:TemplateArgumentName "=" {n})? value:(TemplateParagraph / TemplateFormatted)* posr:#position {
+    = posl:#position name:(n:TemplateArgumentName "=" {n})? value:(Heading / TemplateParagraph / TemplateFormatted)* posr:#position {
      
        Element::TemplateArgument {
             position: Span::new(posl, posr, source_lines),
