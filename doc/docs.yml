@@ -194,7 +194,7 @@
               content:
                 - type: templateargument
                   position: {}
-                  name: ""
+                  name: "1"
                   value:
                     - type: text
                       position: {}
@@ -827,7 +827,7 @@
               content:
                 - type: templateargument
                   position: {}
-                  name: ""
+                  name: "1"
                   value:
                     - type: paragraph
                       position: {}
@@ -837,7 +837,7 @@
                           text: attribute2
                 - type: templateargument
                   position: {}
-                  name: ""
+                  name: "2"
                   value:
                     - type: paragraph
                       position: {}
@@ -847,7 +847,7 @@
                           text: atträöüß3
                 - type: templateargument
                   position: {}
-                  name: ""
+                  name: "3"
                   value:
                     - type: paragraph
                       position: {}
@@ -944,7 +944,7 @@
                   text: "3"
             - type: templateargument
               position: {}
-              name: ""
+              name: "1"
               value:
                 - type: text
                   position: {}
@@ -1540,7 +1540,7 @@
               content:
                 - type: templateargument
                   position: {}
-                  name: ""
+                  name: "1"
                   value:
                     - type: heading
                       position: {}

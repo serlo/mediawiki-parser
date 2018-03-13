@@ -343,3 +343,21 @@ pub fn collapse_consecutive_text(
     root = recurse_inplace_template(&collapse_consecutive_text, root, settings, &squash_text)?;
     Ok(root)
 }
+
+/// Enumerate anonymous template arguments as "1", "2", ...
+pub fn enumerate_anon_args(mut root: Element, settings: &GeneralSettings) -> TResult {
+    if let Element::Template { ref mut content, .. } = root {
+
+        let mut counter = 1;
+        for child in content {
+            if let Element::TemplateArgument { ref mut name, .. } = *child {
+                if name.trim().is_empty() {
+                    name.clear();
+                    name.push_str(&counter.to_string());
+                    counter += 1;
+                }
+            }
+        }
+    };
+    recurse_inplace(&enumerate_anon_args, root, settings)
+}

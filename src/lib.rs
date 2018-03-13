@@ -57,5 +57,6 @@ fn apply_transformations(mut root: Element, settings: &GeneralSettings)
     root = whitespace_paragraphs_to_empty(root, settings)?;
     root = collapse_paragraphs(root, settings)?;
     root = collapse_consecutive_text(root, settings)?;
+    root = enumerate_anon_args(root, settings)?;
     Ok(root)
 }
