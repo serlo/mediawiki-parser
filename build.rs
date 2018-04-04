@@ -22,6 +22,7 @@ fn {} () {{
 
     let result = parse(&input)
         .expect(\"Parsing of the input for {} failed!\");
+    eprintln!(\"{{}}\", &serde_yaml::to_string(&result).unwrap());
     let target: ast::Element = serde_yaml::from_str(&target_source)
         .expect(\"Parsing the documentation of {} failed!\");
     assert_eq!(&target, &result,
