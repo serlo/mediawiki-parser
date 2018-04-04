@@ -203,6 +203,7 @@ pub struct Span {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(rename_all = "lowercase", deny_unknown_fields)]
 pub struct TagAttribute {
+    #[serde(default)]
     pub position: Span,
     pub key: String,
     pub value: String,

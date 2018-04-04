@@ -229,6 +229,7 @@ pub fn whitespace_paragraphs_to_empty(mut root: Element, settings: &GeneralSetti
     Ok(root)
 }
 
+
 /// Reduce consecutive paragraphs and absorb trailing text into one,
 /// if not separated by a blank paragraph.
 pub fn collapse_paragraphs(
@@ -244,50 +245,35 @@ pub fn collapse_paragraphs(
         let mut last_empty = false;
 
         for mut child in root_content.drain(..) {
-            match child {
-                Element::Paragraph {
-                    ref mut content,
-                    ref mut position
-                } => {
-                    if content.is_empty() {
-                        last_empty = true;
+            if let Element::Paragraph {
+                ref mut content,
+                ref mut position,
+            } = child {
+                if content.is_empty() {
+                    last_empty = true;
+                    continue;
+                }
+
+                // if the last paragraph was not empty, append to it.
+                if !last_empty {
+                    let current_content = content;
+                    let current_position = position;
+                    if let Some(&mut Element::Paragraph {
+                        ref mut content,
+                        ref mut position,
+                    }) = result.last_mut() {
+                        // Add a space on line break
+                        content.push(Element::Text {
+                            text: " ".into(),
+                            position: position.clone()
+                        });
+                        content.append(current_content);
+                        position.end = current_position.end.clone();
                         continue;
                     }
-                    // if the last paragraph was not empty, append to it.
-                    if !last_empty {
-                        let current_content = content;
-                        let current_position = position;
-                        if let Some(&mut Element::Paragraph {
-                            ref mut content,
-                            ref mut position,
-                        }) = result.last_mut() {
-                            content.append(current_content);
-                            position.end = current_position.end.clone();
-                            continue;
-                        }
-                    }
-
-                },
-                Element::Text { ref position, ref text } => {
-                    // if the last paragraph was not empty, append to it.
-                    if !last_empty {
-                        let current_position = position;
-                        if let Some(&mut Element::Paragraph {
-                            ref mut content,
-                            ref mut position,
-                        }) = result.last_mut() {
-                            content.push(Element::Text {
-                                position: current_position.clone(),
-                                text: text.clone(),
-                            });
-                            position.end = current_position.end.clone();
-                            continue;
-                        }
-                    }
-
                 }
-                _ => (),
             };
+
             result.push(child);
             last_empty = false;
         }
@@ -303,12 +289,12 @@ pub fn collapse_paragraphs(
     Ok(root)
 }
 
-
-/// Collapse consecutive text tags into one.
+/// Collapse consecutive text tags into one, removing duplicate whitespace.
 pub fn collapse_consecutive_text(
     mut root: Element,
     settings: &GeneralSettings,
 ) -> Result<Element, TransformationError> {
+
     fn squash_text<'a>(
         trans: &TFuncInplace<&'a GeneralSettings>,
         root_content: &mut Vec<Element>,
@@ -324,13 +310,16 @@ pub fn collapse_consecutive_text(
 
                 let new_text = text;
                 let new_position = position;
+
                 if let Some(&mut Element::Text {
                     ref mut text,
                     ref mut position,
                 }) = result.last_mut() {
-
-                    text.push(' ');
-                    text.push_str(new_text);
+                    if util::is_whitespace(new_text) {
+                       text.push(' ');
+                    } else {
+                        text.push_str(new_text);
+                    }
                     position.end = new_position.end.clone();
                     continue;
                 }
@@ -343,6 +332,7 @@ pub fn collapse_consecutive_text(
     root = recurse_inplace_template(&collapse_consecutive_text, root, settings, &squash_text)?;
     Ok(root)
 }
+
 
 /// Enumerate anonymous template arguments as "1", "2", ...
 pub fn enumerate_anon_args(mut root: Element, settings: &GeneralSettings) -> TResult {

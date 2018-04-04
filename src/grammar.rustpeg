@@ -4,17 +4,16 @@ use ast::*;
 
 /** the main document structure */
 pub Document -> Element 
-    = posl:#position top:Paragraph* content:Heading* end:FormattedText* posr:#position {
-        let mut res = top;
-        let mut content = content;
-        let mut end = end;
-        res.append(&mut content);
-        res.append(&mut end);
+    = posl:#position top:Paragraph* content:Heading* EOF posr:#position {
 
-        Element::Document {
-            position: Span::new(posl, posr, source_lines),
-            content: res, 
-        }
+    let mut res = top;
+    let mut content = content;
+    res.append(&mut content);
+
+    Element::Document {
+        position: Span::new(posl, posr, source_lines),
+        content: res, 
+    }
 }
 
 /** all paragraphs after a heading belong to its content */
@@ -25,7 +24,7 @@ HeadingParagraph -> Element
 
 /** A heading is a caption paragraph followed by content paragraphs. */
 Heading -> Element 
-    = posl:#position d:$("="+) Space* caption:HeadingFormatted* "="* Space* Newline pars:Paragraph* posr:#position {
+    = posl:#position d:$("="+) Space* caption:HeadingFormatted* "="* Space* (Newline / EOF) pars:Paragraph* posr:#position {
         Element::Heading {
             position: Span::new(posl, posr, source_lines),
             depth: d.len(),
@@ -41,7 +40,7 @@ Heading -> Element
  * ripped apart.
  */
 ParagraphTemplate<FormattedRule> 
-    = List / Table / Gallery / posl:#position PAR_START_GUARD text:FormattedRule* Newline posr:#position {
+    = List / Table / Gallery / posl:#position PAR_START_GUARD text:FormattedRule* (Newline / EOF) posr:#position {
        
          Element::Paragraph {
             position: Span::new(posl, posr, source_lines),
@@ -94,7 +93,7 @@ TemplateArgument -> Element
  mediawiki lists
  */
 List -> Element
-    = posl:#position items:ListItem+ Space* Newline? posr:#position {
+    = posl:#position items:(li:ListItem (Newline / EOF) {li})+ posr:#position {
         Element::List {
             position: Span::new(posl, posr, source_lines),
             content: items,
@@ -102,12 +101,13 @@ List -> Element
     }
 
 ListItem -> Element
-    = posl:#position s:($("*" / "#" / ":" / ";"))+ Space* content:FormattedText* Newline? posr:#position {?
+    = posl:#position s:($("*" / "#" / ":" / ";"))+ _ content:FormattedText* posr:#position {?
+
         // check if this element is at line start
         if !SourceLine::starts_line(posl, source_lines) {
-            Err ("List item must start on a new line")
-        } else {
-        
+            Err("List item must start on a new line")
+        } else { 
+
             let kind = match s[s.len() - 1] {
                 "*" => ListItemKind::Unordered,
                 "#" => ListItemKind::Ordered,
@@ -130,7 +130,7 @@ ListItem -> Element
  mediawiki tables
  */
 Table -> Element
-    = posl:#position "{|" attr:TableElementAttributes? (Space / Newline)* caption:TableCaption? first_cells:TableCell* rows:TableRow* "|}" posr:#position { 
+    = posl:#position "{|" attr:TableElementAttributes? ws caption:TableCaption? first_cells:TableCell* rows:TableRow* "|}" posr:#position { 
     
         let (cap_attrs, cap_pars) = caption.unwrap_or_default();
         let mut rows = rows;
@@ -316,6 +316,7 @@ FormattedTextTemplate<TextRule>
 
     / AnyTag
     / TextRule
+    / WhitespaceElement
     ) {formatted}
 
 /** Standard text element for most contexts */
@@ -394,14 +395,14 @@ Strong = "'''"
 
 Space = " " / "\t"
 Newline = "\n"
+EOF = #quiet<!.> / #expected("EOF")
 
 
 /*
  * text primitives
  */
 Text<C> 
-    = posl:#position s:CharString<C> posr:#position {
-        
+    = posl:#position s:CharString<C> posr:#position { 
         Element::Text {
             position: Span::new(posl, posr, source_lines),
             text: s
@@ -410,16 +411,11 @@ Text<C>
 
 CharString<C>
     = chars:C+ {
-      
-        let mut result = String::new();;
-        for c in chars {
-            result.push_str(c);
-        }
-        result
+        chars.iter().map(|s| s.to_owned()).collect()
     }
 
 EnclosedLiteral<ClosingChar>
-    = ClosingChar text:CharString<!(ClosingChar) c:$. {c}> ClosingChar {text}
+    = ClosingChar text:CharString<!(ClosingChar) $.> ClosingChar {text}
 
 
 /*
@@ -432,13 +428,13 @@ MathText -> Element
 TemplateArgumentName -> String
     = #quiet<CharString<TemplateAttributeNameChar>> / #expected("template attribute name")
 NowikiText -> Element
-    = #quiet<Text<(!(TagClose<"nowiki"i>) $(.))>> / #expected("any text")
+    = #quiet<Text<!TagClose<"nowiki"i> $.>> / #expected("any text")
 CodeText -> Element
-    = #quiet<Text<(!(TagClose<"code"i>) $(.))>> / #expected("any text")
+    = #quiet<Text<!TagClose<"code"i> $. >> / #expected("any text")
 PreformattedText -> Element
-    = #quiet<Text<(!(TagClose<"pre"i>) $(.))>> / #expected ("any text")
+    = #quiet<Text<!TagClose<"pre"i> $. >> / #expected ("any text")
 Url -> String
-    = #quiet<CharString<(!(Space / "]") c:$. {c})>> / #expected("a word of text (e.g. url)")
+    = #quiet<CharString<!(Space / "]") c:$. {c}>> / #expected("a word of text (e.g. url)")
 TagSafeLiteral -> String
     = #quiet<CharString<(!(Space / "<" / "/" / ">") c:$(.) {c})>> / #expected("tag attribute value")
 QuotedText -> String 
@@ -446,17 +442,20 @@ QuotedText -> String
 TagName -> String 
     = #quiet<CharString<!("<" / ">" / "/" / Space / "=") c:$. {c}>> / #expected("tag / attribute name")
 
-_ -> &'input str = #quiet<w:$([\n\r \t]*) {w}> / #expected("whitespace")
+_ -> &'input str = #quiet<w:$([ \t]*) {w}> / #expected("whitespace")
+ws -> &'input str = #quiet<w:$([\n\r \t]*) {w}> / #expected("whitespace (including newlines)")
+WhitespaceElement -> Element
+    = Text<Whitespace>
 
 /* 
  * character classes 
  * These characters are allowed within certain contexts, excluded characters have special meaning and break texts
  */
-MathChar -> &'input str = !(TagClose<"math"i>) c:$. {c}
+MathChar -> &'input str = !TagClose<"math"i> $.
 // general inline context
 Char -> &'input str 
-    = !(Newline / Emph / Strong / [{}\[\]] / 
-        AnyTag / AnyOpen / AnyClose / HtmlComment) c:$. {c} 
+    = !(Newline/ Whitespace / Emph / Strong / [{}\[\]] / 
+        AnyTag / AnyOpen / AnyClose / HtmlComment) $.
 
 HeadingChar -> &'input str 
     = !"=" c:Char {c}
@@ -466,9 +465,11 @@ TemplateContentChar -> &'input str
     = !"|" c:Char {c}
 TemplateAttributeNameChar -> &'input str 
     = ![|<>=!*#:;/] c:Char {c} 
+Whitespace -> &'input str
+    = $([ \t])
 
 // a paragraph may not start with these symbols as they indicate other elements
-PAR_START_GUARD = ![=!|*#:;]
+PAR_START_GUARD = !([=!|*#:;] / EOF)
 
 // tags which should be parsed as block elements, rather than html tags.
 HTML_BLOCK_ELEMENTS = ("gallery"i)
