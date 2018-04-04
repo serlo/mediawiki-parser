@@ -42,22 +42,22 @@
     input: this is a äüöß == test. "" ʕ•ᴥ•ʔ
     out:
       type: document
-      position: {}
       content:
-        - type: text
-          position: {}
-          text: this is a äüöß == test. "" ʕ•ᴥ•ʔ
+        - type: paragraph
+          content: 
+            - type: text
+              text: this is a äüöß == test. "" ʕ•ᴥ•ʔ
               
 # A single paragraph with some special characters.
   - case: special chars in inline context
     input: hey!!! this is a test! <3 |x|
     out:
       type: document
-      position: {}
       content:
-        - type: text
-          position: {}
-          text: "hey!!! this is a test! <3 |x|"
+        - type: paragraph
+          content:
+            - type: text
+              text: "hey!!! this is a test! <3 |x|"
 
 # A multiline paragraph.
   - case: multiline paragraph
@@ -73,19 +73,14 @@
       This is the next one.
     out:
       type: document
-      position: {}
       content:
         - type: paragraph
-          position: {}
           content:
             - type: text
-              position: {}
               text: This should be a single paragraph.
         - type: paragraph
-          position: {}
           content:
             - type: text
-              position: {}
               text: This is the next one.
               
 # some simple headings.
@@ -101,74 +96,55 @@
       == Heading 9
     out:
       type: document
-      position: {}
       content:
         - type: heading
-          position: {}
           depth: 2
           caption:
             - type: text
-              position: {}
               text: "Heading 1 "
           content:
             - type: heading
-              position: {}
               depth: 3
               caption:
                 - type: text
-                  position: {}
                   text: Heading 2
               content: []
             - type: heading
-              position: {}
               depth: 3
               caption:
                 - type: text
-                  position: {}
                   text: Heading 3
               content:
                 - type: heading
-                  position: {}
                   depth: 4
                   caption:
                     - type: text
-                      position: {}
                       text: Heading 4
                   content: []
         - type: heading
-          position: {}
           depth: 1
           caption:
             - type: text
-              position: {}
               text: "Heading 5 "
           content: []
         - type: heading
-          position: {}
           depth: 1
           caption:
             - type: text
-              position: {}
               text: Heading 7
           content:
             - type: heading
-              position: {}
               depth: 2
               caption:
                 - type: text
-                  position: {}
                   text: Heading 8
               content: []
             - type: heading
-              position: {}
               depth: 2
               caption:
                 - type: text
-                  position: {}
                   text: Heading 9
               content: []
-         
-
           
 # heading with an ancor
   - case: heading with ancor
@@ -176,31 +152,23 @@
       == Heading {{Anker|foo}} ==
     out:
       type: document
-      position: {}
       content:
         - type: heading
-          position: {}
           depth: 2
           caption:
             - type: text
-              position: {}
               text: "Heading "
             - type: template
-              position: {}
               name:
                 - type: text
-                  position: {}
                   text: Anker
               content:
                 - type: templateargument
-                  position: {}
                   name: "1"
                   value:
                     - type: text
-                      position: {}
                       text: foo
             - type: text
-              position: {}
               text: " "
           content: []
           
@@ -210,15 +178,14 @@
     input: "''this is italic''"
     out:
       type: document
-      position: {}
       content:
-        - type: formatted
-          position: {}
-          markup: italic
+        - type: paragraph
           content:
-            - type: text
-              position: {}
-              text: this is italic
+            - type: formatted
+              markup: italic
+              content:
+                - type: text
+                  text: this is italic
 
 # A paragraph with bold words contains a plain formatted element
 # wrapped by '''bold''' formatting.
@@ -226,15 +193,14 @@
     input: "'''this is bold'''"
     out:
       type: document
-      position: {}
       content:
-        - type: formatted
-          position: {}
-          markup: bold
+        - type: paragraph
           content: 
-            - type: text
-              position: {}
-              text: this is bold
+            - type: formatted
+              markup: bold
+              content: 
+                - type: text
+                  text: this is bold
 
 # Multiline bold markup
   - case: multiline bold markup
@@ -246,31 +212,23 @@
       '''
     out:
       type: document
-      position: {}
       content:
         - type: paragraph
-          position: {}
           content:
             - type: formatted
-              position: {}
               markup: bold
               content:
                 - type: paragraph
-                  position: {}
                   content:
                     - type: text
-                      position: {}
-                      text: bla
+                      text: "bla "
                     - type: formatted
-                      position: {}
                       markup: italic
                       content:
                         - type: text
-                          position: {}
                           text: italic
                     - type: text
-                      position: {}
-                      text: bla2
+                      text: " bla2"
 
 # A paragraph with nested markup.
   - case: nested markup italic
@@ -279,34 +237,30 @@
         type: document
         position: {} 
         content: 
-          - type: text
-            position: {}
-            text: "prelude "
-          - type: formatted
-            position: {}
-            markup: italic
-            content: 
+          - type: paragraph
+            content:
               - type: text
-                position: {}
-                text: "italic paragraph with "
-            
+                text: "prelude "
               - type: formatted
-                position: {}
-                markup: bold
+                markup: italic
                 content: 
-                  - type: formatted
-                    position: {} 
-                    markup: italic
-                    content: 
-                      - type: text
-                        position: {}
-                        text: nested
                   - type: text
-                    position: {} 
-                    text: " bold and italic"
-          - type: text
-            position: {}
-            text: " and normal text."
+                    text: "italic paragraph with "
+                
+                  - type: formatted
+                    markup: bold
+                    content: 
+                      - type: formatted
+                        position: {} 
+                        markup: italic
+                        content: 
+                          - type: text
+                            text: nested
+                      - type: text
+                        position: {} 
+                        text: " bold and italic"
+              - type: text
+                text: " and normal text."
 
 # An apostrophe after markup
   - case: markup and apostrophe
@@ -315,115 +269,107 @@
         type: document
         position: {} 
         content: 
-          - type: text
-            position: {}
-            text: "The "
-          - type: formatted
-            position: {}
-            markup: bold
-            content: 
+          - type: paragraph
+            content:
+              - type: text
+                text: "The "
               - type: formatted
-                position: {}
-                markup: italic
+                markup: bold
                 content: 
-                  - type: text
-                    position: {} 
-                    text: "dog"
-          - type: text
-            position: {}
-            text: "\'s bone"
+                  - type: formatted
+                    markup: italic
+                    content: 
+                      - type: text
+                        position: {} 
+                        text: "dog"
+              - type: text
+                text: "\'s bone"
                 
 # A simple inline math tag.
   - case: simple inline math
     input: "<math>x^2</math>"
     out:
       type: document
-      position: {}
       content:
-        - type: formatted
-          position: {}
-          markup: math
-          content:
-            - type: text
-              position: {}
-              text: x^2
+        - type: paragraph
+          content: 
+            - type: formatted
+              markup: math
+              content:
+                  - type: text
+                    text: x^2
 
 # Math tag with special characters
   - case: special inline math
     input: "<math>$\\{{bla}} x'=c</math>"
     out:
       type: document
-      position: {}
       content:
-        - type: formatted
-          position: {}
-          markup: math
-          content:
-            - type: text
-              position: {}
-              text: "$\\{{bla}} x'=c"
+        - type: paragraph
+          content: 
+            - type: formatted
+              markup: math
+              content:
+                - type: text
+                  text: "$\\{{bla}} x'=c"
 
 # An empty math tag.
   - case: empty math
     input: "<math></math>"
     out:
       type: document
-      position: {}
       content:
-        - type: formatted
-          position: {}
-          markup: math
-          content: []
+        - type: paragraph
+          content: 
+          - type: formatted
+            markup: math
+            content: []
 
 # Simple hyperlink without a caption.
   - case: hyperlink without caption
     input: "[https://www.example.com/]"
     out:
       type: document
-      position: {}
       content:
-        - type: externalreference
-          position: {}
-          target: https://www.example.com/
-          caption: []
+        - type: paragraph
+          content:
+            - type: externalreference
+              target: https://www.example.com/
+              caption: []
 
 # Simple hyperlink with a caption.
   - case: hyperlink with caption
     input: "[https://www.example.com/ Example dot com]"
     out:
       type: document
-      position: {}
       content:
-        - type: externalreference
-          position: {}
-          target: https://www.example.com/
-          caption:
-            - type: text
-              position: {}
-              text: "Example dot com"
+        - type: paragraph
+          content:
+            - type: externalreference
+              target: https://www.example.com/
+              caption:
+                - type: text
+                  text: "Example dot com"
 
 # Simple hyperlink without a caption.
   - case: hyperlink with formatted caption
     input: "[https://www.example.com/ Example '''dot com''']"
     out:
       type: document
-      position: {}
       content:
-        - type: externalreference
-          position: {}
-          target: https://www.example.com/
-          caption:
-            - type: text
-              position: {}
-              text: "Example "
-
-            - type: formatted
-              position: {}
-              markup: bold
-              content:
+        - type: paragraph
+          content:
+            - type: externalreference
+              target: https://www.example.com/
+              caption:
                 - type: text
-                  position: {}
-                  text: dot com
+                  text: "Example "
+
+                - type: formatted
+                  markup: bold
+                  content:
+                    - type: text
+                      text: dot com
 
 # An arbitrary html tag
   - case: nested html tag
@@ -432,32 +378,24 @@
       <translate >Fréttinga is a small municipality in MungoLand.< / translate></translate>
     out:
       type: document
-      position: {}
       content:
         - type: paragraph
-          position: {}
           content:
             - type: htmltag
-              position: {}
               name: translate
               attributes:
-                - position: {}
-                  key: language
+                - key: language
                   value: test
-                - position: {}
-                  key: attr2
+                - key: attr2
                   value: bla
-                - position: {}
-                  key: attröbüte
+                - key: attröbüte
                   value: "this is a \"test\""
               content:
                 - type: htmltag
-                  position: {}
                   name: translate
                   attributes: []
                   content:
                     - type: text
-                      position: {}
                       text: "Fréttinga is a small municipality in MungoLand."
               
 # An empty nowiki tag
@@ -465,26 +403,25 @@
     input: "<nowiki></nowiki>"
     out:
       type: document
-      position: {}
       content:
-        - type: formatted
-          position: {}
-          markup: nowiki
-          content: []
+        - type: paragraph
+          content: 
+          - type: formatted
+            markup: nowiki
+            content: []
               
 # A HTML comment
   - case: html comment
     input: "bla <!-- comment ³½}³¹ðđ æđ||đð@³¼¶²{{}} content -->"
     out:
       type: document
-      position: {}
       content:
-        - type: text
-          position: {}
-          text: "bla "
-        - type: comment
-          position: {}
-          text: " comment ³½}³¹ðđ æđ||đð@³¼¶²{{}} content "
+        - type: paragraph
+          content:
+            - type: text
+              text: "bla "
+            - type: comment
+              text: " comment ³½}³¹ðđ æđ||đð@³¼¶²{{}} content "
               
 # The nowiki tag should ignore everything.
   - case: nowiki
@@ -493,17 +430,13 @@
         <another> [</nowiki>
     out:
       type: document
-      position: {}
       content:
         - type: paragraph
-          position: {}
           content:
             - type: formatted
-              position: {}
               markup: nowiki
               content:
                 - type: text
-                  position: {}
                   text: "abc {{bla}} ''' \n<another> ["
 
 # Strikethrough text.
@@ -513,24 +446,20 @@
       <s>strikethrough text</s>
     out:
       type: document
-      position: {}
       content:
         - type: paragraph
-          position: {}
           content:
             - type: formatted
-              position: {}
               markup: strikethrough
               content:
                 - type: text
-                  position: {}
                   text: strikethrough text
+            - type: text
+              text: " "
             - type: formatted
-              position: {}
               markup: strikethrough
               content:
                 - type: text
-                  position: {}
                   text: strikethrough text
                       
 # Definition markup
@@ -538,64 +467,59 @@
     input: <dfn title="Riemannsumme">Riemannsumme</dfn>
     out:
       type: document
-      position: {}
       content:
-        - type: htmltag
-          position: {}
-          name: dfn
-          attributes:
-            - key: title
-              value: Riemannsumme
-              position: {}
+        - type: paragraph
           content:
-            - type: text
-              position: {}
-              text: Riemannsumme
+          - type: htmltag
+            name: dfn
+            attributes:
+              - key: title
+                value: Riemannsumme
+            content:
+              - type: text
+                text: Riemannsumme
                       
 # Underline text
   - case: underline markup
     input: <ins>Inserted</ins>
     out:
       type: document
-      position: {}
       content:
-        - type: formatted
-          position: {}
-          markup: underline
+        - type: paragraph
           content:
-            - type: text
-              position: {}
-              text: Inserted
+            - type: formatted
+              markup: underline
+              content:
+                - type: text
+                  text: Inserted
                       
 # Fixed-width text
   - case: fixed width markup
     input: <code>Fixed width text</code>
     out:
       type: document
-      position: {}
       content:
-        - type: formatted
-          position: {}
-          markup: code
+        - type: paragraph
           content:
-            - type: text
-              position: {}
-              text: Fixed width text
+            - type: formatted
+              markup: code
+              content:
+                - type: text
+                  text: Fixed width text
                       
 # Blockquote
   - case: blockquote markup
     input: <blockquote>Blockquote</blockquote>
     out:
       type: document
-      position: {}
       content:
-        - type: formatted
-          position: {}
-          markup: blockquote
+        - type: paragraph
           content:
-            - type: text
-              position: {}
-              text: Blockquote
+          - type: formatted
+            markup: blockquote
+            content:
+              - type: text
+                text: Blockquote
                       
 # Pre-formatted Text
   - case: pre formatted text
@@ -604,17 +528,13 @@
       ''markups'' '''''cannot''''' be done</pre>
     out:
       type: document
-      position: {}
       content:
         - type: paragraph
-          position: {}
           content:
             - type: formatted
-              position: {}
               markup: preformatted
               content:
                 - type: text
-                  position: {}
                   text: "Text is '''preformatted''' and \n''markups'' '''''cannot''''' be done"
                       
 # A simple list of one item.
@@ -622,18 +542,14 @@
     input: "* item"
     out:
       type: document
-      position: {}
       content:
         - type: list
-          position: {}
           content:
             - type: listitem
-              position: {}
               kind: unordered
               depth: 1
               content:
                 - type: text
-                  position: {}
                   text: item
 
 # A ordered list and a unordered list of one item
@@ -644,29 +560,22 @@
         ## item 2
     out:
       type: document
-      position: {}
       content:
         - type: list
-          position: {}
           content:
             - type: listitem
-              position: {}
               kind: unordered
               depth: 1
               content:
                 - type: text
-                  position: {}
                   text: item 1
         - type: list
-          position: {}
           content:
             - type: listitem
-              position: {}
               kind: ordered
               depth: 2
               content:
                 - type: text
-                  position: {}
                   text: item 2
 
 
@@ -677,24 +586,18 @@
         abc # def *
     out:
       type: document
-      position: {}
       content:
         - type: list
-          position: {}
           content:
             - type: listitem
-              position: {}
               kind: unordered
               depth: 1
               content:
                 - type: text
-                  position: {}
                   text: "item 1 #;* bla"
         - type: paragraph
-          position: {}
           content:
             - type: text
-              position: {}
               text: "abc # def *"
 
 # A list with multiple different item types and a paragraph
@@ -707,59 +610,44 @@
         paragraph
     out:
       type: document
-      position: {}
       content:
         - type: list
-          position: {}
           content:
             - type: listitem
-              position: {}
               kind: definition
               depth: 1
               content:
                 - type: text
-                  position: {}
                   text: item 1
             - type: listitem
-              position: {}
               kind: definitionterm
               depth: 1
               content:
                 - type: text
-                  position: {}
                   text: item 11
                 - type: list
-                  position: {}
                   content:
                     - type: listitem
-                      position: {}
                       depth: 2
                       kind: unordered 
                       content:
                         - type: list
-                          position: {}
                           content:
                             - type: listitem
-                              position: {}
                               depth: 3
                               kind: unordered 
                               content:
                                 - type: text
-                                  position: {}
                                   text: item 2
                     - type: listitem
-                      position: {}
                       depth: 2
                       kind: ordered 
                       content:
                         - type: text
-                          position: {}
                           text: item 3
         - type: paragraph
-          position: {}
           content:
             - type: text
-              position: {}
               text: paragraph
 
 # A very simple template
@@ -767,15 +655,14 @@
     input: "{{name}}"
     out:
       type: document
-      position: {}
       content:
-        - type: template
-          position: {}
-          name:
-            - type: text
-              position: {}
-              text: name
-          content: []
+        - type: paragraph
+          content:
+            - type: template
+              name:
+                - type: text
+                  text: name
+              content: []
 
 
 # A template with list-like name
@@ -786,16 +673,12 @@
         }}
     out:
       type: document
-      position: {}
       content:
         - type: paragraph
-          position: {}
           content:
             - type: template
-              position: {}
               name:
                 - type: text
-                  position: {}
                   text: ":name"
               content: []
 
@@ -810,50 +693,36 @@
         }}
     out:
       type: document
-      position: {}
       content:
         - type: paragraph
-          position: {}
           content:
             - type: template
-              position: {}
               name:
                 - type: paragraph
-                  position: {}
                   content:
                     - type: text
-                      position: {}
                       text: templatename
               content:
                 - type: templateargument
-                  position: {}
                   name: "1"
                   value:
                     - type: paragraph
-                      position: {}
                       content:
                         - type: text
-                          position: {}
                           text: attribute2
                 - type: templateargument
-                  position: {}
                   name: "2"
                   value:
                     - type: paragraph
-                      position: {}
                       content:
                         - type: text
-                          position: {}
                           text: atträöüß3
                 - type: templateargument
-                  position: {}
                   name: "3"
                   value:
                     - type: paragraph
-                      position: {}
                       content:
                         - type: text
-                          position: {}
                           text: attribute4
 
 # A named argument
@@ -861,206 +730,174 @@
     input: "{{name|caption=üäö test}}"
     out:
       type: document
-      position: {}
       content:
-        - type: template
-          position: {}
-          name:
-            - type: text
-              position: {}
-              text: name
+        - type: paragraph
           content:
-            - type: templateargument
-              position: {}
-              name: caption
-              value:
+            - type: template
+              name:
                 - type: text
-                  position: {}
-                  text: üäö test
+                  text: name
+              content:
+                - type: templateargument
+                  name: caption
+                  value:
+                    - type: text
+                      text: üäö test
 
 # Multiple named template arguments
   - case: multiple named template arguments
     input: "{{templatename|äöütem=2|item3=3|item4=4}}"
     out:
       type: document
-      position: {}
       content:
-        - type: template
-          position: {}
-          name:
-            - type: text
-              position: {}
-              text: templatename
+        - type: paragraph
           content:
-            - type: templateargument
-              position: {}
-              name: äöütem
-              value:
+            - type: template
+              name:
                 - type: text
-                  position: {}
-                  text: "2"
-            - type: templateargument
-              position: {}
-              name: item3
-              value:
-                - type: text
-                  position: {}
-                  text: "3"
-            - type: templateargument
-              position: {}
-              name: item4
-              value:
-                - type: text
-                  position: {}
-                  text: "4"
+                  text: templatename
+              content:
+                - type: templateargument
+                  name: äöütem
+                  value:
+                    - type: text
+                      text: "2"
+                - type: templateargument
+                  name: item3
+                  value:
+                    - type: text
+                      text: "3"
+                - type: templateargument
+                  name: item4
+                  value:
+                    - type: text
+                      text: "4"
 
 # Mixed named and unnamed arguments
   - case: mixed template arguments
     input: "{{template1|item2=2|item3=3|item4}}"
     out:
       type: document
-      position: {}
       content:
-        - type: template
-          position: {}
-          name:
-            - type: text
-              position: {}
-              text: template1
+        - type: paragraph
           content:
-            - type: templateargument
-              position: {}
-              name: item2
-              value:
+            - type: template
+              name:
                 - type: text
-                  position: {}
-                  text: "2"
-            - type: templateargument
-              position: {}
-              name: item3
-              value:
-                - type: text
-                  position: {}
-                  text: "3"
-            - type: templateargument
-              position: {}
-              name: "1"
-              value:
-                - type: text
-                  position: {}
-                  text: "item4"
+                  text: template1
+              content:
+                - type: templateargument
+                  name: item2
+                  value:
+                    - type: text
+                      text: "2"
+                - type: templateargument
+                  name: item3
+                  value:
+                    - type: text
+                      text: "3"
+                - type: templateargument
+                  name: "1"
+                  value:
+                    - type: text
+                      text: "item4"
 
 # Nested templates
   - case: nested templates
     input: "{{Thankyou in {{preferred language}}|signature=Me}}"
     out:
       type: document
-      position: {}
       content:
-        - type: template
-          position: {}
-          name:
-            - type: text
-              position: {}
-              text: "Thankyou in "
-            - type: template
-              position: {}
-              name: 
-                - type: text
-                  position: {}
-                  text: "preferred language"
-              content: []
+        - type: paragraph
           content:
-            - type: templateargument
-              position: {}
-              name: signature
-              value:
+            - type: template
+              name:
                 - type: text
-                  position: {}
-                  text: Me
+                  text: "Thankyou in "
+                - type: template
+                  name: 
+                    - type: text
+                      text: "preferred language"
+                  content: []
+              content:
+                - type: templateargument
+                  name: signature
+                  value:
+                    - type: text
+                      text: Me
 
 # A simple internal reference
   - case: simple internal ref
     input: "[[File:Abc]]"
     out:
       type: document
-      position: {}
       content:
-        - type: internalreference
-          position: {}
-          target: 
-            - type: text
-              position: {}
-              text: File:Abc
-          options: []
-          caption: []
+        - type: paragraph
+          content:
+            - type: internalreference
+              target: 
+                - type: text
+                  text: File:Abc
+              options: []
+              caption: []
 
 # An empty internal reference
   - case: empty internal ref
     input: "[[]]"
     out:
       type: document
-      position: {}
       content:
-        - type: internalreference
-          position: {}
-          target: []
-          options: []
-          caption: []
+        - type: paragraph
+          content:
+          - type: internalreference
+            target: []
+            options: []
+            caption: []
 
 # A simple internal reference with caption
   - case: internal ref with caption
     input: "[[File:Abc|this is a caption]]"
     out:
       type: document
-      position: {}
       content:
-        - type: internalreference
-          position: {}
-          target: 
-            - type: text
-              position: {}
-              text: File:Abc
-          options: []
-          caption: 
-            - type: text
-              position: {}
-              text: this is a caption
+        - type: paragraph
+          content:
+            - type: internalreference
+              target: 
+                - type: text
+                  text: File:Abc
+              options: []
+              caption: 
+                - type: text
+                  text: this is a caption
 
 # A simple internal reference with options
   - case: internal ref with options
     input: "[[File:Abc|opt1=value1|opt2=123|this is a caption with '''bold and |special|''' markup]]"
     out:
       type: document
-      position: {}
       content:
-        - type: internalreference
-          position: {}
-          target: 
-            - type: text
-              position: {}
-              text: "File:Abc"
-          options: 
-            - - type: text
-                position: {}
-                text: "opt1=value1"
-            - - type: text
-                position: {}
-                text: "opt2=123"
-          caption: 
-            - type: text
-              position: {}
-              text: "this is a caption with "
-            - type: formatted
-              position: {}
-              markup: bold
-              content:
+        - type: paragraph
+          content:
+            - type: internalreference
+              target: 
                 - type: text
-                  position: {}
-                  text: "bold and |special|"
-            - type: text
-              position: {}
-              text: " markup"                     
+                  text: "File:Abc"
+              options: 
+                - - type: text
+                    text: "opt1=value1"
+                - - type: text
+                    text: "opt2=123"
+              caption: 
+                - type: text
+                  text: "this is a caption with "
+                - type: formatted
+                  markup: bold
+                  content:
+                    - type: text
+                      text: "bold and |special|"
+                - type: text
+                  text: " markup"                     
 
 # Simple table with one cell
   - case: single cell table
@@ -1070,31 +907,24 @@
         |}
     out:
       type: document
-      position: {}
       content:
         - type: table
-          position: {}
           attributes: []
           caption_attributes: []
           caption: []
           rows:
             - type: tablerow
-              position: {}
               attributes: []
               cells:
                 - type: tablecell
-                  position: {}
                   attributes: 
-                    - position: {}
-                      key: attributevalue
+                    - key: attributevalue
                       value: test
                   header: false
                   content:
                     - type: paragraph
-                      position: {}
                       content: 
                         - type: text
-                          position: {}
                           text: test
  
  # Simple table with caption
@@ -1106,47 +936,35 @@
         |}
     out:
       type: document
-      position: {}
       content:
         - type: table
-          position: {}
           attributes: []
           caption_attributes:
-            - position: {}
-              key: caption_attribute
+            - key: caption_attribute
               value: value
           caption:
             - type: paragraph
-              position: {}
               content:
                 - type: text
-                  position: {}
                   text: "this is a "
                 - type: formatted
-                  position: {}
                   markup: italic
                   content:
                     - type: text
-                      position: {}
                       text: "caption"
           rows:
             - type: tablerow
-              position: {}
               attributes: []
               cells:
                 - type: tablecell
-                  position: {}
                   attributes:
-                    - position: {}
-                      key: attributevalue 
+                    - key: attributevalue 
                       value: test
                   header: false
                   content:
                     - type: paragraph
-                      position: {}
                       content: 
                         - type: text
-                          position: {}
                           text: test
           
  # Table with multiple rows
@@ -1164,94 +982,69 @@
         |}
     out:
       type: document
-      position: {}
       content:
         - type: table
-          position: {}
           attributes: 
-            - position: {}
-              key: class
+            - key: class
               value: wikitable
           caption_attributes: []
           caption:
             - type: paragraph
-              position: {}
               content:
                 - type: text
-                  position: {}
                   text: caption
           rows:
             - type: tablerow
-              position: {}
               attributes: []
               cells:
                 - type: tablecell
-                  position: {}
                   attributes: 
-                    - position: {}
-                      key: attributevalue
+                    - key: attributevalue
                       value: test
                   header: false
                   content:
                     - type: paragraph
-                      position: {}
                       content: 
                         - type: text
-                          position: {}
                           text: test
             - type: tablerow
-              position: {}
               attributes: []
               cells:
                 - type: tablecell
-                  position: {}
                   attributes: []
                   header: false
                   content:
                     - type: paragraph
-                      position: {}
                       content: 
                         - type: text
-                          position: {}
                           text: "test "
                         - type: formatted
-                          position: {}
                           markup: italic
                           content:
                             - type: text
-                              position: {}
                               text: "2"
             - type: tablerow
-              position: {}
               attributes: 
-                - position: {}
-                  key: style
+                - key: style
                   value: "font-style: italic; color: green;"
               cells:
                 - type: tablecell
-                  position: {}
                   attributes: []
                   header: false
                   content:
                     - type: paragraph
-                      position: {}
                       content: 
                         - type: text
-                          position: {}
                           text: "test3"
                 - type: tablecell
-                  position: {}
                   attributes:
-                    - position: {}
-                      key: attr4
+                    - key: attr4
                       value: val
                   header: false
                   content:
                     - type: paragraph
-                      position: {}
                       content: 
                         - type: text
-                          position: {}
                           text: "test4"
           
 # Table with multiple cells on one line
@@ -1262,55 +1055,42 @@
         |}
     out:
       type: document
-      position: {}
       content:
         - type: table
-          position: {}
           attributes: []
           caption_attributes: []
           caption: []
           rows:
             - type: tablerow
-              position: {}
               attributes: []
               cells:
                 - type: tablecell
-                  position: {}
                   attributes: 
-                    - position: {}
-                      key: attributevalue
+                    - key: attributevalue
                       value: test
                   header: false
                   content:
                     - type: text
-                      position: {}
                       text: "test "
                 - type: tablecell
-                  position: {}
                   attributes: []
                   header: false
                   content:
                     - type: text
-                      position: {}
                       text: "cell 2 "
                 - type: tablecell
-                  position: {}
                   attributes: []
                   header: false
                   content: []
                 - type: tablecell
-                  position: {}
                   attributes: 
-                    - position: {}
-                      key: attribute
+                    - key: attribute
                       value: "3"
                   header: false
                   content:
                     - type: paragraph
-                      position: {}
                       content:
                         - type: text
-                          position: {}
                           text: cell 3
           
 # Table with header cells
@@ -1324,85 +1104,64 @@
         |}
     out:
       type: document
-      position: {}
       content:
         - type: table
-          position: {}
           attributes: []
           caption_attributes: []
           caption: []
           rows:
             - type: tablerow
-              position: {}
               attributes: []
               cells:
                 - type: tablecell
-                  position: {}
                   header: true
                   attributes: []
                   content:
                     - type: text
-                      position: {}
                       text: "Orange "
                 - type: tablecell
-                  position: {}
                   header: true
                   attributes: 
-                    - position: {}
-                      key: attribute
+                    - key: attribute
                       value: test
                   content:
                     - type: paragraph
-                      position: {}
                       content:
                         - type: text
-                          position: {}
                           text: Apple
             - type: tablerow
-              position: {}
               attributes: []
               cells:
                 - type: tablecell
-                  position: {}
                   header: false
                   attributes: []
                   content:
                     - type: text
-                      position: {}
-                      text: "Bread  "
+                      text: "Bread "
                 - type: tablecell
-                  position: {}
                   header: false
                   attributes: []
                   content:
                     - type: text
-                      position: {}
                       text: "Pie "
                 - type: tablecell
-                  position: {}
                   header: true
                   attributes: []
                   content:
                     - type: paragraph
-                      position: {}
                       content:
                         - type: formatted
-                          position: {}
                           markup: italic
                           content:
                             - type: text
-                              position: {}
                               text: "hey!!"
                 - type: tablecell
-                  position: {}
                   header: true
                   attributes: []
                   content:
                     - type: paragraph
-                      position: {}
                       content:
                         - type: text
-                          position: {}
                           text: footer
 
 # a simple gallery tag
@@ -1413,17 +1172,13 @@
         </gallery>
     out:
       type: document
-      position: {}
       content:
         - type: gallery
-          position: {}
           attributes: []
           content:
             - type: internalreference
-              position: {}
               target: 
                 - type: text
-                  position: {}
                   text: File:Abc
               options: []
               caption: []
@@ -1435,10 +1190,8 @@
         </gallery>
     out:
       type: document
-      position: {}
       content:
         - type: gallery
-          position: {}
           attributes: []
           content: []
 
@@ -1447,10 +1200,8 @@
     input: "<gallery>  \n \n\n\n    \n\t\n </gallery>"
     out:
       type: document
-      position: {}
       content:
         - type: gallery
-          position: {}
           attributes: []
           content: []
 
@@ -1459,17 +1210,13 @@
     input: "<gallery>  \n \nFile:ABC \n\n    \n\t\n </gallery>"
     out:
       type: document
-      position: {}
       content:
         - type: gallery
-          position: {}
           attributes: []
           content: 
             - type: internalreference
-              position: {}
               target: 
                 - type: text
-                  position: {}
                   text: "File:ABC "
               caption: []
               options: []
@@ -1483,36 +1230,27 @@
         </gallery>
     out:
       type: document
-      position: {}
       content:
         - type: gallery
-          position: {}
           attributes: []
           content:
             - type: internalreference
-              position: {}
               target: 
                 - type: text
-                  position: {}
                   text: File:Abc
               options: []
               caption:
                 - type: text
-                  position: {}
                   text: "this is a figure "
                 - type: internalreference
-                  position: {}
                   target: 
                     - type: text
-                      position: {}
                       text: caption
                   caption: []
                   options: []
             - type: internalreference
-              position: {}
               target:
                 - type: text
-                  position: {}
                   text: File:This is a new file
               caption: []
               options: []
@@ -1526,34 +1264,25 @@
       }}
     out:
       type: document
-      position: {}
       content:
         - type: paragraph
-          position: {}
           content:
             - type: template
-              position: {}
               name:
                 - type: text
-                  position: {}
                   text: noprint
               content:
                 - type: templateargument
-                  position: {}
                   name: "1"
                   value:
                     - type: heading
-                      position: {}
                       depth: 2
                       caption: 
                         - type: text
-                          position: {}
                           text: caption
                       content:
                         - type: paragraph
-                          position: {}
                           content:
                             - type: text
-                              position: {}
                               text: content
                             
