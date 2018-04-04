@@ -14,32 +14,41 @@ use serde::ser::{Serialize, Serializer, SerializeMap};
 pub enum Element {
     /// The document root.
     Document {
+        #[serde(default)]
         position: Span,
         content: Vec<Element>,
     },
     /// Headings make a hierarchical document structure.
     /// Headings of higher depths have other headings as parents.
     Heading {
+        #[serde(default)]
         position: Span,
         depth: usize,
         caption: Vec<Element>,
         content: Vec<Element>,
     },
     /// Simple text.
-    Text { position: Span, text: String },
+    Text {
+        #[serde(default)]
+        position: Span,
+        text: String
+     },
     /// A formatting wrapper, usually around text.
     Formatted {
+        #[serde(default)]
         position: Span,
         markup: MarkupType,
         content: Vec<Element>,
     },
     /// Paragraphs are separated by newlines in the input document.
     Paragraph {
+        #[serde(default)]
         position: Span,
         content: Vec<Element>,
     },
     /// A mediawiki template.
     Template {
+        #[serde(default)]
         position: Span,
         name: Vec<Element>,
         content: Vec<Element>,
@@ -47,6 +56,7 @@ pub enum Element {
     /// Argument of a mediawiki template.
     /// Empty name indicate anonymous arguments.
     TemplateArgument {
+        #[serde(default)]
         position: Span,
         name: String,
         value: Vec<Element>,
@@ -54,6 +64,7 @@ pub enum Element {
     /// A reference to internal data, such as embedded files
     /// or other articles.
     InternalReference {
+        #[serde(default)]
         position: Span,
         target: Vec<Element>,
         options: Vec<Vec<Element>>,
@@ -61,12 +72,14 @@ pub enum Element {
     },
     /// External reference, usually hyperlinks.
     ExternalReference {
+        #[serde(default)]
         position: Span,
         target: String,
         caption: Vec<Element>,
     },
     /// List item of a certain `ListItemKind`.
     ListItem {
+        #[serde(default)]
         position: Span,
         depth: usize,
         kind: ListItemKind,
@@ -75,12 +88,14 @@ pub enum Element {
     /// List of items. The `ListItemKind` of its children
     /// can be heterogenous.
     List {
+        #[serde(default)]
         position: Span,
         content: Vec<Element>,
     },
     /// A mediawiki table. `attributes` represent html
     /// attributes assigned to the table.
     Table {
+        #[serde(default)]
         position: Span,
         attributes: Vec<TagAttribute>,
         caption: Vec<Element>,
@@ -90,6 +105,7 @@ pub enum Element {
     /// A table row. `attributes` represent html
     /// attributes assigned to the table.
     TableRow {
+        #[serde(default)]
         position: Span,
         attributes: Vec<TagAttribute>,
         cells: Vec<Element>,
@@ -98,15 +114,21 @@ pub enum Element {
     /// attributes assigned to the table. `header` is true
     /// if this cell is marked as a header cell.
     TableCell {
+        #[serde(default)]
         position: Span,
         header: bool,
         attributes: Vec<TagAttribute>,
         content: Vec<Element>,
     },
     /// Comments in the input document.
-    Comment { position: Span, text: String },
+    Comment {
+        #[serde(default)]
+        position: Span,
+        text: String
+    },
     /// Html tags not encoding formatting elements.
     HtmlTag {
+        #[serde(default)]
         position: Span,
         name: String,
         attributes: Vec<TagAttribute>,
@@ -114,12 +136,17 @@ pub enum Element {
     },
     /// Gallery of images (or interal references in general).
     Gallery {
+        #[serde(default)]
         position: Span,
         attributes: Vec<TagAttribute>,
         content: Vec<Element>,
     },
     /// Indicates an erroneous part of the document tree.
-    Error { position: Span, message: String },
+    Error {
+        #[serde(default)]
+        position: Span,
+        message: String
+    },
 }
 
 /// Types of markup a section of text may have.
@@ -336,6 +363,12 @@ impl Span {
             start: Position::new(posl, source_lines),
             end: Position::new(posr, source_lines),
         }
+    }
+}
+
+impl Default for Span {
+    fn default() -> Self {
+        Self::any()
     }
 }
 
