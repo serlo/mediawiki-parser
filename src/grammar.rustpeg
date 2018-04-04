@@ -395,6 +395,7 @@ Strong = "'''"
 Space = " " / "\t"
 Newline = "\n"
 
+
 /*
  * text primitives
  */
@@ -445,18 +446,29 @@ QuotedText -> String
 TagName -> String 
     = #quiet<CharString<!("<" / ">" / "/" / Space / "=") c:$. {c}>> / #expected("tag / attribute name")
 
+_ -> &'input str = #quiet<w:$([\n\r \t]*) {w}> / #expected("whitespace")
+
 /* 
  * character classes 
  * These characters are allowed within certain contexts, excluded characters have special meaning and break texts
  */
 MathChar -> &'input str = !(TagClose<"math"i>) c:$. {c}
-Char -> &'input str = !(Newline / Emph / Strong / "{" / "}" / AnyTag / AnyOpen / AnyClose / HtmlComment / "[" / "]") c:$. {c} // general inline context
-HeadingChar -> &'input str = !(Newline / Emph / "{" / "}" /AnyTag / AnyOpen / AnyClose / HtmlComment / "[" / "]" / "=") c:$. {c}
-TableChar -> &'input str = !(Newline / Emph / "{" / "}" / "!!" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
-TemplateContentChar -> &'input str = !(Newline / Emph / "{" / "}" / AnyTag / AnyOpen / AnyClose / HtmlComment / "|" / "[" / "]") c:$. {c}
-TemplateAttributeNameChar -> &'input str = !(Newline / "{" / "}" / "|" / "<" / ">" / "[" / "]" / "=" / "!" / "*" / "#" / ":" / ";" / "/") c:$. {c}
+// general inline context
+Char -> &'input str 
+    = !(Newline / Emph / Strong / [{}\[\]] / 
+        AnyTag / AnyOpen / AnyClose / HtmlComment) c:$. {c} 
+
+HeadingChar -> &'input str 
+    = !"=" c:Char {c}
+TableChar -> &'input str 
+    = !("!!" / "|") c:Char {c}
+TemplateContentChar -> &'input str 
+    = !"|" c:Char {c}
+TemplateAttributeNameChar -> &'input str 
+    = ![|<>=!*#:;/] c:Char {c} 
 
 // a paragraph may not start with these symbols as they indicate other elements
-PAR_START_GUARD = !("=" / "!" / "|" / "*" / "#" / ":" / ";")
+PAR_START_GUARD = ![=!|*#:;]
+
 // tags which should be parsed as block elements, rather than html tags.
 HTML_BLOCK_ELEMENTS = ("gallery"i)
