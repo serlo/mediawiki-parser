@@ -35,7 +35,7 @@ pub fn parse(input: &str) -> Result<Element, MWError> {
 
     let source_lines = util::get_source_lines(input);
 
-    let result = match grammar::Document(input, &source_lines) {
+    let result = match grammar::document(input, &source_lines) {
         Err(e) => Err(error::MWError::ParseError(
             error::ParseError::from(&e, input),
         )),
