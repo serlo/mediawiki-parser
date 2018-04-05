@@ -24,7 +24,7 @@ HeadingParagraph -> Element
 
 /** A heading is a caption paragraph followed by content paragraphs. */
 Heading -> Element 
-    = posl:#position d:$("="+) Space* caption:HeadingFormatted* "="* Space* (Newline / EOF) pars:Paragraph* posr:#position {
+    = posl:#position d:$("="+) _ caption:HeadingFormatted* _ "="* _ (Newline / EOF) pars:Paragraph* posr:#position {
         Element::Heading {
             position: Span::new(posl, posr, source_lines),
             depth: d.len(),
@@ -151,13 +151,13 @@ Table -> Element
     }
 
 TableElementAttributes -> Vec<TagAttribute>
-    = Space* attr:(HtmlAttribute ** (Space+)) Space* {attr}
+    = _ attr:(HtmlAttribute ** (Space+)) _ {attr}
 TableFormatted -> Element
     = !("!") FormattedTextTemplate<Text<TableChar>>
 TableParagraph -> Element
     = ParagraphTemplate<TableFormatted>
 TableCaption -> (Vec<TagAttribute>, Vec<Element>) =
-    "|+" attr:(t:TableElementAttributes "|" {t})? Space* pars:(TableParagraph / TableFormatted)* {(attr.unwrap_or_default(), pars)}
+    "|+" _ attr:(t:TableElementAttributes "|" {t})? _ pars:(TableParagraph / TableFormatted)* {(attr.unwrap_or_default(), pars)}
 TableCellSeparator -> &'input str
     = $("||") / $("!!") / $("|") / $("!")
 TableRowSeparator -> Vec<TagAttribute>
@@ -175,7 +175,7 @@ TableRow -> Element
 
 TableCell -> Element
     = posl:#position !("|}" / TableRowSeparator) sep:(TableCellSeparator) attr:(a:TableElementAttributes 
-      "|" !("|") {a})? Space* content:(TableParagraph / TableFormatted)* posr:#position {
+      "|" !("|") {a})? _ content:(TableParagraph / TableFormatted)* posr:#position {
 
         Element::TableCell {
             position: Span::new(posl, posr, source_lines),
@@ -196,7 +196,7 @@ InternalRefParagraph -> Element
     = ParagraphTemplate<InternalReferenceFormatted>
 
 ReferenceInternal -> Element
-    = posl:#position "[[" t:((tar:(InternalRefParagraph / InternalReferenceFormatted)* {tar}) ++ "|") "]]" posr:#position {
+    = posl:#position "[[" _ t:((tar:(InternalRefParagraph / InternalReferenceFormatted)* {tar}) ++ (_ "|" _)) "]]" posr:#position {
         
         let mut t = t;
         Element::InternalReference {
@@ -209,7 +209,7 @@ ReferenceInternal -> Element
 
 /* external references (hyperlink) with only url and optional caption */
 ReferenceExternal -> Element
-    = posl:#position "[" url:Url Space* caption:(Paragraph / FormattedText)* "]" posr:#position {
+    = posl:#position "[" url:Url _ caption:(Paragraph / FormattedText)* "]" posr:#position {
 
         Element::ExternalReference {
             position: Span::new(posl, posr, source_lines),
@@ -221,7 +221,7 @@ ReferenceExternal -> Element
 /*
  * Galleries
  */
-GallerySep = (Space* Newline Space*)+
+GallerySep = (_ Newline _)+
 
 Gallery -> Element 
     = posl:#position attr:TagOpen<"gallery"i> GallerySep* files:(
@@ -330,22 +330,22 @@ FormattedText -> Element
 
 /** A html tag attribute */
 HtmlAttribute -> TagAttribute
-    = posl:#position key:TagName Space* "=" Space * value:(QuotedText / TagSafeLiteral) posr:#position {
+    = posl:#position key:TagName _ "=" _ value:(QuotedText / TagSafeLiteral) posr:#position {
         
         TagAttribute::new(Span::new(posl, posr, source_lines), key, value)
     }
 
 TagInner<Name>
-    = Space* n:Name Space* attrs:(a:HtmlAttribute Space* {a})* {(n, attrs)}
+    = n:Name _ attrs:(a:HtmlAttribute _ {a})* {(n, attrs)}
 TagOpen<Name> 
-    = #quiet<"<" inner:TagInner<Name> ">" {inner}> / #expected("opening html tag")
+    = #quiet<"<" _ inner:TagInner<Name> _ ">" {inner}> / #expected("opening html tag")
 TagClose<Name> 
-    = #quiet<("<" Space* "/" Space * TagInner<Name> Space* ">") / "</>"> / #expected("closing html tag")
+    = #quiet<("<" _ "/" _ TagInner<Name> _ ">") / "<" _ "/" _ ">"> / #expected("closing html tag")
 
 /** a generic html tag (self-closing or with inner elements) */
 HtmlTag<Name, Inner>
     = (tag:TagOpen<Name> i:Inner TagClose<Name> {(tag.0, tag.1, i)}) 
-    / ("<" tag:TagInner<Name> "/" Space* ">" {(tag.0, tag.1, vec![])})
+    / ("<" _ tag:TagInner<Name> _ "/" _ ">" {(tag.0, tag.1, vec![])})
 
 AnyOpen 
     = TagOpen<TagName?> {()}
@@ -410,12 +410,10 @@ Text<C>
     }
 
 CharString<C>
-    = chars:C+ {
-        chars.iter().map(|s| s.to_owned()).collect()
-    }
+    = chars:C+ { chars.iter().map(|s| s.to_owned()).collect() }
 
 EnclosedLiteral<ClosingChar>
-    = ClosingChar text:CharString<!(ClosingChar) $.> ClosingChar {text}
+    = ClosingChar text:CharString<!(ClosingChar) $.> ClosingChar { text }
 
 
 /*
@@ -434,13 +432,13 @@ CodeText -> Element
 PreformattedText -> Element
     = #quiet<Text<!TagClose<"pre"i> $. >> / #expected ("any text")
 Url -> String
-    = #quiet<CharString<!(Space / "]") c:$. {c}>> / #expected("a word of text (e.g. url)")
+    = #quiet<CharString<UrlChar>> / #expected("a word of text (e.g. url)")
 TagSafeLiteral -> String
-    = #quiet<CharString<(!(Space / "<" / "/" / ">") c:$(.) {c})>> / #expected("tag attribute value")
+    = #quiet<CharString<TagChar>> / #expected("tag attribute value")
 QuotedText -> String 
     = #quiet<EnclosedLiteral<"\""> / EnclosedLiteral<"'">> / #expected("quoted text")
 TagName -> String 
-    = #quiet<CharString<!("<" / ">" / "/" / Space / "=") c:$. {c}>> / #expected("tag / attribute name")
+    = #quiet<CharString<TagChar>> / #expected("tag / attribute name")
 
 _ -> &'input str = #quiet<w:$([ \t]*) {w}> / #expected("whitespace")
 ws -> &'input str = #quiet<w:$([\n\r \t]*) {w}> / #expected("whitespace (including newlines)")
@@ -467,6 +465,10 @@ TemplateAttributeNameChar -> &'input str
     = ![|<>=!*#:;/] c:Char {c} 
 Whitespace -> &'input str
     = $([ \t])
+TagChar -> &'input str
+    = $([^<>/ =])
+UrlChar -> &'input str
+    = $([^ \]])
 
 // a paragraph may not start with these symbols as they indicate other elements
 PAR_START_GUARD = !([=!|*#:;] / EOF)
