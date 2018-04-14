@@ -65,61 +65,39 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
             return Ok(());
         }
         match *root {
-            Element::Document { ref content, .. }
-            | Element::Formatted { ref content, .. }
-            | Element::Paragraph { ref content, .. }
-            | Element::ListItem { ref content, .. }
-            | Element::List { ref content, .. }
-            | Element::TableCell { ref content, .. }
-            | Element::HtmlTag { ref content, .. }
-            | Element::Gallery { ref content, .. }
-            => {
-                self.run_vec(content, settings, out)?;
+            Element::Document(ref e) => self.run_vec(&e.content, settings, out)?,
+            Element::Formatted(ref e) => self.run_vec(&e.content, settings, out)?,
+            Element::Paragraph(ref e) => self.run_vec(&e.content, settings, out)?,
+            Element::ListItem(ref e) => self.run_vec(&e.content, settings, out)?,
+            Element::List(ref e) => self.run_vec(&e.content, settings, out)?,
+            Element::TableCell(ref e) => self.run_vec(&e.content, settings, out)?,
+            Element::HtmlTag(ref e) => self.run_vec(&e.content, settings, out)?,
+            Element::Gallery(ref e) => self.run_vec(&e.content, settings, out)?,
+            Element::Heading(ref e) => {
+                self.run_vec(&e.caption, settings, out)?;
+                self.run_vec(&e.content, settings, out)?;
+            },
+            Element::Template(ref e) => {
+                self.run_vec(&e.name, settings, out)?;
+                self.run_vec(&e.content, settings, out)?;
             }
-            Element::Heading {
-                ref caption,
-                ref content,
-                ..
-            } => {
-                self.run_vec(caption, settings, out)?;
-                self.run_vec(content, settings, out)?;
-            }
-            Element::Template { ref content, ref name, .. } => {
-                self.run_vec(content, settings, out)?;
-                self.run_vec(name, settings, out)?;
-            }
-            Element::TemplateArgument { ref value, .. } => {
-                self.run_vec(value, settings, out)?;
-            }
-            Element::InternalReference {
-                ref target,
-                ref options,
-                ref caption,
-                ..
-            } => {
-                self.run_vec(target, settings, out)?;
-                for option in options {
+            Element::TemplateArgument(ref e) => self.run_vec(&e.value, settings, out)?,
+            Element::InternalReference(ref e) => {
+                self.run_vec(&e.target, settings, out)?;
+                for option in &e.options {
                     self.run_vec(option, settings, out)?;
                 }
-                self.run_vec(caption, settings, out)?;
+                self.run_vec(&e.caption, settings, out)?;
+            },
+            Element::ExternalReference(ref e) => self.run_vec(&e.caption, settings, out)?,
+            Element::Table(ref e) => {
+                self.run_vec(&e.caption, settings, out)?;
+                self.run_vec(&e.rows, settings, out)?;
             }
-            Element::ExternalReference { ref caption, .. } => {
-                self.run_vec(caption, settings, out)?;
-            }
-            Element::Table {
-                ref caption,
-                ref rows,
-                ..
-            } => {
-                self.run_vec(caption, settings, out)?;
-                self.run_vec(rows, settings, out)?;
-            }
-            Element::TableRow { ref cells, .. } => {
-                self.run_vec(cells, settings, out)?;
-            }
-            Element::Text { .. }
-            | Element::Comment { .. }
-            | Element::Error { .. }
+            Element::TableRow(ref e) => self.run_vec(&e.cells, settings, out)?,
+            Element::Text(_)
+            | Element::Comment(_)
+            | Element::Error(_)
             => (),
         }
         self.path_pop();

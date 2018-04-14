@@ -12,141 +12,213 @@ use serde::ser::{Serialize, Serializer, SerializeMap};
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
 pub enum Element {
-    /// The document root.
-    Document {
-        #[serde(default)]
-        position: Span,
-        content: Vec<Element>,
-    },
-    /// Headings make a hierarchical document structure.
-    /// Headings of higher depths have other headings as parents.
-    Heading {
-        #[serde(default)]
-        position: Span,
-        depth: usize,
-        caption: Vec<Element>,
-        content: Vec<Element>,
-    },
-    /// Simple text.
-    Text {
-        #[serde(default)]
-        position: Span,
-        text: String
-     },
-    /// A formatting wrapper, usually around text.
-    Formatted {
-        #[serde(default)]
-        position: Span,
-        markup: MarkupType,
-        content: Vec<Element>,
-    },
-    /// Paragraphs are separated by newlines in the input document.
-    Paragraph {
-        #[serde(default)]
-        position: Span,
-        content: Vec<Element>,
-    },
-    /// A mediawiki template.
-    Template {
-        #[serde(default)]
-        position: Span,
-        name: Vec<Element>,
-        content: Vec<Element>,
-    },
-    /// Argument of a mediawiki template.
-    /// Empty name indicate anonymous arguments.
-    TemplateArgument {
-        #[serde(default)]
-        position: Span,
-        name: String,
-        value: Vec<Element>,
-    },
-    /// A reference to internal data, such as embedded files
-    /// or other articles.
-    InternalReference {
-        #[serde(default)]
-        position: Span,
-        target: Vec<Element>,
-        options: Vec<Vec<Element>>,
-        caption: Vec<Element>,
-    },
-    /// External reference, usually hyperlinks.
-    ExternalReference {
-        #[serde(default)]
-        position: Span,
-        target: String,
-        caption: Vec<Element>,
-    },
-    /// List item of a certain `ListItemKind`.
-    ListItem {
-        #[serde(default)]
-        position: Span,
-        depth: usize,
-        kind: ListItemKind,
-        content: Vec<Element>,
-    },
-    /// List of items. The `ListItemKind` of its children
-    /// can be heterogenous.
-    List {
-        #[serde(default)]
-        position: Span,
-        content: Vec<Element>,
-    },
-    /// A mediawiki table. `attributes` represent html
-    /// attributes assigned to the table.
-    Table {
-        #[serde(default)]
-        position: Span,
-        attributes: Vec<TagAttribute>,
-        caption: Vec<Element>,
-        caption_attributes: Vec<TagAttribute>,
-        rows: Vec<Element>,
-    },
-    /// A table row. `attributes` represent html
-    /// attributes assigned to the table.
-    TableRow {
-        #[serde(default)]
-        position: Span,
-        attributes: Vec<TagAttribute>,
-        cells: Vec<Element>,
-    },
-    /// A single table cell. `attributes` represent html
-    /// attributes assigned to the table. `header` is true
-    /// if this cell is marked as a header cell.
-    TableCell {
-        #[serde(default)]
-        position: Span,
-        header: bool,
-        attributes: Vec<TagAttribute>,
-        content: Vec<Element>,
-    },
-    /// Comments in the input document.
-    Comment {
-        #[serde(default)]
-        position: Span,
-        text: String
-    },
-    /// Html tags not encoding formatting elements.
-    HtmlTag {
-        #[serde(default)]
-        position: Span,
-        name: String,
-        attributes: Vec<TagAttribute>,
-        content: Vec<Element>,
-    },
-    /// Gallery of images (or interal references in general).
-    Gallery {
-        #[serde(default)]
-        position: Span,
-        attributes: Vec<TagAttribute>,
-        content: Vec<Element>,
-    },
-    /// Indicates an erroneous part of the document tree.
-    Error {
-        #[serde(default)]
-        position: Span,
-        message: String
-    },
+    Document(Document),
+    Heading(Heading),
+    Text(Text),
+    Formatted(Formatted),
+    Paragraph(Paragraph),
+    Template(Template),
+    TemplateArgument(TemplateArgument),
+    InternalReference(InternalReference),
+    ExternalReference(ExternalReference),
+    ListItem(ListItem),
+    List(List),
+    Table(Table),
+    TableRow(TableRow),
+    TableCell(TableCell),
+    Comment(Comment),
+    HtmlTag(HtmlTag),
+    Gallery(Gallery),
+    Error(Error),
+}
+
+/// The document root.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Document {
+    #[serde(default)]
+    pub position: Span,
+    pub content: Vec<Element>,
+}
+
+/// Headings make a hierarchical document structure.
+/// Headings of higher depths have other headings as parents.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Heading {
+    #[serde(default)]
+    pub position: Span,
+    pub depth: usize,
+    pub caption: Vec<Element>,
+    pub content: Vec<Element>,
+}
+
+/// Simple text.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Text {
+    #[serde(default)]
+    pub position: Span,
+    pub text: String
+}
+
+/// A formatting wrapper, usually around text.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Formatted {
+    #[serde(default)]
+    pub position: Span,
+    pub markup: MarkupType,
+    pub content: Vec<Element>,
+}
+
+/// Paragraphs are separated by newlines in the input document.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Paragraph {
+    #[serde(default)]
+    pub position: Span,
+    pub content: Vec<Element>,
+}
+
+/// A mediawiki template.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Template {
+    #[serde(default)]
+    pub position: Span,
+    pub name: Vec<Element>,
+    pub content: Vec<Element>,
+}
+
+/// Argument of a mediawiki template.
+/// Empty name indicate anonymous arguments.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct TemplateArgument {
+    #[serde(default)]
+    pub position: Span,
+    pub name: String,
+    pub value: Vec<Element>,
+}
+
+/// A reference to internal data, such as embedded files
+/// or other articles.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct InternalReference {
+    #[serde(default)]
+    pub position: Span,
+    pub target: Vec<Element>,
+    pub options: Vec<Vec<Element>>,
+    pub caption: Vec<Element>,
+}
+
+/// External reference, usually hyperlinks.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct ExternalReference {
+    #[serde(default)]
+    pub position: Span,
+    pub target: String,
+    pub caption: Vec<Element>,
+}
+
+/// List item of a certain `ListItemKind`.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct ListItem {
+    #[serde(default)]
+    pub position: Span,
+    pub depth: usize,
+    pub kind: ListItemKind,
+    pub content: Vec<Element>,
+}
+
+/// List of items. The `ListItemKind` of its children
+/// can be heterogenous.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct List {
+    #[serde(default)]
+    pub position: Span,
+    pub content: Vec<Element>,
+}
+
+/// A mediawiki table. `attributes` represent html
+/// attributes assigned to the table.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Table {
+    #[serde(default)]
+    pub position: Span,
+    pub attributes: Vec<TagAttribute>,
+    pub caption: Vec<Element>,
+    pub caption_attributes: Vec<TagAttribute>,
+    pub rows: Vec<Element>,
+}
+
+/// A table row. `attributes` represent html
+/// attributes assigned to the table.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct TableRow {
+    #[serde(default)]
+    pub position: Span,
+    pub attributes: Vec<TagAttribute>,
+    pub cells: Vec<Element>,
+}
+
+/// A single table cell. `attributes` represent html
+/// attributes assigned to the table. `header` is true
+/// if this cell is marked as a header cell.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct TableCell {
+    #[serde(default)]
+    pub position: Span,
+    pub header: bool,
+    pub attributes: Vec<TagAttribute>,
+    pub content: Vec<Element>,
+}
+
+/// Comments in the input document.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Comment {
+    #[serde(default)]
+    pub position: Span,
+    pub text: String
+}
+
+/// Html tags not encoding formatting elements.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct HtmlTag {
+    #[serde(default)]
+    pub position: Span,
+    pub name: String,
+    pub attributes: Vec<TagAttribute>,
+    pub content: Vec<Element>,
+}
+
+/// Gallery of images (or interal references in general).
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Gallery {
+    #[serde(default)]
+    pub position: Span,
+    pub attributes: Vec<TagAttribute>,
+    pub content: Vec<Element>,
+}
+
+/// Indicates an erroneous part of the document tree.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub struct Error {
+    #[serde(default)]
+    pub position: Span,
+    pub message: String
 }
 
 /// Types of markup a section of text may have.
@@ -250,74 +322,72 @@ impl Element {
     /// returns the source code position of an element.
     pub fn get_position(&self) -> &Span {
         match *self {
-            Element::Document { ref position, .. }
-            | Element::Heading { ref position, .. }
-            | Element::Text { ref position, .. }
-            | Element::Formatted { ref position, .. }
-            | Element::Paragraph { ref position, .. }
-            | Element::Template { ref position, .. }
-            | Element::TemplateArgument { ref position, .. }
-            | Element::InternalReference { ref position, .. }
-            | Element::ExternalReference { ref position, .. }
-            | Element::List { ref position, .. }
-            | Element::ListItem { ref position, .. }
-            | Element::Table { ref position, .. }
-            | Element::TableRow { ref position, .. }
-            | Element::TableCell { ref position, .. }
-            | Element::Comment { ref position, .. }
-            | Element::HtmlTag { ref position, .. }
-            | Element::Gallery { ref position, .. }
-            | Element::Error { ref position, .. }
-            => position,
+            Element::Document(ref e) => &e.position,
+            Element::Heading(ref e) => &e.position,
+            Element::Text(ref e) => &e.position,
+            Element::Formatted(ref e) => &e.position,
+            Element::Paragraph(ref e) => &e.position,
+            Element::Template(ref e) => &e.position,
+            Element::TemplateArgument(ref e) => &e.position,
+            Element::InternalReference(ref e) => &e.position,
+            Element::ExternalReference(ref e) => &e.position,
+            Element::List(ref e) => &e.position,
+            Element::ListItem(ref e) => &e.position,
+            Element::Table(ref e) => &e.position,
+            Element::TableRow(ref e) => &e.position,
+            Element::TableCell(ref e) => &e.position,
+            Element::Comment(ref e) => &e.position,
+            Element::HtmlTag(ref e) => &e.position,
+            Element::Gallery(ref e) => &e.position,
+            Element::Error(ref e) => &e.position,
         }
     }
 
     /// returns a mutable reference the source code position of an element.
     pub fn get_position_mut(&mut self) -> &mut Span {
         match *self {
-            Element::Document { ref mut position, .. }
-            | Element::Heading { ref mut position, .. }
-            | Element::Text { ref mut position, .. }
-            | Element::Formatted { ref mut position, .. }
-            | Element::Paragraph { ref mut position, .. }
-            | Element::Template { ref mut position, .. }
-            | Element::TemplateArgument { ref mut position, .. }
-            | Element::InternalReference { ref mut position, .. }
-            | Element::ExternalReference { ref mut position, .. }
-            | Element::List { ref mut position, .. }
-            | Element::ListItem { ref mut position, .. }
-            | Element::Table { ref mut position, .. }
-            | Element::TableRow { ref mut position, .. }
-            | Element::TableCell { ref mut position, .. }
-            | Element::Comment { ref mut position, .. }
-            | Element::HtmlTag { ref mut position, .. }
-            | Element::Gallery { ref mut position, .. }
-            | Element::Error { ref mut position, .. }
-            => position,
+            Element::Document(ref mut e) => &mut e.position,
+            Element::Heading(ref mut e) => &mut e.position,
+            Element::Text(ref mut e) => &mut e.position,
+            Element::Formatted(ref mut e) => &mut e.position,
+            Element::Paragraph(ref mut e) => &mut e.position,
+            Element::Template(ref mut e) => &mut e.position,
+            Element::TemplateArgument(ref mut e) => &mut e.position,
+            Element::InternalReference(ref mut e) => &mut e.position,
+            Element::ExternalReference(ref mut e) => &mut e.position,
+            Element::List(ref mut e) => &mut e.position,
+            Element::ListItem(ref mut e) => &mut e.position,
+            Element::Table(ref mut e) => &mut e.position,
+            Element::TableRow(ref mut e) => &mut e.position,
+            Element::TableCell(ref mut e) => &mut e.position,
+            Element::Comment(ref mut e) => &mut e.position,
+            Element::HtmlTag(ref mut e) => &mut e.position,
+            Element::Gallery(ref mut e) => &mut e.position,
+            Element::Error(ref mut e) => &mut e.position,
         }
     }
 
     /// returns the variant name of an element.
     pub fn get_variant_name(&self) -> &str {
         match *self {
-            Element::Document { .. } => "Document",
-            Element::Heading { .. } => "Heading",
-            Element::Text { .. } => "Text",
-            Element::Formatted { .. } => "Formatted",
-            Element::Paragraph { .. } => "Paragraph",
-            Element::Template { .. } => "Template",
-            Element::TemplateArgument { .. } => "TemplateArgument",
-            Element::InternalReference { .. } => "InternalReference",
-            Element::ExternalReference { .. } => "ExternalReference",
-            Element::List { .. } => "List",
-            Element::ListItem { .. } => "ListItem",
-            Element::Table { .. } => "Table",
-            Element::TableRow { .. } => "TableRow",
-            Element::TableCell { .. } => "TableCell",
-            Element::Comment { .. } => "Comment",
-            Element::HtmlTag { .. } => "HtmlTag",
-            Element::Gallery { .. } => "Gallery",
-            Element::Error { .. } => "Error",
+            Element::Document(_) => "Document",
+            Element::Heading(_) => "Heading",
+            Element::Text(_) => "Text",
+            Element::Formatted(_) => "Formatted",
+            Element::Paragraph(_) => "Paragraph",
+            Element::Template(_) => "Template",
+            Element::TemplateArgument(_) => "TemplateArgument",
+            Element::InternalReference(_) => "InternalReference",
+            Element::ExternalReference(_) => "ExternalReference",
+            Element::List(_) => "List",
+            Element::ListItem(_) => "ListItem",
+            Element::Table(_) => "Table",
+            Element::TableRow(_) => "TableRow",
+            Element::TableCell(_) => "TableCell",
+            Element::Comment(_) => "Comment",
+            Element::HtmlTag(_) => "HtmlTag",
+            Element::Gallery(_) => "Gallery",
+            Element::Error(_) => "Error",
         }
     }
 }

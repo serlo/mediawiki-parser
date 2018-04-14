@@ -10,10 +10,10 @@ pub document -> Element
     let mut content = content;
     res.append(&mut content);
 
-    Element::Document {
+    Element::Document(Document {
         position: Span::new(posl, posr, source_lines),
         content: res, 
-    }
+    })
 }
 
 head_fmt -> Element
@@ -23,12 +23,12 @@ head_fmt -> Element
 heading -> Element 
     = posl:#position d:$("="+) _ cap:head_fmt* _ "="* _ (nl / EOF) pars:paragraph* posr:#position 
 {
-    Element::Heading {
+    Element::Heading(Heading {
         position: Span::new(posl, posr, source_lines),
         depth: d.len(),
         caption: cap,
         content: pars,
-    }
+    })
 }
 
 // a paragraph is a block element, some or no text followed by a newline.
@@ -39,10 +39,10 @@ ParagraphTemplate<fmt_rule>
     = list / table / gallery 
       / posl:#position PAR_START_GUARD text:fmt_rule* (nl / EOF) posr:#position 
 {   
-    Element::Paragraph {
+    Element::Paragraph(Paragraph {
         position: Span::new(posl, posr, source_lines),
         content: text,
-    }
+    })
 } 
 
 //  the standard paragraph
@@ -61,22 +61,22 @@ template -> Element
     = posl:#position "{{" ws n:(template_par / template_fmt)* ws 
       attrs:("|" t:template_arg {t})* "}}" posr:#position 
 {    
-    Element::Template {
+    Element::Template(Template {
         position: Span::new(posl, posr, source_lines),
         name: n,
         content: attrs
-    }
+    })
 }
 
 template_arg -> Element
     = posl:#position name:(n:template_arg_name "=" {n})? 
       value:(heading / template_par / template_fmt)* posr:#position 
 { 
-    Element::TemplateArgument {
+    Element::TemplateArgument(TemplateArgument {
         position: Span::new(posl, posr, source_lines),
         name: name.unwrap_or_default(),
         value: value,
-    }    
+    })
 } 
 
 
@@ -84,10 +84,10 @@ template_arg -> Element
 list -> Element
     = posl:#position items:(li:list_item (nl / EOF) {li})+ posr:#position 
 {
-    Element::List {
+    Element::List(List {
         position: Span::new(posl, posr, source_lines),
         content: items,
-    }
+    })
 }
 
 list_item -> Element
@@ -105,12 +105,12 @@ list_item -> Element
             _ => panic!("undefined list start: {:?} \
                         this is an implementation error!", s.chars().last())
         };
-        Ok(Element::ListItem {
+        Ok(Element::ListItem(ListItem {
             position: Span::new(posl, posr, source_lines),
             depth: s.len(),
             kind: kind,
             content: content,
-        })
+        }))
     }
 }
 
@@ -123,20 +123,20 @@ table -> Element
     let (cap_attrs, cap_pars) = caption.unwrap_or_default();
     let mut rows = rows;
     if first_cells.len() > 0 {
-        rows.insert(0, Element::TableRow {
+        rows.insert(0, Element::TableRow(TableRow {
             position: Span::new(0, 0, source_lines),
             cells: first_cells,
             attributes: vec![],
-        });
+        }));
     }
 
-    Element::Table {
+    Element::Table(Table {
         position: Span::new(posl, posr, source_lines),
         rows: rows,
         attributes: attr.unwrap_or_default(),
         caption: cap_pars,
         caption_attributes: cap_attrs,
-    }
+    })
 }
 
 table_attrs -> Vec<TagAttribute>
@@ -160,23 +160,23 @@ row_sep -> Vec<TagAttribute>
 table_row -> Element
     = posl:#position !("|}") sep:row_sep c:table_cell* posr:#position 
 {    
-    Element::TableRow {
+    Element::TableRow(TableRow {
         position: Span::new(posl, posr, source_lines),
         cells: c,
         attributes: sep,
-    }
+    })
 }
 
 table_cell -> Element
     = posl:#position !("|}" / row_sep) sep:cell_sep attr:(a:table_attrs "|" !("|") {a})?
       _ content:(table_par / table_fmt)* posr:#position 
 {
-    Element::TableCell {
+    Element::TableCell(TableCell {
         position: Span::new(posl, posr, source_lines),
         content: content,
         attributes: attr.unwrap_or_default(),
         header: sep.starts_with('!'),
-    }
+    })
 }
 
 // === References ===
@@ -191,23 +191,23 @@ internal_ref -> Element
     = posl:#position "[[" _ t:((tar:(iref_par / iref_fmt)* {tar}) ++ (_ "|" _)) "]]" posr:#position
 {    
     let mut t = t;
-    Element::InternalReference {
+    Element::InternalReference(InternalReference {
         position: Span::new(posl, posr, source_lines),
         target: t.remove(0),
         caption: t.pop().unwrap_or_default(),
         options: t, 
-    }      
+    })
 }
 
 // external references (hyperlink) with only url and optional caption
 external_ref -> Element
     = posl:#position "[" u:url _ caption:(paragraph / formatted)* "]" posr:#position 
 {
-    Element::ExternalReference {
+    Element::ExternalReference(ExternalReference {
         position: Span::new(posl, posr, source_lines),
         target: u,
         caption: caption
-    }
+    })
 }
 
 // === Galleries ===
@@ -218,12 +218,12 @@ gallery_file -> Element
     = flp:#position content:(f:iref_fmt+ {f}) ++ "|" frp:#position
 {
     let mut content = content;
-    Element::InternalReference {
+    Element::InternalReference(InternalReference {
         position: Span::new(flp, frp, source_lines),
         target: content.remove(0),
         caption: content.pop().unwrap_or_default(),
         options: content,
-    }
+    })
 }
 
 gallery -> Element 
@@ -231,11 +231,11 @@ gallery -> Element
         ws files:(gallery_file ** gallery_sep) ws 
       TagClose<"gallery"i> posr:#position 
 {
-    Element::Gallery {
+    Element::Gallery(Gallery {
         position: Span::new(posl, posr, source_lines),
         attributes: attr.1,
         content: files,
-    }
+    })
 }
 
 // === Inline markup ===
@@ -254,11 +254,11 @@ strong -> Element
         inner:(ParagraphTemplate<strong_formatted> / strong_formatted)+ 
       strong_lit posr:#position 
 {
-    Element::Formatted {
+    Element::Formatted(Formatted {
         position: Span::new(posl, posr, source_lines),
         content: inner,
         markup: MarkupType::Bold
-    }
+    })
 }
 
 emph -> Element
@@ -266,11 +266,11 @@ emph -> Element
         inner:(ParagraphTemplate<emph_formatted> / emph_formatted)+ 
       emph_lit posr:#position 
 { 
-    Element::Formatted {
+    Element::Formatted(Formatted {
         position: Span::new(posl, posr, source_lines),
         content: inner,
         markup: MarkupType::Italic
-    }
+    })
 }
 
 // html markup
@@ -352,23 +352,23 @@ any_tag -> Element
         t:HtmlTag<(!HTML_BLOCK_ELEMENTS n:tag_name {n}), (paragraph / formatted / heading)*> 
       posr:#position 
 { 
-    Element::HtmlTag {
+    Element::HtmlTag(HtmlTag {
         position: Span::new(posl, posr, source_lines),
         name: t.0,
         attributes: t.1,
         content: t.2,
-    }
+    })
 }
 
 // macro for simple formatting markup tags. Matches markup type by tag name (see ast.rs)
 MarkupTag<name, inner>
     = posl:#position tag_info:HtmlTag<$(name), inner> posr:#position 
 { 
-    Element::Formatted {
+    Element::Formatted(Formatted {
         position: Span::new(posl, posr, source_lines),
         content: tag_info.2,
         markup: MarkupType::by_tag_name(tag_info.0),
-    }
+    })
 }
 
 
@@ -376,10 +376,10 @@ MarkupTag<name, inner>
 html_comment -> Element
     = posl:#position "<!--" s:CharString<(!("-->") c:$. {c})>? "-->" posr:#position 
 { 
-    Element::Comment {
+    Element::Comment(Comment {
         position: Span::new(posl, posr, source_lines),
         text: s.unwrap_or_default(),
-    }
+    })
 }
 
 // === primitive terminals ===
@@ -396,10 +396,10 @@ EOF = #quiet<!.> / #expected("EOF")
 Text<C> 
     = posl:#position s:CharString<C> posr:#position 
 { 
-    Element::Text {
+    Element::Text(Text {
         position: Span::new(posl, posr, source_lines),
         text: s
-    }
+    })
 }
 
 CharString<C>

@@ -25,32 +25,19 @@ pub fn fold_headings_transformation(mut root: Element, settings: &GeneralSetting
         let mut current_depth = usize::MAX;
 
         for child in root_content.drain(..) {
-            if let Element::Heading {
-                position,
-                depth,
-                caption,
-                content,
-            } = child {
+            if let Element::Heading(cur_heading) = child {
 
-                let new = Element::Heading {
-                    position,
-                    depth,
-                    caption,
-                    content,
-                };
-
-                if depth > current_depth {
-                    if let Some(&mut Element::Heading {
-                        ref mut content,
-                        ..
-                    }) = result.get_mut(current_heading_index) {
-                        content.push(new);
+                if cur_heading.depth > current_depth {
+                    let last = result.get_mut(current_heading_index);
+                    if let Some(&mut Element::Heading(ref mut e)) = last {
+                        e.content.push(Element::Heading(cur_heading));
                     }
                 } else {
-                    // pick a new reference heading if the new one is equally deep or more shallow
+                    // pick a new reference heading if the new one
+                    // is equally deep or more shallow
                     current_heading_index = result.len();
-                    current_depth = depth;
-                    result.push(new);
+                    current_depth = cur_heading.depth;
+                    result.push(Element::Heading(cur_heading));
                 }
             } else {
                 if current_depth < usize::MAX {
@@ -91,12 +78,13 @@ pub fn fold_lists_transformation(mut root: Element, settings: &GeneralSettings) 
         settings: &'a GeneralSettings,
     ) -> TListResult {
 
-        // the currently least deep list item, every deeper list item will be moved to a new sublist
+        // the currently least deep list item, every deeper
+        // list item will be moved to a new sublist
         let mut lowest_depth = usize::MAX;
         for child in &root_content[..] {
-            if let Element::ListItem { depth, .. } = *child {
-                if depth < lowest_depth {
-                    lowest_depth = depth;
+            if let Element::ListItem(ref e) = *child {
+                if e.depth < lowest_depth {
+                    lowest_depth = e.depth;
                 }
             } else {
                 return Err(TransformationError {
@@ -113,30 +101,17 @@ pub fn fold_lists_transformation(mut root: Element, settings: &GeneralSettings) 
         let mut create_sublist = true;
 
         for child in root_content.drain(..) {
-            if let Element::ListItem {
-                position,
-                depth,
-                kind,
-                content,
-            } = child {
-                // clone the position and item kind to later use it as list position when creating a sublist.
-                let position_copy = position.clone();
+            if let Element::ListItem(cur_item) = child {
 
-                let new = Element::ListItem {
-                    position,
-                    depth,
-                    kind,
-                    content,
-                };
-                if depth > lowest_depth {
+                if cur_item.depth > lowest_depth {
 
                     // this error is returned if the sublist to append to was not found
-                    let build_found_error = |origin: &Element| {
+                    let build_found_error = |origin: &ListItem| {
                         TransformationError {
-                            cause: String::from("sublist was not instantiated properly."),
-                            transformation_name: String::from("fold_lists_transformation"),
-                            position: origin.get_position().clone(),
-                            tree: origin.clone(),
+                            cause: "sublist was not instantiated properly.".into(),
+                            transformation_name: "fold_lists_transformation".into(),
+                            position: origin.position.clone(),
+                            tree: Element::ListItem(origin.clone()),
                         }
                     };
 
@@ -145,43 +120,34 @@ pub fn fold_lists_transformation(mut root: Element, settings: &GeneralSettings) 
                         create_sublist = false;
 
                         if result.is_empty() {
-                            result.push(Element::ListItem {
-                                position: position_copy.clone(),
+                            result.push(Element::ListItem(ListItem {
+                                position: cur_item.position.clone(),
                                 depth: lowest_depth,
-                                kind,
+                                kind: cur_item.kind,
                                 content: vec![],
-                            });
+                            }));
                         }
-                        if let Some(&mut Element::ListItem {
-                            ref mut content,
-                            ..
-                        }) = result.last_mut() {
-                            content.push(Element::List {
-                                position: position_copy,
+                        if let Some(&mut Element::ListItem(ref mut last)) = result.last_mut() {
+                            last.content.push(Element::List(List {
+                                position: cur_item.position.clone(),
                                 content: vec![],
-                            });
+                            }));
                         } else {
-                            return Err(build_found_error(&new));
+                            return Err(build_found_error(&cur_item));
                         }
                     }
 
-                    if let Some(&mut Element::ListItem {
-                        ref mut content,
-                        ..
-                    }) = result.last_mut() {
-                        if let Some(&mut Element::List {
-                            ref mut content,
-                            ..
-                        }) = content.last_mut() {
-                            content.push(new);
+                    if let Some(&mut Element::ListItem(ref mut item)) = result.last_mut() {
+                        if let Some(&mut Element::List(ref mut l)) = item.content.last_mut() {
+                            l.content.push(Element::ListItem(cur_item));
                         } else {
-                            return Err(build_found_error(&new));
+                            return Err(build_found_error(&cur_item));
                         }
                     } else {
-                        return Err(build_found_error(&new));
+                        return Err(build_found_error(&cur_item));
                     }
                 } else {
-                    result.push(new);
+                    result.push(Element::ListItem(cur_item));
                     create_sublist = true;
                 }
             } else {
@@ -207,11 +173,11 @@ pub fn fold_lists_transformation(mut root: Element, settings: &GeneralSettings) 
 
 /// Transform whitespace-only paragraphs to empty paragraphs.
 pub fn whitespace_paragraphs_to_empty(mut root: Element, settings: &GeneralSettings) -> TResult {
-    if let Element::Paragraph { ref mut content, .. } = root {
+    if let Element::Paragraph(ref mut par) = root {
         let mut is_only_whitespace = true;
-        for child in &content[..] {
-            if let Element::Text { ref text, .. } = *child {
-                if !util::is_whitespace(text) {
+        for child in &par.content[..] {
+            if let Element::Text(ref text) = *child {
+                if !util::is_whitespace(&text.text) {
                     is_only_whitespace = false;
                     break;
                 }
@@ -221,7 +187,7 @@ pub fn whitespace_paragraphs_to_empty(mut root: Element, settings: &GeneralSetti
             }
         }
         if is_only_whitespace {
-            content.drain(..);
+            par.content.drain(..);
         }
     } else {
         root = recurse_inplace(&whitespace_paragraphs_to_empty, root, settings)?;
@@ -245,30 +211,22 @@ pub fn collapse_paragraphs(
         let mut last_empty = false;
 
         for mut child in root_content.drain(..) {
-            if let Element::Paragraph {
-                ref mut content,
-                ref mut position,
-            } = child {
-                if content.is_empty() {
+            if let Element::Paragraph(ref mut par) = child {
+                if par.content.is_empty() {
                     last_empty = true;
                     continue;
                 }
 
                 // if the last paragraph was not empty, append to it.
-                if !last_empty {
-                    let current_content = content;
-                    let current_position = position;
-                    if let Some(&mut Element::Paragraph {
-                        ref mut content,
-                        ref mut position,
-                    }) = result.last_mut() {
+                if !last_empty {;
+                    if let Some(&mut Element::Paragraph(ref mut last)) = result.last_mut() {
                         // Add a space on line break
-                        content.push(Element::Text {
+                        last.content.push(Element::Text(Text {
                             text: " ".into(),
-                            position: position.clone()
-                        });
-                        content.append(current_content);
-                        position.end = current_position.end.clone();
+                            position: last.position.clone()
+                        }));
+                        last.content.append(&mut par.content);
+                        last.position.end = par.position.end.clone();
                         continue;
                     }
                 }
@@ -303,27 +261,18 @@ pub fn collapse_consecutive_text(
         let mut result = vec![];
 
         for mut child in root_content.drain(..) {
-            if let Element::Text {
-                ref mut text,
-                ref mut position,
-            } = child {
+            if let Element::Text(ref mut text) = child {
 
-                let new_text = text;
-                let new_position = position;
-
-                if let Some(&mut Element::Text {
-                    ref mut text,
-                    ref mut position,
-                }) = result.last_mut() {
-                    if util::is_whitespace(new_text) {
-                       text.push(' ');
+                if let Some(&mut Element::Text(ref mut last)) = result.last_mut() {
+                    if util::is_whitespace(&text.text) {
+                        last.text.push(' ');
                     } else {
-                        text.push_str(new_text);
+                        last.text.push_str(&text.text);
                     }
-                    position.end = new_position.end.clone();
+                    last.position.end = text.position.end.clone();
                     continue;
                 }
-            }
+            };
             result.push(child);
         }
         result = apply_func_drain(trans, &mut result, settings)?;
@@ -336,14 +285,14 @@ pub fn collapse_consecutive_text(
 
 /// Enumerate anonymous template arguments as "1", "2", ...
 pub fn enumerate_anon_args(mut root: Element, settings: &GeneralSettings) -> TResult {
-    if let Element::Template { ref mut content, .. } = root {
+    if let Element::Template(ref mut template) = root {
 
         let mut counter = 1;
-        for child in content {
-            if let Element::TemplateArgument { ref mut name, .. } = *child {
-                if name.trim().is_empty() {
-                    name.clear();
-                    name.push_str(&counter.to_string());
+        for child in &mut template.content {
+            if let Element::TemplateArgument(ref mut arg) = *child {
+                if arg.name.trim().is_empty() {
+                    arg.name.clear();
+                    arg.name.push_str(&counter.to_string());
                     counter += 1;
                 }
             }
