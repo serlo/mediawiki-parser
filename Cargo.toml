@@ -2,7 +2,13 @@
 name = "mediawiki_parser"
 version = "0.3.0"
 authors = ["Valentin Roland <valentin@vroland.de>"]
+description = "A strict parser for MediaWiki markdown."
+repository = "https://github.com/vroland/mediawiki-parser"
 build = "build.rs"
+readme = "README.md"
+keywords = ["mediawiki", "parser", "peg", "wikipedia", "wikibooks", "mfnf", "markdown"]
+categories = ["parsing", "text-processing"]
+license = "MIT"
 
 [lib]
 name = "mediawiki_parser"
@@ -28,6 +34,6 @@ colored = "1.6"
 [build-dependencies]
 serde = "1.0"
 serde_derive = "1.0"
-peg = "0.5.4"
+peg = "0.5"
 serde_yaml = "0.7"
 

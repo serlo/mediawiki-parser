@@ -3,3 +3,4 @@ target/
 src/generated_tests.rs
 testfiles
 test.md
+Cargo.lock
