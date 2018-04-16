@@ -1,6 +1,6 @@
 [package]
 name = "mediawiki_parser"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Valentin Roland <valentin@vroland.de>"]
 build = "build.rs"
 

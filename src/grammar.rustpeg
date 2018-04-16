@@ -82,7 +82,7 @@ template_arg -> Element
 
 // === mediawiki lists ===
 list -> Element
-    = posl:#position items:(li:list_item (nl / EOF) {li})+ posr:#position 
+    = posl:#position items:(li:list_item ++ (nl / EOF) {li}) nl? posr:#position 
 {
     Element::List(List {
         position: Span::new(posl, posr, source_lines),
