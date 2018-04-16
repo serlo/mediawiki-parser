@@ -6,7 +6,7 @@ description = "A strict parser for MediaWiki markdown."
 repository = "https://github.com/vroland/mediawiki-parser"
 build = "build.rs"
 readme = "README.md"
-keywords = ["mediawiki", "parser", "peg", "wikipedia", "wikibooks", "mfnf", "markdown"]
+keywords = ["mediawiki", "parser", "wikipedia", "wikibooks", "markdown"]
 categories = ["parsing", "text-processing"]
 license = "MIT"
 
