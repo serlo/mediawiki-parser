@@ -4,6 +4,7 @@ version = "0.3.0"
 authors = ["Valentin Roland <valentin@vroland.de>"]
 description = "A strict parser for MediaWiki markdown."
 repository = "https://github.com/vroland/mediawiki-parser"
+documentation = "https://docs.rs/mediawiki_parser/"
 build = "build.rs"
 readme = "README.md"
 keywords = ["mediawiki", "parser", "wikipedia", "wikibooks", "markdown"]
