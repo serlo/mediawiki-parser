@@ -189,9 +189,8 @@ pub fn whitespace_paragraphs_to_empty(mut root: Element, settings: &GeneralSetti
         if is_only_whitespace {
             par.content.drain(..);
         }
-    } else {
-        root = recurse_inplace(&whitespace_paragraphs_to_empty, root, settings)?;
-    }
+    };
+    root = recurse_inplace(&whitespace_paragraphs_to_empty, root, settings)?;
     Ok(root)
 }
 
