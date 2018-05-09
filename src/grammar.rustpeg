@@ -447,7 +447,7 @@ normal_char -> &'input str
         any_tag / any_open / any_close / html_comment) $.
 
 heading_char -> &'input str 
-    = !"=" c:normal_char {c}
+    = !("="+ _ (nl / EOF)) c:normal_char {c}
 table_char -> &'input str 
     = !("!!" / "|") c:normal_char {c}
 template_char -> &'input str 

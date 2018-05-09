@@ -171,6 +171,20 @@
             - type: text
               text: " "
           content: []
+
+# heading with equal sign
+  - case: heading with equal sign
+    input: |
+      == Heading == Structure ==
+    out:
+      type: document
+      content:
+        - type: heading
+          depth: 2
+          caption:
+            - type: text
+              text: "Heading == Structure "
+          content: []
           
 # A paragraph with bold words contains a plain formatted element
 # wrapped by ''italic'' formatting.
