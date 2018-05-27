@@ -980,7 +980,111 @@
                       content: 
                         - type: text
                           text: test
-          
+
+ # simple heading in template (mediawiki can't do this)
+  - case: table in template
+    input: |
+        {{test|bla=
+        {|
+        |+ caption_attribute=value | this is a ''caption''
+        | attributevalue = "test" | test
+        |}
+        }}
+    out:
+      type: document
+      content:
+        - type: paragraph
+          content:
+            - type: template
+              name:
+                - type: text
+                  text: test
+              content:
+                - type: templateargument
+                  name: bla
+                  value:
+                  - type: table
+                    attributes: []
+                    caption_attributes:
+                      - key: caption_attribute
+                        value: value
+                    caption:
+                      - type: paragraph
+                        content:
+                          - type: text
+                            text: "this is a "
+                          - type: formatted
+                            markup: italic
+                            content:
+                              - type: text
+                                text: "caption"
+                    rows:
+                      - type: tablerow
+                        attributes: []
+                        cells:
+                          - type: tablecell
+                            attributes:
+                              - key: attributevalue 
+                                value: test
+                            header: false
+                            content:
+                              - type: paragraph
+                                content: 
+                                  - type: text
+                                    text: test
+
+ # simple heading in template (with hack used in real mediawiki)
+  - case: table in template mediawiki hack
+    input: |
+        {{test|bla=
+        {{(!}}
+        {{!+}} caption_attribute=value {{!}} this is a ''caption''
+        {{!}} attributevalue = "test" {{!}} test
+        {{!)}}
+        }}
+    out:
+      type: document
+      content:
+        - type: paragraph
+          content:
+            - type: template
+              name:
+                - type: text
+                  text: test
+              content:
+                - type: templateargument
+                  name: bla
+                  value:
+                  - type: table
+                    attributes: []
+                    caption_attributes:
+                      - key: caption_attribute
+                        value: value
+                    caption:
+                      - type: paragraph
+                        content:
+                          - type: text
+                            text: "this is a "
+                          - type: formatted
+                            markup: italic
+                            content:
+                              - type: text
+                                text: "caption"
+                    rows:
+                      - type: tablerow
+                        attributes: []
+                        cells:
+                          - type: tablecell
+                            attributes:
+                              - key: attributevalue 
+                                value: test
+                            header: false
+                            content:
+                              - type: paragraph
+                                content: 
+                                  - type: text
+                                    text: test
+
  # Table with multiple rows
   - case: multi row table
     input: |

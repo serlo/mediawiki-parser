@@ -58,7 +58,7 @@ template_par -> Element
 
 // mediawiki templates have a name followed by a sequence of arguments.
 template -> Element 
-    = posl:#position "{{" ws n:(template_par / template_fmt)* ws 
+    = posl:#position !(MAGIC_WORDS) "{{" ws n:(template_par / template_fmt)* ws 
       attrs:("|" t:template_arg {t})* "}}" posr:#position 
 {    
     Element::Template(Template {
@@ -117,13 +117,13 @@ list_item -> Element
 
 // === mediawiki tables === 
 
-table_start = "{|"
-table_end = "|}"
-table_caption_sep = "|+"
-table_row_sep = "|-"
-table_pipe = "|"
+table_start = "{|" / "{{(!}}"
+table_end = "|}" / "{{!)}}"
+table_caption_sep = "|+" / "{{!+}}"
+table_row_sep = "|-" / "{{!-}}"
+table_pipe = "|" / "{{!}}"
 cell_sep -> &'input str
-    = $("||") / $("!!") / $("|") / $("!")
+    = $("||") / $("!!") / $("|") / $("!") / $("{{!}}") / $("{{!!}}")
 
 table -> Element
     = posl:#position table_start attr:table_attrs? ws caption:table_caption? 
@@ -304,7 +304,8 @@ pre_formatted -> Element
 // Template for formatted text with a specific rule for plain text.
 FormattedTextTemplate<text_rule>
     = fmt:(
-    strong
+    text_rule
+    / strong
     / emph 
     / template
     / internal_ref
@@ -319,8 +320,7 @@ FormattedTextTemplate<text_rule>
     / blockquote
     / pre_formatted
 
-    / any_tag
-    / text_rule
+    / any_tag 
     / whitespace_elem
     ) {fmt}
 
@@ -475,3 +475,7 @@ PAR_START_GUARD = !([=!|*#:;] / EOF)
 
 // tags which should be parsed as block elements, rather than html tags.
 HTML_BLOCK_ELEMENTS = ("gallery"i)
+
+// magic words which cannot be interpreted as templates
+MAGIC_WORDS = table_start / table_end / table_caption_sep / 
+            table_row_sep / table_pipe / cell_sep
