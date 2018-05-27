@@ -21,7 +21,7 @@ head_fmt -> Element
 
 // A heading is a caption paragraph followed by content paragraphs.
 heading -> Element 
-    = posl:#position d:$("="+) _ cap:head_fmt* _ "="* _ (nl / EOF) pars:paragraph* posr:#position 
+    = posl:#position d:$('='+) _ cap:head_fmt* _ '='* _ (nl / EOF) pars:paragraph* posr:#position
 {
     Element::Heading(Heading {
         position: Span::new(posl, posr, source_lines),
@@ -59,7 +59,7 @@ template_par -> Element
 // mediawiki templates have a name followed by a sequence of arguments.
 template -> Element 
     = posl:#position !(MAGIC_WORDS) "{{" ws n:(template_par / template_fmt)* ws 
-      attrs:("|" t:template_arg {t})* "}}" posr:#position 
+      attrs:('|' t:template_arg {t})* "}}" posr:#position
 {    
     Element::Template(Template {
         position: Span::new(posl, posr, source_lines),
@@ -69,7 +69,7 @@ template -> Element
 }
 
 template_arg -> Element
-    = posl:#position name:(n:template_arg_name "=" {n})? 
+    = posl:#position name:(n:template_arg_name '=' {n})? 
       value:(heading / template_par / template_fmt)* posr:#position 
 { 
     Element::TemplateArgument(TemplateArgument {
@@ -82,7 +82,7 @@ template_arg -> Element
 
 // === mediawiki lists ===
 list -> Element
-    = posl:#position items:(li:list_item ++ (nl / EOF) {li}) nl? posr:#position 
+    = posl:#position items:(li:list_item ++ (nl / EOF) {li}) nl? posr:#position
 {
     Element::List(List {
         position: Span::new(posl, posr, source_lines),
@@ -91,7 +91,7 @@ list -> Element
 }
 
 list_item -> Element
-    = posl:#position s:$([*#:;]+) _ content:formatted* posr:#position 
+    = posl:#position s:$([*#:;]+) _ content:formatted* posr:#position
 {?
     // check if this element is at line start
     if !SourceLine::starts_line(posl, source_lines) {
@@ -121,9 +121,9 @@ table_start = "{|" / "{{(!}}"
 table_end = "|}" / "{{!)}}"
 table_caption_sep = "|+" / "{{!+}}"
 table_row_sep = "|-" / "{{!-}}"
-table_pipe = "|" / "{{!}}"
+table_pipe = '|' / "{{!}}"
 cell_sep -> &'input str
-    = $("||") / $("!!") / $("|") / $("!") / $("{{!}}") / $("{{!!}}")
+    = $("||") / $("!!") / $('|') / $('!') / $("{{!}}") / $("{{!!}}")
 
 table -> Element
     = posl:#position table_start attr:table_attrs? ws caption:table_caption? 
@@ -149,7 +149,7 @@ table -> Element
 }
 
 table_attrs -> Vec<TagAttribute>
-    = _ attr:(html_attr ** (space+)) _ {attr}
+    = _ attr:(html_attr ** (whitespace+)) _ {attr}
 table_fmt -> Element
     = !(cell_sep) FormattedTextTemplate<Text<table_char>>
 table_par -> Element
@@ -197,7 +197,7 @@ iref_par -> Element
     = ParagraphTemplate<iref_fmt>
 
 internal_ref -> Element
-    = posl:#position "[[" _ t:((tar:(iref_par / iref_fmt)* {tar}) ++ (_ "|" _)) "]]" posr:#position
+    = posl:#position "[[" _ t:((tar:(iref_par / iref_fmt)* {tar}) ++ (_ '|' _)) "]]" posr:#position
 {    
     let mut t = t;
     Element::InternalReference(InternalReference {
@@ -210,7 +210,7 @@ internal_ref -> Element
 
 // external references (hyperlink) with only url and optional caption
 external_ref -> Element
-    = posl:#position "[" u:url _ caption:(paragraph / formatted)* "]" posr:#position 
+    = posl:#position '[' u:url _ caption:(paragraph / formatted)* ']' posr:#position 
 {
     Element::ExternalReference(ExternalReference {
         position: Span::new(posl, posr, source_lines),
@@ -224,7 +224,7 @@ external_ref -> Element
 gallery_sep = (_ nl _)+
 
 gallery_file -> Element 
-    = flp:#position content:(f:iref_fmt+ {f}) ++ "|" frp:#position
+    = flp:#position content:(f:iref_fmt+ {f}) ++ '|' frp:#position
 {
     let mut content = content;
     Element::InternalReference(InternalReference {
@@ -250,7 +250,7 @@ gallery -> Element
 // === Inline markup ===
 
 // quoted formatted text cannot start with a single quote, except they are "Included" 
-QuoteFormattedTemplate<included> = text:((!("'") t:formatted {t}) / included) {text}
+QuoteFormattedTemplate<included> = text:((!('\'') t:formatted {t}) / included) {text}
 
 // quote formatting cannot be nested into it self
 strong_formatted -> Element
@@ -332,7 +332,7 @@ formatted -> Element
 // === embedded html ===
 
 html_attr -> TagAttribute
-    = posl:#position key:tag_name _ "=" _ value:(quoted_text / tag_safe_literal) posr:#position 
+    = posl:#position key:tag_name _ '=' _ value:(quoted_text / tag_safe_literal) posr:#position 
 { 
     TagAttribute::new(Span::new(posl, posr, source_lines), key, value)
 }
@@ -340,9 +340,9 @@ html_attr -> TagAttribute
 TagInner<name>
     = n:name _ attrs:(a:html_attr _ {a})* {(n, attrs)}
 TagOpen<name> 
-    = #quiet<"<" _ inner:TagInner<name> _ ">" {inner}> / #expected("opening html tag")
+    = #quiet<'<' _ inner:TagInner<name> _ '>' {inner}> / #expected("opening html tag")
 TagClose<name> 
-    = #quiet<("<" _ "/" _ TagInner<name> _ ">") / "<" _ "/" _ ">"> / #expected("closing html tag")
+    = #quiet<('<' _ '/' _ TagInner<name> _ '>') / '<' _ '/' _ '>'> / #expected("closing html tag")
 
 // a generic html tag (self-closing or with inner elements) 
 HtmlTag<name, inner>
@@ -382,8 +382,13 @@ MarkupTag<name, inner>
 
 
 // html comments may contain any text.
+html_comment_start = "<!--"
+html_comment_end = "-->"
+
 html_comment -> Element
-    = posl:#position "<!--" s:CharString<(!("-->") c:$. {c})>? "-->" posr:#position 
+    = posl:#position html_comment_start 
+        s:CharString<(!(html_comment_end) c:$. {c})>? 
+    html_comment_end posr:#position 
 { 
     Element::Comment(Comment {
         position: Span::new(posl, posr, source_lines),
@@ -395,8 +400,7 @@ html_comment -> Element
 
 emph_lit = "''"
 strong_lit = "'''"
-space = " " / "\t"
-nl = "\n"
+nl = '\n'
 EOF = #quiet<!.> / #expected("EOF")
 
 
@@ -437,7 +441,7 @@ url -> String
 tag_safe_literal -> String
     = #quiet<CharString<tag_char>> / #expected("tag attribute value")
 quoted_text -> String 
-    = #quiet<EnclosedLiteral<"\""> / EnclosedLiteral<"'">> / #expected("quoted text")
+    = #quiet<EnclosedLiteral<'\"'> / EnclosedLiteral<'\''>> / #expected("quoted text")
 tag_name -> String 
     = #quiet<CharString<tag_char>> / #expected("tag / attribute name")
 
@@ -452,19 +456,19 @@ whitespace_elem -> Element
 
 math_char -> &'input str = !TagClose<"math"i> $.
 normal_char -> &'input str 
-    = !(nl / whitespace / emph_lit / strong_lit / [{}\[\]] / 
-        any_tag / any_open / any_close / html_comment) $.
+    = !([\n\r \t{}\[\]] / emph_lit /
+        any_open / any_close / html_comment_start) $.
 
 heading_char -> &'input str 
-    = !("="+ _ (nl / EOF)) c:normal_char {c}
+    = !('='+ _ (nl / EOF)) c:normal_char {c}
 table_char -> &'input str 
     = !(cell_sep) c:normal_char {c}
 template_char -> &'input str 
-    = !"|" c:normal_char {c}
+    = !'|' c:normal_char {c}
 template_arg_char -> &'input str 
     = ![|<>=!*#:;/] c:normal_char {c} 
 whitespace -> &'input str
-    = $([ \t])
+    = $(' ') / $('\t')
 tag_char -> &'input str
     = $([^<>/ =])
 url_char -> &'input str
