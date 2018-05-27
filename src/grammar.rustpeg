@@ -116,9 +116,18 @@ list_item -> Element
 
 
 // === mediawiki tables === 
+
+table_start = "{|"
+table_end = "|}"
+table_caption_sep = "|+"
+table_row_sep = "|-"
+table_pipe = "|"
+cell_sep -> &'input str
+    = $("||") / $("!!") / $("|") / $("!")
+
 table -> Element
-    = posl:#position "{|" attr:table_attrs? ws caption:table_caption? 
-        first_cells:table_cell* rows:table_row* "|}" posr:#position 
+    = posl:#position table_start attr:table_attrs? ws caption:table_caption? 
+        first_cells:table_cell* rows:table_row* table_end posr:#position 
 { 
     let (cap_attrs, cap_pars) = caption.unwrap_or_default();
     let mut rows = rows;
@@ -142,23 +151,22 @@ table -> Element
 table_attrs -> Vec<TagAttribute>
     = _ attr:(html_attr ** (space+)) _ {attr}
 table_fmt -> Element
-    = !("!") FormattedTextTemplate<Text<table_char>>
+    = !(cell_sep) FormattedTextTemplate<Text<table_char>>
 table_par -> Element
     = ParagraphTemplate<table_fmt>
 
 table_caption -> (Vec<TagAttribute>, Vec<Element>) 
-    = "|+" _ attr:(t:table_attrs "|" {t})? _ pars:(table_par / table_fmt)* 
+    = table_caption_sep _ attr:(t:table_attrs table_pipe {t})? _ pars:(table_par / table_fmt)* 
 {
     (attr.unwrap_or_default(), pars)
 }
 
-cell_sep -> &'input str
-    = $("||") / $("!!") / $("|") / $("!")
+
 row_sep -> Vec<TagAttribute>
-    = "|-" attr:table_attrs nl {attr}
+    = table_row_sep attr:table_attrs nl {attr}
 
 table_row -> Element
-    = posl:#position !("|}") sep:row_sep c:table_cell* posr:#position 
+    = posl:#position !(table_end) sep:row_sep c:table_cell* posr:#position 
 {    
     Element::TableRow(TableRow {
         position: Span::new(posl, posr, source_lines),
@@ -168,7 +176,8 @@ table_row -> Element
 }
 
 table_cell -> Element
-    = posl:#position !("|}" / row_sep) sep:cell_sep attr:(a:table_attrs "|" !("|") {a})?
+    = posl:#position !(table_end / row_sep) sep:cell_sep 
+      attr:(a:table_attrs table_pipe !(table_pipe) {a})?
       _ content:(table_par / table_fmt)* posr:#position 
 {
     Element::TableCell(TableCell {
@@ -449,7 +458,7 @@ normal_char -> &'input str
 heading_char -> &'input str 
     = !("="+ _ (nl / EOF)) c:normal_char {c}
 table_char -> &'input str 
-    = !("!!" / "|") c:normal_char {c}
+    = !(cell_sep) c:normal_char {c}
 template_char -> &'input str 
     = !"|" c:normal_char {c}
 template_arg_char -> &'input str 
