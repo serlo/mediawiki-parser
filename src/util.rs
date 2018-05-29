@@ -29,12 +29,7 @@ pub fn get_source_lines(source: &str) -> Vec<ast::SourceLine> {
 
 /// Tests if a string is entirely whitespace
 pub fn is_whitespace(input: &str) -> bool {
-    for c in input.chars() {
-        if !c.is_whitespace() {
-            return false;
-        }
-    }
-    true
+    return input.chars().all(|c| c.is_whitespace());
 }
 
 
