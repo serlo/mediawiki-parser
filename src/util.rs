@@ -64,3 +64,19 @@ pub fn shorten_str(input: &str) -> String {
     }
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_whitespace() {
+        for arg in &["", "   ", "\t", "\n", "\t\t\t", "\n\t "] {
+            assert!(is_whitespace(arg), "is_whitespace({:?})", arg);
+        }
+
+        for arg in &["a", "    a", "\t\\", "   \nä\t\t\t "] {
+            assert!(!is_whitespace(arg), "!is_whitespace({:?})", arg);
+        }
+    }
+}
