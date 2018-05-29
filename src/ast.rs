@@ -471,10 +471,6 @@ impl PartialEq for Position {
 
 impl TagAttribute {
     pub fn new(position: Span, key: String, value: String) -> Self {
-        TagAttribute {
-            position,
-            key,
-            value,
-        }
+        return TagAttribute { position, key, value }
     }
 }
