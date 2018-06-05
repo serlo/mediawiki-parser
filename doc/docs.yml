@@ -423,6 +423,23 @@
           - type: formatted
             markup: nowiki
             content: []
+
+# A self-closing tag
+  - case: self closing tag
+    input: "<section/><section/>"
+    out:
+      type: document
+      content:
+        - type: paragraph
+          content:
+            - type: htmltag
+              name: section
+              attributes: []
+              content: []
+            - type: htmltag
+              name: section
+              attributes: []
+              content: []
               
 # A HTML comment
   - case: html comment

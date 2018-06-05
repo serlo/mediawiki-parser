@@ -457,7 +457,7 @@ whitespace_elem -> Element
 math_char -> &'input str = !TagClose<"math"i> $.
 normal_char -> &'input str 
     = !([\n\r \t{}\[\]] / emph_lit /
-        any_open / any_close / html_comment_start) $.
+        any_open / any_close / any_tag / html_comment_start) $.
 
 heading_char -> &'input str 
     = !('='+ _ (nl / EOF)) c:normal_char {c}
