@@ -5,6 +5,8 @@ extern crate colored;
 
 #[cfg(test)]
 extern crate serde_yaml;
+#[cfg(feature = "ptime")]
+extern crate time;
 
 #[cfg(test)]
 mod tests;
@@ -35,6 +37,9 @@ pub fn parse(input: &str) -> Result<Element, MWError> {
 
     let source_lines = util::get_source_lines(input);
 
+    #[cfg(feature = "ptime")]
+    let starttime = time::precise_time_ns();
+
     let result = match grammar::document(input, &source_lines) {
         Err(e) => Err(error::MWError::ParseError(
             error::ParseError::from(&e, input),
@@ -42,11 +47,21 @@ pub fn parse(input: &str) -> Result<Element, MWError> {
         Ok(r) => Ok(r),
     }?;
 
+    #[cfg(feature = "ptime")]
+    let parsedtime = time::precise_time_ns();
+
     let settings = GeneralSettings {};
-    match apply_transformations(result, &settings) {
-        Err(e) => Err(error::MWError::TransformationError(e)),
-        Ok(r) => Ok(r),
+    let trans_result = apply_transformations(result, &settings);
+
+    #[cfg(feature = "ptime")]
+    {
+        eprintln!("Parse Timer: Parsing took {} ms.",
+            ((parsedtime - starttime) as f64) / 1.0e6);
+        eprintln!("Parse Timer: Transformation took {} ms.",
+            ((time::precise_time_ns() - parsedtime) as f64) / 1.0e6);
     }
+
+    trans_result.map_err(|e| error::MWError::TransformationError(e))
 }
 
 fn apply_transformations(mut root: Element, settings: &GeneralSettings)
