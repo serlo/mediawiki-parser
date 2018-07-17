@@ -681,6 +681,40 @@
             - type: text
               text: paragraph
 
+# Lists in template arguments should also parse corrently, 
+# despite not starting a line.
+  - case: list in template
+    input: |
+        {{test|* item 1
+        * item 2}}
+    out:
+      type: document
+      content:
+        - type: paragraph
+          content:
+            - type: template
+              name:
+                - type: text
+                  text: test
+              content:
+                - type: templateargument
+                  name: "1"
+                  value:
+                    - type: list
+                      content:
+                        - type: listitem
+                          kind: unordered
+                          depth: 1
+                          content:
+                            - type: text
+                              text: item 1
+                        - type: listitem
+                          kind: unordered
+                          depth: 1
+                          content:
+                            - type: text
+                              text: item 2
+
 # A very simple template
   - case: simple template
     input: "{{name}}"
@@ -729,10 +763,8 @@
           content:
             - type: template
               name:
-                - type: paragraph
-                  content:
-                    - type: text
-                      text: templatename
+                - type: text
+                  text: templatename
               content:
                 - type: templateargument
                   name: "1"

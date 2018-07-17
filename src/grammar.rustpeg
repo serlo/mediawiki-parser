@@ -58,7 +58,7 @@ template_par -> Element
 
 // mediawiki templates have a name followed by a sequence of arguments.
 template -> Element 
-    = posl:#position !(MAGIC_WORDS) "{{" ws n:(template_par / template_fmt)* ws 
+    = posl:#position !(MAGIC_WORDS) "{{" ws n:(template_fmt)* ws 
       attrs:('|' t:template_arg {t})* "}}" posr:#position
 {    
     Element::Template(Template {
@@ -91,27 +91,22 @@ list -> Element
 }
 
 list_item -> Element
-    = posl:#position s:$([*#:;]+) _ content:formatted* posr:#position
-{?
-    // check if this element is at line start
-    if !SourceLine::starts_line(posl, source_lines) {
-        Err("List item must start on a new line")
-    } else { 
-        let kind = match s.chars().last() {
-            Some('*') => ListItemKind::Unordered,
-            Some('#') => ListItemKind::Ordered,
-            Some(':') => ListItemKind::Definition,
-            Some(';') => ListItemKind::DefinitionTerm,
-            _ => panic!("undefined list start: {:?} \
-                        this is an implementation error!", s.chars().last())
-        };
-        Ok(Element::ListItem(ListItem {
-            position: Span::new(posl, posr, source_lines),
-            depth: s.len(),
-            kind: kind,
-            content: content,
-        }))
-    }
+    = posl:#position s:$([*#:;]+) _ content:formatted* _ posr:#position
+{
+    let kind = match s.chars().last() {
+        Some('*') => ListItemKind::Unordered,
+        Some('#') => ListItemKind::Ordered,
+        Some(':') => ListItemKind::Definition,
+        Some(';') => ListItemKind::DefinitionTerm,
+        _ => panic!("undefined list start: {:?} \
+                    this is an implementation error!", s.chars().last())
+    };
+    Element::ListItem(ListItem {
+        position: Span::new(posl, posr, source_lines),
+        depth: s.len(),
+        kind: kind,
+        content: content,
+    })
 }
 
 
