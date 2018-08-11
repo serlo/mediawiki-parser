@@ -1,6 +1,6 @@
 [package]
 name = "mediawiki_parser"
-version = "0.3.5"
+version = "0.3.6"
 authors = ["Valentin Roland <valentin@vroland.de>"]
 description = "A strict parser for MediaWiki markdown."
 repository = "https://github.com/vroland/mediawiki-parser"
