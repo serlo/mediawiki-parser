@@ -6,6 +6,11 @@ use ast;
 const TERMINAL_WIDTH: usize = 80;
 
 
+pub fn combine<T>(t: (Vec<T>, Vec<T>)) -> Vec<T> {
+    let (mut t1, mut t2) = t;
+    t1.append(&mut t2);
+    t1
+}
 
 /// Compiles a list of start and end positions of the input source lines.
 ///

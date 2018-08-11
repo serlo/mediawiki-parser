@@ -1,4 +1,5 @@
 use ast::*;
+use util::*;
 
 #![arguments(source_lines: &[SourceLine])]
 
@@ -37,7 +38,7 @@ heading -> Element
 // ripped apart.
 ParagraphTemplate<fmt_rule> 
     = list / table / gallery 
-      / posl:#position PAR_START_GUARD text:fmt_rule* (nl / EOF) posr:#position 
+      / posl:#position PAR_START_GUARD text:fmt_rule* _ (nl / EOF) posr:#position 
 {   
     Element::Paragraph(Paragraph {
         position: Span::new(posl, posr, source_lines),
@@ -69,13 +70,13 @@ template -> Element
 }
 
 template_arg -> Element
-    = posl:#position name:(n:template_arg_name '=' {n})? 
-      value:(heading / template_par / template_fmt)* posr:#position 
-{ 
+    = posl:#position ws name:(n:template_arg_name '=' {n})? ws
+      value:(h:heading* p:template_par* f:template_fmt* {(h, (p, f))}) posr:#position 
+{
     Element::TemplateArgument(TemplateArgument {
         position: Span::new(posl, posr, source_lines),
         name: name.unwrap_or_default(),
-        value: value,
+        value: combine((value.0, combine(value.1)))
     })
 } 
 
@@ -151,7 +152,8 @@ table_par -> Element
     = ParagraphTemplate<table_fmt>
 
 table_caption -> (Vec<TagAttribute>, Vec<Element>) 
-    = table_caption_sep _ attr:(t:table_attrs table_pipe {t})? _ pars:(table_par / table_fmt)* 
+    = table_caption_sep _ attr:(t:table_attrs table_pipe {t})? _ 
+    pars:(p:table_par* f:table_fmt* {combine((p, f))})
 {
     (attr.unwrap_or_default(), pars)
 }
@@ -173,7 +175,7 @@ table_row -> Element
 table_cell -> Element
     = posl:#position !(table_end / row_sep) sep:cell_sep 
       attr:(a:table_attrs table_pipe !(table_pipe) {a})?
-      _ content:(table_par / table_fmt)* posr:#position 
+      _ content:(p:table_par* f:table_fmt* {combine((p, f))}) posr:#position 
 {
     Element::TableCell(TableCell {
         position: Span::new(posl, posr, source_lines),
@@ -192,9 +194,10 @@ iref_par -> Element
     = ParagraphTemplate<iref_fmt>
 
 internal_ref -> Element
-    = posl:#position "[[" _ t:((tar:(iref_par / iref_fmt)* {tar}) ++ (_ '|' _)) "]]" posr:#position
+    = posl:#position "[[" _ t:((pars:(iref_par*) _ fmts:(iref_fmt*) {(pars, fmts)}) ++ (_ '|' _)) "]]" posr:#position
 {    
     let mut t = t;
+    let mut t: Vec<Vec<Element>> = t.drain(..).map(|e| combine(e)).collect();
     Element::InternalReference(InternalReference {
         position: Span::new(posl, posr, source_lines),
         target: t.remove(0),
@@ -205,12 +208,12 @@ internal_ref -> Element
 
 // external references (hyperlink) with only url and optional caption
 external_ref -> Element
-    = posl:#position '[' u:url _ caption:(paragraph / formatted)* ']' posr:#position 
+    = posl:#position '[' u:url _ cap:(p:paragraph*  f:formatted* {(p,f)}) ']' posr:#position 
 {
     Element::ExternalReference(ExternalReference {
         position: Span::new(posl, posr, source_lines),
         target: u,
-        caption: caption
+        caption: combine(cap)
     })
 }
 
@@ -252,10 +255,14 @@ strong_formatted -> Element
     = QuoteFormattedTemplate<emph>
 emph_formatted -> Element
     = QuoteFormattedTemplate<strong>
+strong_par -> Element
+    = !(list / table / gallery) e:ParagraphTemplate<strong_formatted> {e}
+emph_par -> Element
+    = !(list / table / gallery) e:ParagraphTemplate<emph_formatted> {e}
 
 strong -> Element
     = posl:#position strong_lit
-        inner:(ParagraphTemplate<strong_formatted> / strong_formatted)+ 
+        inner:(strong_par / strong_formatted)+ 
       strong_lit posr:#position 
 {
     Element::Formatted(Formatted {
@@ -267,7 +274,7 @@ strong -> Element
 
 emph -> Element
     = posl:#position emph_lit
-        inner:(ParagraphTemplate<emph_formatted> / emph_formatted)+ 
+        inner:(emph_par / emph_formatted)+ 
       emph_lit posr:#position 
 { 
     Element::Formatted(Formatted {
@@ -281,17 +288,17 @@ emph -> Element
 math -> Element
     = inner:MarkupTag<"math"i, math_text*> {inner}
 strike_through -> Element
-    = inner:MarkupTag<"del"i, (paragraph / formatted)*> {inner}
-    / inner:MarkupTag<"s"i, (paragraph / formatted)*> {inner}
+    = inner:MarkupTag<"del"i, p:paragraph* f:formatted* {combine((p, f))}> {inner}
+    / inner:MarkupTag<"s"i, p:paragraph* f:formatted* {combine((p, f))}> {inner}
 underline -> Element
-    = inner:MarkupTag<"ins"i, (paragraph / formatted)*> {inner}
-    / inner:MarkupTag<"u"i, (paragraph / formatted)*> {inner}
+    = inner:MarkupTag<"ins"i, p:paragraph* f:formatted* {combine((p, f))}> {inner}
+    / inner:MarkupTag<"u"i, p:paragraph* f:formatted* {combine((p, f))}> {inner}
 nowiki -> Element
     = inner:MarkupTag<"nowiki"i, nowiki_text*> {inner}
 code -> Element
     = inner:MarkupTag<"code"i, code_text*> {inner}
 blockquote -> Element
-    = inner:MarkupTag<"blockquote"i, (paragraph / formatted)*> {inner}
+    = inner:MarkupTag<"blockquote"i, p:paragraph* f:formatted* {combine((p, f))}> {inner}
 pre_formatted -> Element
     = inner:MarkupTag<"pre"i, preformatted_text*> {inner}
 
@@ -353,14 +360,14 @@ any_close
 // with inner Text / Paragraph / Heading, creating a HtmlTag Element.
 any_tag -> Element 
     = posl:#position 
-        t:HtmlTag<(!HTML_BLOCK_ELEMENTS n:tag_name {n}), (paragraph / formatted / heading)*> 
+        t:HtmlTag<(!HTML_BLOCK_ELEMENTS n:tag_name {n}), p:paragraph* f:formatted* h:heading* {combine((p, combine((f, h))))}> 
       posr:#position 
 { 
     Element::HtmlTag(HtmlTag {
         position: Span::new(posl, posr, source_lines),
         name: t.0,
         attributes: t.1,
-        content: t.2,
+        content: t.2
     })
 }
 

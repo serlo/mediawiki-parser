@@ -715,6 +715,55 @@
                             - type: text
                               text: item 2
 
+# Lists cannot be started mid-line.
+  - case: list mod line
+    input: |
+        {{test| this * is <a> * a </a> test}}
+        [[this ** '' * as''<u> * as</u> well]]
+    out:
+      type: document
+      content:
+        - type: paragraph
+          content:
+            - type: template
+              name:
+                - type: text
+                  text: test
+              content:
+                - type: templateargument
+                  name: "1"
+                  value:
+                    - type: text
+                      text: "this * is "
+                    - type: htmltag
+                      name: a
+                      attributes: []
+                      content: 
+                        - type: text
+                          text: " * a "
+                    - type: text
+                      text: " test"
+            - type: text
+              text: " "
+            - type: internalreference
+              target:
+                - type: text
+                  text: "this ** "
+                - type: formatted
+                  markup: italic
+                  content:
+                    - type: text
+                      text: " * as"
+                - type: formatted
+                  markup: underline
+                  content:
+                    - type: text
+                      text: " * as"
+                - type: text
+                  text: " well"
+              options: []
+              caption: []
+               
 # A very simple template
   - case: simple template
     input: "{{name}}"
