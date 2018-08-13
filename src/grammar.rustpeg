@@ -194,13 +194,13 @@ iref_par -> Element
     = ParagraphTemplate<iref_fmt>
 
 internal_ref -> Element
-    = posl:#position "[[" _ t:((pars:(iref_par*) _ fmts:(iref_fmt*) {(pars, fmts)}) ++ (_ '|' _)) "]]" posr:#position
+    = posl:#position "[[" _ tar:iref_fmt* _ "|"? _ t:(pars:iref_par* _ fmts:iref_fmt* {(pars, fmts)}) ++ (_ '|' _) "]]" posr:#position
 {    
     let mut t = t;
     let mut t: Vec<Vec<Element>> = t.drain(..).map(|e| combine(e)).collect();
     Element::InternalReference(InternalReference {
         position: Span::new(posl, posr, source_lines),
-        target: t.remove(0),
+        target: tar,
         caption: t.pop().unwrap_or_default(),
         options: t, 
     })
@@ -208,12 +208,12 @@ internal_ref -> Element
 
 // external references (hyperlink) with only url and optional caption
 external_ref -> Element
-    = posl:#position '[' u:url _ cap:(p:paragraph*  f:formatted* {(p,f)}) ']' posr:#position 
+    = posl:#position '[' u:url _ cap:formatted* ']' posr:#position 
 {
     Element::ExternalReference(ExternalReference {
         position: Span::new(posl, posr, source_lines),
         target: u,
-        caption: combine(cap)
+        caption: cap
     })
 }
 
