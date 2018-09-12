@@ -70,7 +70,7 @@ template -> Element
 }
 
 template_arg -> Element
-    = posl:#position ws name:(n:template_arg_name '=' {n})? ws
+    = posl:#position ws name:(n:template_arg_name ws '=' {n})? ws
       value:(h:heading* p:template_par* f:template_fmt* {(h, (p, f))}) posr:#position 
 {
     Element::TemplateArgument(TemplateArgument {
