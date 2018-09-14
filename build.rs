@@ -1,19 +1,22 @@
 extern crate peg;
 extern crate serde;
 extern crate serde_yaml;
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 
-use std::path::{Path, PathBuf};
-use std::fs;
 use std::env;
+use std::fs;
 use std::io::*;
+use std::path::{Path, PathBuf};
 
 #[allow(dead_code)]
 mod ast {
     include!("src/ast.rs");
 }
 
-macro_rules! TEST_SOUCE { () => ("
+macro_rules! TEST_SOUCE {
+    () => {
+        "
 // {}
 #[test]
 fn {} () {{
@@ -28,16 +31,22 @@ fn {} () {{
     assert_eq!(&target, &result,
         \"comparing documentation (left) with parse result (right) failed!\");
 }}
-")}
+"
+    };
+}
 
-macro_rules! TEST_HEADER { () => ("
+macro_rules! TEST_HEADER {
+    () => {
+        "
 // THIS DOCUMENT IS AUTO-GENERATED AND SHOULD NOT BE EDITED BY HAND!
 
 use ast;
 use serde_yaml;
 use parse;
 
-")}
+"
+    };
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Test {
@@ -73,17 +82,18 @@ fn generate_tests() {
         .join(Path::new("tests_generated.rs"))
         .with_extension("rs");
 
-    let mut in_file = fs::File::open(Path::new("doc/docs.yml")).ok().expect(
-        "Could not open input file!",
-    );
-    let mut out_file = fs::File::create(Path::new(&out_path)).ok().expect(
-        "Could not open output file!",
-    );
+    let mut in_file = fs::File::open(Path::new("doc/docs.yml"))
+        .ok()
+        .expect("Could not open input file!");
+    let mut out_file = fs::File::create(Path::new(&out_path))
+        .ok()
+        .expect("Could not open output file!");
 
     let mut content = String::new();
-    in_file.read_to_string(&mut content).ok().expect(
-        "Could not read file!",
-    );
+    in_file
+        .read_to_string(&mut content)
+        .ok()
+        .expect("Could not read file!");
 
     let tests: Vec<Test> =
         serde_yaml::from_str(&content).expect("Could not parse the documentation!");

@@ -1,7 +1,7 @@
 /// Data structures describing the parsed document.
 
 #[cfg(feature = "no_position")]
-use serde::ser::{Serialize, Serializer, SerializeMap};
+use serde::ser::{Serialize, SerializeMap, Serializer};
 
 /**
  * Element types used in the abstract syntax tree (AST).
@@ -59,7 +59,7 @@ pub struct Heading {
 pub struct Text {
     #[serde(default)]
     pub position: Span,
-    pub text: String
+    pub text: String,
 }
 
 /// A formatting wrapper, usually around text.
@@ -188,7 +188,7 @@ pub struct TableCell {
 pub struct Comment {
     #[serde(default)]
     pub position: Span,
-    pub text: String
+    pub text: String,
 }
 
 /// Html tags not encoding formatting elements.
@@ -218,7 +218,7 @@ pub struct Gallery {
 pub struct Error {
     #[serde(default)]
     pub position: Span,
-    pub message: String
+    pub message: String,
 }
 
 /// Types of markup a section of text may have.
@@ -235,7 +235,6 @@ pub enum MarkupType {
     Blockquote,
     Preformatted,
 }
-
 
 /// Types of markup a section of text may have.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Copy)]
@@ -255,7 +254,11 @@ pub enum ListItemKind {
  * a default Position ("{}") can be used where the actual representation is irrelevant.
  */
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "lowercase", default = "Position::any_position", deny_unknown_fields)]
+#[serde(
+    rename_all = "lowercase",
+    default = "Position::any_position",
+    deny_unknown_fields
+)]
 pub struct Position {
     pub offset: usize,
     pub line: usize,
@@ -265,7 +268,11 @@ pub struct Position {
 /// Holds position information (start and end) for one element
 #[derive(Debug, Deserialize, PartialEq, Clone)]
 #[cfg_attr(not(feature = "no_position"), derive(Serialize))]
-#[serde(rename_all = "lowercase", default = "Span::any", deny_unknown_fields)]
+#[serde(
+    rename_all = "lowercase",
+    default = "Span::any",
+    deny_unknown_fields
+)]
 pub struct Span {
     pub start: Position,
     pub end: Position,
@@ -316,7 +323,6 @@ impl MarkupType {
         }
     }
 }
-
 
 impl Element {
     /// returns the source code position of an element.
@@ -392,7 +398,6 @@ impl Element {
     }
 }
 
-
 impl Position {
     pub fn new(offset: usize, slocs: &[SourceLine]) -> Self {
         for (i, sloc) in slocs.iter().enumerate() {
@@ -420,7 +425,6 @@ impl Position {
     }
 }
 
-
 impl Span {
     pub fn any() -> Self {
         Span {
@@ -443,7 +447,6 @@ impl Default for Span {
     }
 }
 
-
 #[cfg(feature = "no_position")]
 impl Serialize for Span {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -458,8 +461,8 @@ impl Serialize for Span {
 impl PartialEq for Position {
     fn eq(&self, other: &Position) -> bool {
         // comparing with "any" position is always true
-        if (other.offset == 0 && other.line == 0 && other.col == 0) ||
-            (self.offset == 0 && self.line == 0 && self.col == 0)
+        if (other.offset == 0 && other.line == 0 && other.col == 0)
+            || (self.offset == 0 && self.line == 0 && self.col == 0)
         {
             return true;
         }
@@ -468,9 +471,12 @@ impl PartialEq for Position {
     }
 }
 
-
 impl TagAttribute {
     pub fn new(position: Span, key: String, value: String) -> Self {
-        return TagAttribute { position, key, value }
+        return TagAttribute {
+            position,
+            key,
+            value,
+        };
     }
 }

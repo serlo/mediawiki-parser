@@ -3,7 +3,6 @@
 use ast::*;
 use std::io;
 
-
 /// Implements a traversion over a tree of `Element`.
 ///
 /// All fields of the traversion struct can be mutated,
@@ -19,10 +18,7 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
     /// if the result is `false`, handling is complete and
     /// children of this node are not considered,
     /// otherwise `work()` is recursively called for all children.
-    fn work(&mut self,
-            _root: &'a Element,
-            _settings: S,
-            _out: &mut io::Write) -> io::Result<bool> {
+    fn work(&mut self, _root: &'a Element, _settings: S, _out: &mut io::Write) -> io::Result<bool> {
         Ok(true)
     }
 
@@ -30,20 +26,22 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
     /// if the result is `false`, handling is complete and
     /// children of the vector's elements are not considered,
     /// otherwise `work()` is recursively called for all children.
-    fn work_vec(&mut self,
-            _root: &'a [Element],
-            _settings: S,
-            _out: &mut io::Write) -> io::Result<bool> {
+    fn work_vec(
+        &mut self,
+        _root: &'a [Element],
+        _settings: S,
+        _out: &mut io::Write,
+    ) -> io::Result<bool> {
         Ok(true)
     }
 
-
     /// run this traversion for a vector of elements.
-    fn run_vec(&mut self,
-               content: &'a [Element],
-               settings: S,
-               out: &mut io::Write) -> io::Result<()> {
-
+    fn run_vec(
+        &mut self,
+        content: &'a [Element],
+        settings: S,
+        out: &mut io::Write,
+    ) -> io::Result<()> {
         if !self.work_vec(content, settings, out)? {
             return Ok(());
         }
@@ -53,11 +51,7 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
         Ok(())
     }
     /// run this traversion for an element.
-    fn run(&mut self,
-           root: &'a Element,
-           settings: S,
-           out: &mut io::Write) -> io::Result<()> {
-
+    fn run(&mut self, root: &'a Element, settings: S, out: &mut io::Write) -> io::Result<()> {
         self.path_push(root);
 
         // break if work function breaks recursion.
@@ -76,7 +70,7 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
             Element::Heading(ref e) => {
                 self.run_vec(&e.caption, settings, out)?;
                 self.run_vec(&e.content, settings, out)?;
-            },
+            }
             Element::Template(ref e) => {
                 self.run_vec(&e.name, settings, out)?;
                 self.run_vec(&e.content, settings, out)?;
@@ -88,17 +82,14 @@ pub trait Traversion<'a, S: Copy + ?Sized> {
                     self.run_vec(option, settings, out)?;
                 }
                 self.run_vec(&e.caption, settings, out)?;
-            },
+            }
             Element::ExternalReference(ref e) => self.run_vec(&e.caption, settings, out)?,
             Element::Table(ref e) => {
                 self.run_vec(&e.caption, settings, out)?;
                 self.run_vec(&e.rows, settings, out)?;
             }
             Element::TableRow(ref e) => self.run_vec(&e.cells, settings, out)?,
-            Element::Text(_)
-            | Element::Comment(_)
-            | Element::Error(_)
-            => (),
+            Element::Text(_) | Element::Comment(_) | Element::Error(_) => (),
         }
         self.path_pop();
         Ok(())

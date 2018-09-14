@@ -11,13 +11,12 @@ extern crate serde_yaml;
 #[macro_use]
 extern crate structopt;
 
+use std::fs;
 use std::io;
 use std::io::prelude::*;
-use std::fs;
 use std::path::PathBuf;
 use std::process;
 use structopt::StructOpt;
-
 
 #[derive(Debug, StructOpt)]
 /// This program takes MediaWiki source code and produces
@@ -33,20 +32,17 @@ struct Args {
 fn read_from_reader(reader: &mut io::Read) -> String {
     let mut buffer = io::BufReader::new(reader);
     let mut content = String::new();
-    buffer.read_to_string(&mut content).expect(
-        "Could not read fron file!",
-    );
+    buffer
+        .read_to_string(&mut content)
+        .expect("Could not read fron file!");
     content
 }
 
-
 /// Read a file from disk and store to string.
 fn read_file(filename: &PathBuf) -> String {
-    let mut file = fs::File::open(filename)
-        .expect("Could not open file!");
+    let mut file = fs::File::open(filename).expect("Could not open file!");
     read_from_reader(&mut file)
 }
-
 
 /// Read a file from stdin from to string.
 fn read_stdin() -> String {

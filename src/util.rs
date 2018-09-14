@@ -5,7 +5,6 @@ use ast;
 /// The terminal width.
 const TERMINAL_WIDTH: usize = 80;
 
-
 pub fn combine<T>(t: (Vec<T>, Vec<T>)) -> Vec<T> {
     let (mut t1, mut t2) = t;
     t1.append(&mut t2);
@@ -16,7 +15,6 @@ pub fn combine<T>(t: (Vec<T>, Vec<T>)) -> Vec<T> {
 ///
 /// This representation is used to calculate line and column position from the input offset.
 pub fn get_source_lines(source: &str) -> Vec<ast::SourceLine> {
-
     let mut pos = 0;
     let mut result = Vec::new();
 
@@ -31,16 +29,13 @@ pub fn get_source_lines(source: &str) -> Vec<ast::SourceLine> {
     result
 }
 
-
 /// Tests if a string is entirely whitespace
 pub fn is_whitespace(input: &str) -> bool {
     return input.chars().all(|c| c.is_whitespace());
 }
 
-
 /// Shorten a string to fit into `TERMINAL_WIDTH`.
 pub fn shorten_str(input: &str) -> String {
-
     let input_len = input.chars().count();
 
     if input.len() < TERMINAL_WIDTH {

@@ -1,23 +1,20 @@
-use transformations::*;
 use ast::*;
-use util;
-use std::usize;
 use error::*;
+use std::usize;
+use transformations::*;
+use util;
 
 /// Settings for general transformations.
 pub struct GeneralSettings {}
 
-
 /// Moves flat headings into a hierarchical structure based on their depth.
 pub fn fold_headings_transformation(mut root: Element, settings: &GeneralSettings) -> TResult {
-
     // append following deeper headings than current_depth in content to the result list.
     fn move_deeper_headings<'a>(
         trans: &TFuncInplace<&'a GeneralSettings>,
         root_content: &mut Vec<Element>,
         settings: &'a GeneralSettings,
     ) -> TListResult {
-
         let mut result = vec![];
         let mut current_heading_index = 0;
 
@@ -26,7 +23,6 @@ pub fn fold_headings_transformation(mut root: Element, settings: &GeneralSetting
 
         for child in root_content.drain(..) {
             if let Element::Heading(cur_heading) = child {
-
                 if cur_heading.depth > current_depth {
                     let last = result.get_mut(current_heading_index);
                     if let Some(&mut Element::Heading(ref mut e)) = last {
@@ -43,7 +39,8 @@ pub fn fold_headings_transformation(mut root: Element, settings: &GeneralSetting
                 if current_depth < usize::MAX {
                     return Err(TransformationError {
                         cause: "a non-heading element was found after a heading. \
-                                This should not happen.".to_string(),
+                                This should not happen."
+                            .to_string(),
                         position: child.get_position().clone(),
                         transformation_name: String::from("fold_headings_transformation"),
                         tree: child.clone(),
@@ -70,14 +67,12 @@ pub fn fold_headings_transformation(mut root: Element, settings: &GeneralSetting
 /// If a list is started with a deeper item than one, this transformation still applies,
 /// although this should later be a linter error.
 pub fn fold_lists_transformation(mut root: Element, settings: &GeneralSettings) -> TResult {
-
     // move list items which are deeper than the current level into new sub-lists.
     fn move_deeper_items<'a>(
         trans: &TFuncInplace<&'a GeneralSettings>,
         root_content: &mut Vec<Element>,
         settings: &'a GeneralSettings,
     ) -> TListResult {
-
         // the currently least deep list item, every deeper
         // list item will be moved to a new sublist
         let mut lowest_depth = usize::MAX;
@@ -92,7 +87,7 @@ pub fn fold_lists_transformation(mut root: Element, settings: &GeneralSettings) 
                     transformation_name: String::from("fold_lists_transformation"),
                     position: child.get_position().clone(),
                     tree: child.clone(),
-                })
+                });
             }
         }
 
@@ -102,17 +97,13 @@ pub fn fold_lists_transformation(mut root: Element, settings: &GeneralSettings) 
 
         for child in root_content.drain(..) {
             if let Element::ListItem(cur_item) = child {
-
                 if cur_item.depth > lowest_depth {
-
                     // this error is returned if the sublist to append to was not found
-                    let build_found_error = |origin: &ListItem| {
-                        TransformationError {
-                            cause: "sublist was not instantiated properly.".into(),
-                            transformation_name: "fold_lists_transformation".into(),
-                            position: origin.position.clone(),
-                            tree: Element::ListItem(origin.clone()),
-                        }
+                    let build_found_error = |origin: &ListItem| TransformationError {
+                        cause: "sublist was not instantiated properly.".into(),
+                        transformation_name: "fold_lists_transformation".into(),
+                        position: origin.position.clone(),
+                        tree: Element::ListItem(origin.clone()),
                     };
 
                     if create_sublist {
@@ -194,7 +185,6 @@ pub fn whitespace_paragraphs_to_empty(mut root: Element, settings: &GeneralSetti
     Ok(root)
 }
 
-
 /// Reduce consecutive paragraphs and absorb trailing text into one,
 /// if not separated by a blank paragraph.
 pub fn collapse_paragraphs(
@@ -217,12 +207,12 @@ pub fn collapse_paragraphs(
                 }
 
                 // if the last paragraph was not empty, append to it.
-                if !last_empty {;
+                if !last_empty {
                     if let Some(&mut Element::Paragraph(ref mut last)) = result.last_mut() {
                         // Add a space on line break
                         last.content.push(Element::Text(Text {
                             text: " ".into(),
-                            position: last.position.clone()
+                            position: last.position.clone(),
                         }));
                         last.content.append(&mut par.content);
                         last.position.end = par.position.end.clone();
@@ -251,7 +241,6 @@ pub fn collapse_consecutive_text(
     mut root: Element,
     settings: &GeneralSettings,
 ) -> Result<Element, TransformationError> {
-
     fn squash_text<'a>(
         trans: &TFuncInplace<&'a GeneralSettings>,
         root_content: &mut Vec<Element>,
@@ -261,7 +250,6 @@ pub fn collapse_consecutive_text(
 
         for mut child in root_content.drain(..) {
             if let Element::Text(ref mut text) = child {
-
                 if let Some(&mut Element::Text(ref mut last)) = result.last_mut() {
                     if util::is_whitespace(&text.text) {
                         last.text.push(' ');
@@ -281,11 +269,9 @@ pub fn collapse_consecutive_text(
     Ok(root)
 }
 
-
 /// Enumerate anonymous template arguments as "1", "2", ...
 pub fn enumerate_anon_args(mut root: Element, settings: &GeneralSettings) -> TResult {
     if let Element::Template(ref mut template) = root {
-
         let mut counter = 1;
         for child in &mut template.content {
             if let Element::TemplateArgument(ref mut arg) = *child {

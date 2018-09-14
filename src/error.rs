@@ -1,11 +1,11 @@
 //! Error structures
 
 use ast;
-use std::fmt;
-use std::error;
 use colored::*;
-use util;
 use grammar;
+use std::error;
+use std::fmt;
+use util;
 
 /// The number of lines to display as error context.
 const ERROR_CONTEXT_LINES: usize = 5;
@@ -41,7 +41,6 @@ pub struct TransformationError {
 
 impl ParseError {
     pub fn from(err: &grammar::ParseError, input: &str) -> Self {
-
         let source_lines = util::get_source_lines(input);
         let line_count = source_lines.len();
 
@@ -68,7 +67,6 @@ impl ParseError {
             token_str.push(String::from(*token));
         }
 
-
         let mut context = vec![];
         for sloc in source_lines[start..end + 1].iter() {
             context.push(String::from(sloc.content));
@@ -94,10 +92,9 @@ impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         let error_message = format!(
             "ERROR in line {} at column {}: Could not continue to parse, expected one of: ",
-            self.position.line,
-            self.position.col
+            self.position.line, self.position.col
         ).red()
-            .bold();
+        .bold();
 
         let mut token_str = vec![];
         for token in &self.expected {
@@ -112,7 +109,6 @@ impl fmt::Display for ParseError {
         write!(f, "{}\n", token_str.join(", ").blue().bold())?;
 
         for (i, content) in self.context.iter().enumerate() {
-
             let lineno = format!("{} |", self.context_start + i + 1);
             let lineno_col;
 
