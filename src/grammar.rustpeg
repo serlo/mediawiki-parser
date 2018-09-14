@@ -105,8 +105,8 @@ list_item -> Element
     Element::ListItem(ListItem {
         position: Span::new(posl, posr, source_lines),
         depth: s.len(),
-        kind: kind,
-        content: content,
+        kind,
+        content,
     })
 }
 
@@ -137,7 +137,7 @@ table -> Element
 
     Element::Table(Table {
         position: Span::new(posl, posr, source_lines),
-        rows: rows,
+        rows,
         attributes: attr.unwrap_or_default(),
         caption: cap_pars,
         caption_attributes: cap_attrs,
@@ -179,7 +179,7 @@ table_cell -> Element
 {
     Element::TableCell(TableCell {
         position: Span::new(posl, posr, source_lines),
-        content: content,
+        content,
         attributes: attr.unwrap_or_default(),
         header: sep.starts_with('!'),
     })
@@ -197,7 +197,7 @@ internal_ref -> Element
     = posl:#position "[[" _ tar:iref_fmt* _ "|"? _ t:(pars:iref_par* _ fmts:iref_fmt* {(pars, fmts)}) ++ (_ '|' _) "]]" posr:#position
 {    
     let mut t = t;
-    let mut t: Vec<Vec<Element>> = t.drain(..).map(|e| combine(e)).collect();
+    let mut t: Vec<Vec<Element>> = t.drain(..).map(combine).collect();
     Element::InternalReference(InternalReference {
         position: Span::new(posl, posr, source_lines),
         target: tar,

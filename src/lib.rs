@@ -71,7 +71,7 @@ pub fn parse(input: &str) -> Result<Element, MWError> {
         );
     }
 
-    trans_result.map_err(|e| error::MWError::TransformationError(e))
+    trans_result.map_err(error::MWError::TransformationError)
 }
 
 fn apply_transformations(

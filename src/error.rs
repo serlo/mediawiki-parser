@@ -74,7 +74,7 @@ impl ParseError {
 
         ParseError {
             position: ast::Position::new(err.offset, &source_lines),
-            context: context,
+            context,
             expected: token_str,
             context_start: start,
             context_end: end,
@@ -101,12 +101,12 @@ impl fmt::Display for ParseError {
             if util::is_whitespace(token) {
                 token_str.push(format!("{:?}", token));
             } else {
-                token_str.push(format!("{}", token));
+                token_str.push(token.to_string());
             }
         }
 
         write!(f, "{}", error_message)?;
-        write!(f, "{}\n", token_str.join(", ").blue().bold())?;
+        writeln!(f, "{}", token_str.join(", ").blue().bold())?;
 
         for (i, content) in self.context.iter().enumerate() {
             let lineno = format!("{} |", self.context_start + i + 1);

@@ -31,7 +31,7 @@ pub fn get_source_lines(source: &str) -> Vec<ast::SourceLine> {
 
 /// Tests if a string is entirely whitespace
 pub fn is_whitespace(input: &str) -> bool {
-    return input.chars().all(|c| c.is_whitespace());
+    input.chars().all(|c| c.is_whitespace())
 }
 
 /// Shorten a string to fit into `TERMINAL_WIDTH`.
