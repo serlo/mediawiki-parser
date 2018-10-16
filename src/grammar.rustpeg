@@ -91,16 +91,8 @@ list -> Element
     })
 }
 
-line_start = pos:#position {?
-    if !SourceLine::starts_line(pos, source_lines) {
-        Err("element must start on a new line")
-    } else {
-        Ok(())
-    }
-}
-
 list_item -> Element
-    = posl:#position line_start _ s:$([*#:;]+) _ content:formatted* _ posr:#position
+    = posl:#position s:$([*#:;]+) _ content:formatted* _ posr:#position
 {
     let kind = match s.chars().last() {
         Some('*') => ListItemKind::Unordered,
@@ -485,7 +477,7 @@ url_char -> &'input str
     = $([^ \]])
 
 // a paragraph may not start with these symbols as they indicate other elements
-PAR_START_GUARD = !([=!|] / EOF)
+PAR_START_GUARD = !([=!|;#:*] / EOF)
 
 // tags which should be parsed as block elements, rather than html tags.
 HTML_BLOCK_ELEMENTS = ("gallery"i)
