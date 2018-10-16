@@ -37,7 +37,7 @@ heading -> Element
 // uses the standard formatted rule. This keeps formatted text or html tags from beeing
 // ripped apart.
 ParagraphTemplate<fmt_rule> 
-    = list / table / gallery 
+    = list / table / gallery / (t:template _ (nl / EOF) {t})
       / posl:#position PAR_START_GUARD text:fmt_rule* _ (nl / EOF) posr:#position 
 {   
     Element::Paragraph(Paragraph {

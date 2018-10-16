@@ -681,39 +681,37 @@
             - type: text
               text: paragraph
 
-# Lists in template arguments should also parse corrently, 
-# despite not starting a line.
+# Even inside of templates, lists must start on a new line
   - case: list in template
     input: |
-        {{test|* item 1
+        {{test|
+        * item 1
         * item 2}}
     out:
       type: document
       content:
-        - type: paragraph
+        - type: template
+          name:
+            - type: text
+              text: test
           content:
-            - type: template
-              name:
-                - type: text
-                  text: test
-              content:
-                - type: templateargument
-                  name: "1"
-                  value:
-                    - type: list
+            - type: templateargument
+              name: "1"
+              value:
+                - type: list
+                  content:
+                    - type: listitem
+                      kind: unordered
+                      depth: 1
                       content:
-                        - type: listitem
-                          kind: unordered
-                          depth: 1
-                          content:
-                            - type: text
-                              text: item 1
-                        - type: listitem
-                          kind: unordered
-                          depth: 1
-                          content:
-                            - type: text
-                              text: item 2
+                        - type: text
+                          text: item 1
+                    - type: listitem
+                      kind: unordered
+                      depth: 1
+                      content:
+                        - type: text
+                          text: item 2
 
 # Lists cannot be started mid-line.
   - case: list mod line
@@ -723,28 +721,26 @@
     out:
       type: document
       content:
+        - type: template
+          name:
+            - type: text
+              text: test
+          content:
+            - type: templateargument
+              name: "1"
+              value:
+                - type: text
+                  text: "this * is "
+                - type: htmltag
+                  name: a
+                  attributes: []
+                  content: 
+                    - type: text
+                      text: " * a "
+                - type: text
+                  text: " test"
         - type: paragraph
           content:
-            - type: template
-              name:
-                - type: text
-                  text: test
-              content:
-                - type: templateargument
-                  name: "1"
-                  value:
-                    - type: text
-                      text: "this * is "
-                    - type: htmltag
-                      name: a
-                      attributes: []
-                      content: 
-                        - type: text
-                          text: " * a "
-                    - type: text
-                      text: " test"
-            - type: text
-              text: " "
             - type: internalreference
               target:
                 - type: text
@@ -770,8 +766,50 @@
     out:
       type: document
       content:
+        - type: template
+          name:
+            - type: text
+              text: name
+          content: []
+
+# A sequence of block templates
+  - case: block template sequence
+    input: |
+        {{name}}
+
+        {{name}}
+    out:
+      type: document
+      content:
+        - type: template
+          name:
+            - type: text
+              text: name
+          content: []
+        - type: template
+          name:
+            - type: text
+              text: name
+          content: []
+
+# A sequence of inline templates
+  - case: inline template sequence
+    input: |
+        bla {{name}} and a {{name}}
+    out:
+      type: document
+      content:
         - type: paragraph
           content:
+            - type: text
+              text: "bla "
+            - type: template
+              name:
+                - type: text
+                  text: name
+              content: []
+            - type: text
+              text: " and a "
             - type: template
               name:
                 - type: text
@@ -788,13 +826,11 @@
     out:
       type: document
       content:
-        - type: paragraph
-          content:
-            - type: template
-              name:
-                - type: text
-                  text: ":name"
-              content: []
+        - type: template
+          name:
+            - type: text
+              text: ":name"
+          content: []
 
 
 # A sequence of unnamed template arguments
@@ -808,34 +844,32 @@
     out:
       type: document
       content:
-        - type: paragraph
+        - type: template
+          name:
+            - type: text
+              text: templatename
           content:
-            - type: template
-              name:
-                - type: text
-                  text: templatename
-              content:
-                - type: templateargument
-                  name: "1"
-                  value:
-                    - type: paragraph
-                      content:
-                        - type: text
-                          text: attribute2
-                - type: templateargument
-                  name: "2"
-                  value:
-                    - type: paragraph
-                      content:
-                        - type: text
-                          text: atträöüß3
-                - type: templateargument
-                  name: "3"
-                  value:
-                    - type: paragraph
-                      content:
-                        - type: text
-                          text: attribute4
+            - type: templateargument
+              name: "1"
+              value:
+                - type: paragraph
+                  content:
+                    - type: text
+                      text: attribute2
+            - type: templateargument
+              name: "2"
+              value:
+                - type: paragraph
+                  content:
+                    - type: text
+                      text: atträöüß3
+            - type: templateargument
+              name: "3"
+              value:
+                - type: paragraph
+                  content:
+                    - type: text
+                      text: attribute4
 
 # A named argument
   - case: named argument
@@ -843,18 +877,16 @@
     out:
       type: document
       content:
-        - type: paragraph
+        - type: template
+          name:
+            - type: text
+              text: name
           content:
-            - type: template
-              name:
+            - type: templateargument
+              name: caption
+              value:
                 - type: text
-                  text: name
-              content:
-                - type: templateargument
-                  name: caption
-                  value:
-                    - type: text
-                      text: üäö test
+                  text: üäö test
 
 # Multiple named template arguments
   - case: multiple named template arguments
@@ -862,28 +894,26 @@
     out:
       type: document
       content:
-        - type: paragraph
+        - type: template
+          name:
+            - type: text
+              text: templatename
           content:
-            - type: template
-              name:
+            - type: templateargument
+              name: äöütem
+              value:
                 - type: text
-                  text: templatename
-              content:
-                - type: templateargument
-                  name: äöütem
-                  value:
-                    - type: text
-                      text: "2"
-                - type: templateargument
-                  name: item3
-                  value:
-                    - type: text
-                      text: "3"
-                - type: templateargument
-                  name: item4
-                  value:
-                    - type: text
-                      text: "4"
+                  text: "2"
+            - type: templateargument
+              name: item3
+              value:
+                - type: text
+                  text: "3"
+            - type: templateargument
+              name: item4
+              value:
+                - type: text
+                  text: "4"
 
 # Mixed named and unnamed arguments
   - case: mixed template arguments
@@ -891,28 +921,26 @@
     out:
       type: document
       content:
-        - type: paragraph
+        - type: template
+          name:
+            - type: text
+              text: template1
           content:
-            - type: template
-              name:
+            - type: templateargument
+              name: item2
+              value:
                 - type: text
-                  text: template1
-              content:
-                - type: templateargument
-                  name: item2
-                  value:
-                    - type: text
-                      text: "2"
-                - type: templateargument
-                  name: item3
-                  value:
-                    - type: text
-                      text: "3"
-                - type: templateargument
-                  name: "1"
-                  value:
-                    - type: text
-                      text: "item4"
+                  text: "2"
+            - type: templateargument
+              name: item3
+              value:
+                - type: text
+                  text: "3"
+            - type: templateargument
+              name: "1"
+              value:
+                - type: text
+                  text: "item4"
 
 # Nested templates
   - case: nested templates
@@ -920,23 +948,21 @@
     out:
       type: document
       content:
-        - type: paragraph
-          content:
+        - type: template
+          name:
+            - type: text
+              text: "Thankyou in "
             - type: template
-              name:
+              name: 
                 - type: text
-                  text: "Thankyou in "
-                - type: template
-                  name: 
-                    - type: text
-                      text: "preferred language"
-                  content: []
-              content:
-                - type: templateargument
-                  name: signature
-                  value:
-                    - type: text
-                      text: Me
+                  text: "preferred language"
+              content: []
+          content:
+            - type: templateargument
+              name: signature
+              value:
+                - type: text
+                  text: Me
 
 # A simple internal reference
   - case: simple internal ref
@@ -1091,45 +1117,43 @@
     out:
       type: document
       content:
-        - type: paragraph
+        - type: template
+          name:
+            - type: text
+              text: test
           content:
-            - type: template
-              name:
-                - type: text
-                  text: test
-              content:
-                - type: templateargument
-                  name: bla
-                  value:
-                  - type: table
-                    attributes: []
-                    caption_attributes:
-                      - key: caption_attribute
-                        value: value
-                    caption:
-                      - type: paragraph
+            - type: templateargument
+              name: bla
+              value:
+              - type: table
+                attributes: []
+                caption_attributes:
+                  - key: caption_attribute
+                    value: value
+                caption:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: "this is a "
+                      - type: formatted
+                        markup: italic
                         content:
                           - type: text
-                            text: "this is a "
-                          - type: formatted
-                            markup: italic
-                            content:
+                            text: "caption"
+                rows:
+                  - type: tablerow
+                    attributes: []
+                    cells:
+                      - type: tablecell
+                        attributes:
+                          - key: attributevalue 
+                            value: test
+                        header: false
+                        content:
+                          - type: paragraph
+                            content: 
                               - type: text
-                                text: "caption"
-                    rows:
-                      - type: tablerow
-                        attributes: []
-                        cells:
-                          - type: tablecell
-                            attributes:
-                              - key: attributevalue 
-                                value: test
-                            header: false
-                            content:
-                              - type: paragraph
-                                content: 
-                                  - type: text
-                                    text: test
+                                text: test
 
  # simple heading in template (with hack used in real mediawiki)
   - case: table in template mediawiki hack
@@ -1143,45 +1167,43 @@
     out:
       type: document
       content:
-        - type: paragraph
+        - type: template
+          name:
+            - type: text
+              text: test
           content:
-            - type: template
-              name:
-                - type: text
-                  text: test
-              content:
-                - type: templateargument
-                  name: bla
-                  value:
-                  - type: table
-                    attributes: []
-                    caption_attributes:
-                      - key: caption_attribute
-                        value: value
-                    caption:
-                      - type: paragraph
+            - type: templateargument
+              name: bla
+              value:
+              - type: table
+                attributes: []
+                caption_attributes:
+                  - key: caption_attribute
+                    value: value
+                caption:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: "this is a "
+                      - type: formatted
+                        markup: italic
                         content:
                           - type: text
-                            text: "this is a "
-                          - type: formatted
-                            markup: italic
-                            content:
+                            text: "caption"
+                rows:
+                  - type: tablerow
+                    attributes: []
+                    cells:
+                      - type: tablecell
+                        attributes:
+                          - key: attributevalue 
+                            value: test
+                        header: false
+                        content:
+                          - type: paragraph
+                            content: 
                               - type: text
-                                text: "caption"
-                    rows:
-                      - type: tablerow
-                        attributes: []
-                        cells:
-                          - type: tablecell
-                            attributes:
-                              - key: attributevalue 
-                                value: test
-                            header: false
-                            content:
-                              - type: paragraph
-                                content: 
-                                  - type: text
-                                    text: test
+                                text: test
 
  # Table with multiple rows
   - case: multi row table
@@ -1481,24 +1503,22 @@
     out:
       type: document
       content:
-        - type: paragraph
+        - type: template
+          name:
+            - type: text
+              text: noprint
           content:
-            - type: template
-              name:
-                - type: text
-                  text: noprint
-              content:
-                - type: templateargument
-                  name: "1"
-                  value:
-                    - type: heading
-                      depth: 2
-                      caption: 
-                        - type: text
-                          text: caption
+            - type: templateargument
+              name: "1"
+              value:
+                - type: heading
+                  depth: 2
+                  caption: 
+                    - type: text
+                      text: caption
+                  content:
+                    - type: paragraph
                       content:
-                        - type: paragraph
-                          content:
-                            - type: text
-                              text: content
+                        - type: text
+                          text: content
                             
