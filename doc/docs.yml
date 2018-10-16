@@ -739,26 +739,24 @@
                       text: " * a "
                 - type: text
                   text: " test"
-        - type: paragraph
-          content:
-            - type: internalreference
-              target:
+        - type: internalreference
+          target:
+            - type: text
+              text: "this ** "
+            - type: formatted
+              markup: italic
+              content:
                 - type: text
-                  text: "this ** "
-                - type: formatted
-                  markup: italic
-                  content:
-                    - type: text
-                      text: " * as"
-                - type: formatted
-                  markup: underline
-                  content:
-                    - type: text
-                      text: " * as"
+                  text: " * as"
+            - type: formatted
+              markup: underline
+              content:
                 - type: text
-                  text: " well"
-              options: []
-              caption: []
+                  text: " * as"
+            - type: text
+              text: " well"
+          options: []
+          caption: []
                
 # A very simple template
   - case: simple template
@@ -970,14 +968,12 @@
     out:
       type: document
       content:
-        - type: paragraph
-          content:
-            - type: internalreference
-              target: 
-                - type: text
-                  text: File:Abc
-              options: []
-              caption: []
+        - type: internalreference
+          target: 
+            - type: text
+              text: File:Abc
+          options: []
+          caption: []
 
 # An empty internal reference
   - case: empty internal ref
@@ -985,12 +981,10 @@
     out:
       type: document
       content:
-        - type: paragraph
-          content:
-          - type: internalreference
-            target: []
-            options: []
-            caption: []
+        - type: internalreference
+          target: []
+          options: []
+          caption: []
 
 # A simple internal reference with caption
   - case: internal ref with caption
@@ -998,16 +992,14 @@
     out:
       type: document
       content:
-        - type: paragraph
-          content:
-            - type: internalreference
-              target: 
-                - type: text
-                  text: File:Abc
-              options: []
-              caption: 
-                - type: text
-                  text: this is a caption
+        - type: internalreference
+          target: 
+            - type: text
+              text: File:Abc
+          options: []
+          caption: 
+            - type: text
+              text: this is a caption
 
 # A simple internal reference with options
   - case: internal ref with options
@@ -1015,27 +1007,25 @@
     out:
       type: document
       content:
-        - type: paragraph
-          content:
-            - type: internalreference
-              target: 
+        - type: internalreference
+          target: 
+            - type: text
+              text: "File:Abc"
+          options: 
+            - - type: text
+                text: "opt1=value1"
+            - - type: text
+                text: "opt2=123"
+          caption: 
+            - type: text
+              text: "this is a caption with "
+            - type: formatted
+              markup: bold
+              content:
                 - type: text
-                  text: "File:Abc"
-              options: 
-                - - type: text
-                    text: "opt1=value1"
-                - - type: text
-                    text: "opt2=123"
-              caption: 
-                - type: text
-                  text: "this is a caption with "
-                - type: formatted
-                  markup: bold
-                  content:
-                    - type: text
-                      text: "bold and |special|"
-                - type: text
-                  text: " markup"                     
+                  text: "bold and |special|"
+            - type: text
+              text: " markup"                     
 
 # Simple table with one cell
   - case: single cell table
