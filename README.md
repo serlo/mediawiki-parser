@@ -1,8 +1,13 @@
-# mediawiki-peg-rust
-This project aims to develop a parser for mediawiki markdown on the basis of Parsing Expression Grammars. 
+# mediawiki-parser
+This project aims to develop a parser for a subset of mediawiki markdown on the basis of Parsing Expression Grammars. 
 It currently features a generated parser and test generation from a specification document. A simple binary to read from a file and write yaml to stdout is provided.
 
-Although compatibility with the online MediaWiki markup is desirable and worked towards, this parser will focus on a useful subset of the markup language for now. Instead, providing useful error messages and encouraging semantic markup will be a priority.
+## Disclaimer
+
+The goal of mediawiki-parser is *not* full compatibility with MediaWiki and all of it's quirks. It is intended to be used if rejecting exotic or malformed input is fine. 
+The markup supported is currently largely oriented towards the need of a specific MediaWiki Project and will likely not change drastically without external contributions. 
+
+If you want to parse any MediaWiki with all its weirdness, take a look at [Parse Wiki Text](https://github.com/portstrom/parse_wiki_text) instead.
 
 ## Currently supported MediaWiki:
 
