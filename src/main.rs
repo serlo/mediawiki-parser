@@ -8,11 +8,13 @@
 
 extern crate mediawiki_parser;
 extern crate serde_yaml;
+extern crate serde_json;
 #[macro_use]
 extern crate structopt;
 
 use std::fs;
 use std::io;
+use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process;
@@ -26,6 +28,10 @@ struct Args {
     /// If none is provided, stdin is used.
     #[structopt(short = "i", long = "input", parse(from_os_str))]
     pub input_file: Option<PathBuf>,
+
+    /// Ouput the result as JSON
+    #[structopt(short = "j", long = "json")]
+    pub use_json: bool,
 }
 
 /// read contents of a `io::Reader` into a string
@@ -40,8 +46,9 @@ fn read_from_reader(reader: &mut io::Read) -> String {
 
 /// Read a file from disk and store to string.
 fn read_file(filename: &PathBuf) -> String {
-    let mut file = fs::File::open(filename).expect("Could not open file!");
-    read_from_reader(&mut file)
+    let file = fs::File::open(filename).expect("Could not open file!");
+    let mut reader = BufReader::new(file);
+    read_from_reader(&mut reader)
 }
 
 /// Read a file from stdin from to string.
@@ -58,17 +65,28 @@ fn main() {
     };
 
     let result = mediawiki_parser::parse(&input);
-
     match result {
         Ok(r) => {
-            serde_yaml::to_writer(io::stdout(), &r).unwrap();
+            if args.use_json {
+                serde_json::to_writer(io::stdout(), &r)
+                    .expect("could not serialize json!");
+            } else {
+                serde_yaml::to_writer(io::stdout(), &r)
+                    .expect("could not serialize yaml!");
+            };
             println!();
         }
         Err(e) => {
             eprintln!("{}", e);
-            serde_yaml::to_writer(io::stdout(), &e).unwrap();
+            if args.use_json {
+                serde_json::to_writer(io::stdout(), &e)
+                    .expect("could not serialize json!");
+            } else {
+                serde_yaml::to_writer(io::stdout(), &e)
+                    .expect("could not serialize yaml!");
+            };
             println!();
             process::exit(1);
         }
-    }
+    };
 }
