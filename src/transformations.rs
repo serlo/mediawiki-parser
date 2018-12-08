@@ -1,7 +1,7 @@
 //! Functions and types for source tree transformations.
 
-use ast::*;
-use error::*;
+use crate::ast::*;
+use crate::error::TransformationError;
 
 /// Transformation result type
 pub type TResult = Result<Element, TransformationError>;

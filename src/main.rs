@@ -6,16 +6,13 @@
 //! documentation for a description of possible elements of the abstract
 //! syntax tree.
 
-extern crate mediawiki_parser;
-extern crate serde_yaml;
-extern crate serde_json;
-#[macro_use]
-extern crate structopt;
-
+use mediawiki_parser;
+use serde_json;
+use serde_yaml;
 use std::fs;
 use std::io;
-use std::io::BufReader;
 use std::io::prelude::*;
+use std::io::BufReader;
 use std::path::PathBuf;
 use std::process;
 use structopt::StructOpt;
@@ -68,22 +65,18 @@ fn main() {
     match result {
         Ok(r) => {
             if args.use_json {
-                serde_json::to_writer(io::stdout(), &r)
-                    .expect("could not serialize json!");
+                serde_json::to_writer(io::stdout(), &r).expect("could not serialize json!");
             } else {
-                serde_yaml::to_writer(io::stdout(), &r)
-                    .expect("could not serialize yaml!");
+                serde_yaml::to_writer(io::stdout(), &r).expect("could not serialize yaml!");
             };
             println!();
         }
         Err(e) => {
             eprintln!("{}", e);
             if args.use_json {
-                serde_json::to_writer(io::stdout(), &e)
-                    .expect("could not serialize json!");
+                serde_json::to_writer(io::stdout(), &e).expect("could not serialize json!");
             } else {
-                serde_yaml::to_writer(io::stdout(), &e)
-                    .expect("could not serialize yaml!");
+                serde_yaml::to_writer(io::stdout(), &e).expect("could not serialize yaml!");
             };
             println!();
             process::exit(1);

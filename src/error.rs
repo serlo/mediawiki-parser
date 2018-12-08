@@ -1,11 +1,12 @@
 //! Error structures
 
-use ast;
+use crate::ast::{Element, Position, Span};
+use crate::grammar;
+use crate::util::{get_source_lines, is_whitespace, shorten_str};
 use colored::*;
-use grammar;
+use serde_derive::{Deserialize, Serialize};
 use std::error;
 use std::fmt;
-use util;
 
 /// The number of lines to display as error context.
 const ERROR_CONTEXT_LINES: usize = 5;
@@ -22,7 +23,7 @@ pub enum MWError {
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase", deny_unknown_fields)]
 pub struct ParseError {
-    pub position: ast::Position,
+    pub position: Position,
     pub expected: Vec<String>,
     pub context: Vec<String>,
     pub context_start: usize,
@@ -34,14 +35,14 @@ pub struct ParseError {
 #[serde(rename_all = "lowercase", deny_unknown_fields)]
 pub struct TransformationError {
     pub cause: String,
-    pub position: ast::Span,
+    pub position: Span,
     pub transformation_name: String,
-    pub tree: ast::Element,
+    pub tree: Element,
 }
 
 impl ParseError {
     pub fn from(err: &grammar::ParseError, input: &str) -> Self {
-        let source_lines = util::get_source_lines(input);
+        let source_lines = get_source_lines(input);
         let line_count = source_lines.len();
 
         let line = if err.line <= line_count {
@@ -73,7 +74,7 @@ impl ParseError {
         }
 
         ParseError {
-            position: ast::Position::new(err.offset, &source_lines),
+            position: Position::new(err.offset, &source_lines),
             context,
             expected: token_str,
             context_start: start,
@@ -93,12 +94,13 @@ impl fmt::Display for ParseError {
         let error_message = format!(
             "ERROR in line {} at column {}: Could not continue to parse, expected one of: ",
             self.position.line, self.position.col
-        ).red()
+        )
+        .red()
         .bold();
 
         let mut token_str = vec![];
         for token in &self.expected {
-            if util::is_whitespace(token) {
+            if is_whitespace(token) {
                 token_str.push(format!("{:?}", token));
             } else {
                 token_str.push(token.to_string());
@@ -118,7 +120,7 @@ impl fmt::Display for ParseError {
                 formatted_content = content.red();
                 lineno_col = lineno.red().bold();
             } else {
-                formatted_content = util::shorten_str(content).normal();
+                formatted_content = shorten_str(content).normal();
                 lineno_col = lineno.blue().bold()
             }
 

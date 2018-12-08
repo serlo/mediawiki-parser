@@ -1,16 +1,3 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate colored;
-extern crate serde;
-
-#[cfg(test)]
-extern crate serde_yaml;
-#[cfg(feature = "ptime")]
-extern crate time;
-
-#[cfg(test)]
-mod tests;
-
 mod ast;
 mod error;
 #[cfg_attr(
@@ -25,18 +12,20 @@ mod error;
     )
 )]
 mod grammar;
+#[cfg(test)]
+mod tests;
 mod traversion;
 mod util;
 
 // public exports
-pub use ast::*;
-pub use error::*;
-pub use traversion::Traversion;
+pub use self::ast::*;
+pub use self::error::*;
+pub use self::traversion::Traversion;
 
 pub mod transformations;
 
 mod default_transformations;
-use default_transformations::*;
+use self::default_transformations::*;
 
 /// Parse the input document to generate a document tree.
 /// After parsing, some transformations are applied to the result.

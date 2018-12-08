@@ -1,7 +1,8 @@
 /// Data structures describing the parsed document.
 
 #[cfg(feature = "no_position")]
-use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde::{Serialize, SerializeMap, Serializer};
+use serde_derive::{Deserialize, Serialize};
 
 /**
  * Element types used in the abstract syntax tree (AST).
@@ -268,11 +269,7 @@ pub struct Position {
 /// Holds position information (start and end) for one element
 #[derive(Debug, Deserialize, PartialEq, Clone)]
 #[cfg_attr(not(feature = "no_position"), derive(Serialize))]
-#[serde(
-    rename_all = "lowercase",
-    default = "Span::any",
-    deny_unknown_fields
-)]
+#[serde(rename_all = "lowercase", default = "Span::any", deny_unknown_fields)]
 pub struct Span {
     pub start: Position,
     pub end: Position,

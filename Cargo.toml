@@ -10,6 +10,7 @@ readme = "README.md"
 keywords = ["mediawiki", "parser", "wikipedia", "wikibooks", "markdown"]
 categories = ["parsing", "text-processing"]
 license = "MIT"
+edition = "2018"
 
 [lib]
 name = "mediawiki_parser"

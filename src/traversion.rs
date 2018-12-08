@@ -1,6 +1,6 @@
 //! Helper trait for operations reading from the document tree.
 
-use ast::*;
+use super::ast::Element;
 use std::io;
 
 /// Implements a traversion over a tree of `Element`.
@@ -9,7 +9,7 @@ use std::io;
 /// external settings cannot.
 pub trait Traversion<'a, S: Copy + ?Sized> {
     /// push to the traversion path.
-    fn path_push(&mut self, &'a Element);
+    fn path_push(&mut self, elem: &'a Element);
     /// pop from the traversion path.
     fn path_pop(&mut self) -> Option<&'a Element>;
     /// get the traversion path.

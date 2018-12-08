@@ -1,8 +1,8 @@
-use ast::*;
-use error::*;
+use crate::ast::*;
+use crate::error::TransformationError;
+use crate::transformations::*;
+use crate::util;
 use std::usize;
-use transformations::*;
-use util;
 
 /// Settings for general transformations.
 pub struct GeneralSettings {}

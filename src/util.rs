@@ -1,6 +1,6 @@
 //! Utility functions and types
 
-use ast;
+use crate::ast;
 
 /// The terminal width.
 const TERMINAL_WIDTH: usize = 80;

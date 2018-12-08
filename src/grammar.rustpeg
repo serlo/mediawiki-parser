@@ -1,5 +1,5 @@
-use ast::*;
-use util::*;
+use crate::ast::*;
+use crate::util::combine;
 
 #![arguments(source_lines: &[SourceLine])]
 

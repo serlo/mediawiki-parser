@@ -1,12 +1,10 @@
-extern crate peg;
-extern crate serde;
-extern crate serde_yaml;
-#[macro_use]
-extern crate serde_derive;
-
+use peg;
+use serde_derive::{Deserialize, Serialize};
+use serde_yaml;
 use std::env;
 use std::fs;
-use std::io::*;
+use std::io;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
 #[allow(dead_code)]
@@ -40,9 +38,9 @@ macro_rules! TEST_HEADER {
         "
 // THIS DOCUMENT IS AUTO-GENERATED AND SHOULD NOT BE EDITED BY HAND!
 
-use ast;
+use crate::ast;
 use serde_yaml;
-use parse;
+use crate::parse;
 
 "
     };
@@ -60,7 +58,7 @@ fn escape_test_name(input: String) -> String {
 }
 
 impl Test {
-    fn write_code(&self, file: &mut fs::File) -> Result<()> {
+    fn write_code(&self, file: &mut fs::File) -> io::Result<()> {
         writeln!(
             file,
             TEST_SOUCE!(),
