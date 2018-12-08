@@ -351,6 +351,17 @@
               target: https://www.example.com/
               caption: []
 
+# Normal text with angle brackets
+  - case: text with brackets
+    input: "see reference [1]!"
+    out:
+      type: document
+      content:
+        - type: paragraph
+          content:
+            - type: text
+              text: "see reference [1]!"
+
 # Simple hyperlink with a caption.
   - case: hyperlink with caption
     input: "[https://www.example.com/ Example dot com]"
