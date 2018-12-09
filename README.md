@@ -22,6 +22,16 @@ If you want to parse any MediaWiki with all its weirdness, take a look at [Parse
 * Galleries
 * Generic html tags and comments `<thing>content</thing>`
 
+## Known Limitations
+
+This project has some known limitations, which might or might not be lifted in the future. 
+Part of this comes from treating WikiText as a context-free formal language, which is not entrierly true.
+
+* `{,},[,]`  cannot be used in plain text, as they normally indicate special syntax. However, using them in math or `<nowiki>` is fine.
+* Indentation is currently not parsed as `pre`.
+* Templates are only pared on a syntactical level, they have no effects on their content whatsoever.
+
+
 ## Example
 
 Parsing will result in either a syntax tree with position information (mostly omitted here for conciseness):
