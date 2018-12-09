@@ -1,15 +1,13 @@
 mod ast;
 mod error;
-#[cfg_attr(
-    feature = "cargo-clippy",
-    allow(
-        unit_arg,
-        cyclomatic_complexity,
-        len_zero,
-        single_match,
-        naive_bytecount,
-        suspicious_else_formatting
-    )
+#[allow(
+    clippy::unused_unit,
+    clippy::unit_arg,
+    clippy::cyclomatic_complexity,
+    clippy::len_zero,
+    clippy::single_match,
+    clippy::naive_bytecount,
+    clippy::suspicious_else_formatting
 )]
 mod grammar;
 #[cfg(test)]

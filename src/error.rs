@@ -69,7 +69,7 @@ impl ParseError {
         }
 
         let mut context = vec![];
-        for sloc in source_lines[start..end + 1].iter() {
+        for sloc in source_lines[start..=end].iter() {
             context.push(String::from(sloc.content));
         }
 
