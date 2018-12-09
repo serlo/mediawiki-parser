@@ -65,6 +65,7 @@ fn apply_transformations(
     mut root: Element,
     settings: &GeneralSettings,
 ) -> transformations::TResult {
+    root = validate_external_refs(root, settings)?;
     root = fold_headings_transformation(root, settings)?;
     root = fold_lists_transformation(root, settings)?;
     root = whitespace_paragraphs_to_empty(root, settings)?;

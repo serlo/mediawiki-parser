@@ -285,3 +285,88 @@ pub fn enumerate_anon_args(mut root: Element, settings: &GeneralSettings) -> TRe
     };
     recurse_inplace(&enumerate_anon_args, root, settings)
 }
+
+// taken from https://github.com/portstrom/parse_wiki_text/blob/master/src/default.rs
+const PROTOCOLS: [&str; 28] = [
+    "//",
+    "bitcoin:",
+    "ftp://",
+    "ftps://",
+    "geo:",
+    "git://",
+    "gopher://",
+    "http://",
+    "https://",
+    "irc://",
+    "ircs://",
+    "magnet:",
+    "mailto:",
+    "mms://",
+    "news:",
+    "nntp://",
+    "redis://",
+    "sftp://",
+    "sip:",
+    "sips:",
+    "sms:",
+    "ssh://",
+    "svn://",
+    "tel:",
+    "telnet://",
+    "urn:",
+    "worldwind://",
+    "xmpp:",
+];
+
+/// only keep external references with actual urls
+pub fn validate_external_refs(mut root: Element, settings: &GeneralSettings) -> TResult {
+    fn validate_erefs_vec<'a>(
+        trans: &TFuncInplace<&'a GeneralSettings>,
+        root_content: &mut Vec<Element>,
+        settings: &'a GeneralSettings,
+    ) -> TListResult {
+        let mut result = vec![];
+
+        for mut child in root_content.drain(..) {
+            if let Element::ExternalReference(ref mut eref) = child {
+                let is_uri = PROTOCOLS.iter().any(|p| eref.target.trim().starts_with(p));
+                if is_uri {
+                    eref.target = eref.target.trim().to_string();
+                    result.push(child);
+                } else {
+                    result.push(Element::Text(Text {
+                        position: Span {
+                            start: eref.position.start.clone(),
+                            end: eref
+                                .caption
+                                .iter()
+                                .next()
+                                .map(|c| c.get_position().start.clone())
+                                .unwrap_or(eref.position.end.clone()),
+                        },
+                        text: format!("[{}", eref.target),
+                    }));
+                    result.append(&mut eref.caption);
+                    result.push(Element::Text(Text {
+                        position: Span {
+                            start: {
+                                let mut s = eref.position.end.clone();
+                                s.col -= 1;
+                                s.offset -= 1;
+                                s
+                            },
+                            end: eref.position.end.clone(),
+                        },
+                        text: "]".to_string(),
+                    }));
+                }
+            } else {
+                result.push(child);
+            }
+        }
+        result = apply_func_drain(trans, &mut result, settings)?;
+        Ok(result)
+    }
+    root = recurse_inplace_template(&validate_external_refs, root, settings, &validate_erefs_vec)?;
+    Ok(root)
+}

@@ -194,7 +194,7 @@ table_cell -> Element
 
 // internal references, may have pipe-separated options
 iref_fmt -> Element
-    = FormattedTextTemplate<Text<iref_char>>
+    = FormattedTextTemplate<Text<template_char>>
 iref_par -> Element
     = ParagraphTemplate<iref_fmt>
 
@@ -212,14 +212,12 @@ internal_ref -> Element
 }
 
 // external references (hyperlink) with only url and optional caption
-eref_fmt -> Element
-    = FormattedTextTemplate<Text<eref_char>>
 external_ref -> Element
-    = posl:#position '[' _ &protocol_prefix u:url _ cap:eref_fmt* ']' posr:#position
+    = posl:#position '[' u:url ws:_ cap:formatted* ']' posr:#position 
 {
     Element::ExternalReference(ExternalReference {
         position: Span::new(posl, posr, source_lines),
-        target: u,
+        target: format!("{}{}", u, ws),
         caption: cap
     })
 }
@@ -465,7 +463,7 @@ whitespace_elem -> Element
 
 math_char -> &'input str = !TagClose<"math"i> $.
 normal_char -> &'input str 
-    = !([\n\r \t{}] / emph_lit / ("[" _ protocol_prefix) / internal_ref /
+    = !([\n\r \t{}\[\]] / emph_lit /
         any_open / any_close / any_tag / html_comment_start) $.
 
 heading_char -> &'input str 
@@ -474,22 +472,14 @@ table_char -> &'input str
     = !(cell_sep) c:normal_char {c}
 template_char -> &'input str 
     = !'|' c:normal_char {c}
-iref_char -> &'input str
-    = !('|' / "]]") c:normal_char {c}
-eref_char -> &'input str
-    = !('|' / ']') c:normal_char {c}
-template_arg_char -> &'input str
+template_arg_char -> &'input str 
     = ![|<>=!*#:;/] c:normal_char {c} 
 whitespace -> &'input str
     = $(' ') / $('\t')
 tag_char -> &'input str
     = $([^<>/ =])
 url_char -> &'input str
-    = $([^ \t\]])
-
-// list of protocol prefixes for externa links.
-// Taken from https://github.com/portstrom/parse_wiki_text
-protocol_prefix = "//" / "bitcoin:" / "ftp://" / "ftps://" / "geo:" / "git://" / "gopher://" / "http://" / "https://" / "irc://" / "ircs://" / "magnet:" / "mailto:" / "mms://" / "news:" / "nntp://" / "redis://" / "sftp://" / "sip:" / "sips:" / "sms:" / "ssh://" / "svn://" / "tel:" / "telnet://" / "urn:" / "worldwind://" / "xmpp:"
+    = $([^ \]])
 
 // a paragraph may not start with these symbols as they indicate other elements
 PAR_START_GUARD = !([=!|;#:*] / EOF)
